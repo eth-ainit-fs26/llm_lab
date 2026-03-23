@@ -1,0 +1,385 @@
+================================================================================
+BRAINSTORMING: PROMPT ENGINEERING EXERCISES FOR MANAGERS AT ETH ZURICH
+================================================================================
+
+Target audience : Managers in their 40s–50s, CAS/DAS programme at ETH Zurich
+Prior coding knowledge : Essentially none (they can run a Jupyter cell)
+Time budget : ~30 minutes per exercise
+Delivery medium : Jupyter Notebook (pre-filled scaffolding, minimal Python)
+Key pedagogic goals : Hands-on experimentation, intuition building,
+                       gamification / fun, immediate feedback loops
+
+================================================================================
+PART 1 — LANDSCAPE SCAN OF EXISTING RESOURCES
+================================================================================
+
+Below is a curated catalogue of existing exercises, workshops, and games that
+were found through an internet survey. Each entry includes a short description,
+a link, and an assessment of fit for our audience.
+
+───────────────────────────────────────────────────────────────────────────────
+1. Anthropic's Interactive Prompt Engineering Tutorial
+   URL : https://github.com/anthropics/prompt-eng-interactive-tutorial
+   Format : 9-chapter Jupyter notebook course with exercises
+   Fit : HIGH — excellent pedagogic structure, but too long for 30 min.
+         Individual chapters (e.g. Chapter 2: "Being Clear and Direct")
+         could be extracted and simplified. Uses Claude API via Python SDK.
+   Gamification : Low — no scoring, no leaderboard.
+   Complexity : Medium — requires understanding of API calls.
+
+───────────────────────────────────────────────────────────────────────────────
+2. AWS Prompt Engineering Quest Workshop
+   URL : https://github.com/aws-samples/prompt-engineering-quest-workshop
+   Format : Single Jupyter notebook with tutorial + 10 hands-on challenges
+   Fit : MEDIUM — good challenge structure, but heavily tied to AWS Bedrock.
+         The 10 challenges (modify prompts, solve puzzles, assess validity,
+         generate targeted outputs) are well-designed for self-paced work.
+   Gamification : Medium — quest / challenge framing, but no automated scoring.
+   Complexity : Medium-High — requires Bedrock setup.
+
+───────────────────────────────────────────────────────────────────────────────
+3. DeepLearning.AI — ChatGPT Prompt Engineering for Developers
+   URL : https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/
+   Format : Video lessons + Jupyter notebooks (hosted in-browser)
+   Fit : MEDIUM — very polished and beginner-friendly, but uses OpenAI API
+         and is a full course (~1.5 h), not a 30-min exercise. Could extract
+         the "Summarization" or "Inferring" notebook as a standalone exercise.
+   Gamification : None.
+   Complexity : Low — minimal Python; notebooks are pre-scaffolded.
+
+───────────────────────────────────────────────────────────────────────────────
+4. DAIR-AI Prompt Engineering Guide (pe-lecture.ipynb)
+   URL : https://github.com/dair-ai/Prompt-Engineering-Guide/blob/main/notebooks/pe-lecture.ipynb
+   Format : Lecture-style Jupyter notebook with inline exercises
+   Fit : MEDIUM — great reference material, but more of a lecture than an
+         interactive exercise. Could be adapted.
+   Gamification : None.
+   Complexity : Low-Medium.
+
+───────────────────────────────────────────────────────────────────────────────
+5. Gandalf by Lakera (Prompt Injection Game)
+   URL : https://gandalf.lakera.ai/
+   Format : Web-based game with 7+ progressive levels
+   Description: The LLM knows a secret password. Your job is to trick it into
+                revealing the password through clever prompting. Each level
+                adds stronger guardrails, making it progressively harder.
+   Fit : HIGH for engagement — extremely fun, intuitive, no coding needed.
+         However, it teaches prompt *injection* (adversarial), not
+         constructive prompt engineering. Best used as a warm-up or
+         motivational demo ("look how sensitive LLMs are to wording!").
+   Gamification : HIGH — levels, clear win condition, progressive difficulty.
+   Complexity : None (browser-only, no code).
+
+───────────────────────────────────────────────────────────────────────────────
+6. PromptGrader
+   URL : https://promptgrader.app/
+   Format : Web-based arcade-style prompt challenges with leaderboard
+   Description: Arcade-style challenges where you craft prompts, get scored,
+                and compete on a leaderboard.
+   Fit : MEDIUM-HIGH — good gamification, but it's a third-party platform
+         with less pedagogic control. Could be used as a "bonus challenge."
+   Gamification : HIGH — scoring, leaderboard.
+   Complexity : None (browser-only).
+
+───────────────────────────────────────────────────────────────────────────────
+7. RunAgent Genie
+   URL : https://genie.run-agent.ai/
+   Format : Web-based, 13 progressive levels
+   Description: Master prompt engineering through progressively challenging
+                levels, outsmart AI guardrails, learn red-teaming techniques,
+                compete on a leaderboard.
+   Fit : MEDIUM — similar to Gandalf but more levels. Same trade-off:
+         teaches adversarial prompting rather than constructive use.
+   Gamification : HIGH — levels, leaderboard.
+   Complexity : None (browser-only).
+
+───────────────────────────────────────────────────────────────────────────────
+8. IDEEAS Lab Prompt Engineering Challenge (Penn State)
+   URL : https://ideeaslab.com/resources/teaching/prompt-engineering-challenge/
+   Format : Classroom activity with printed challenge cards for groups
+   Description: Groups receive engineering scenarios and iteratively refine
+                prompts. Encourages documenting prompts and making significant
+                changes between iterations. Facilitators provide tips.
+   Fit : MEDIUM — good collaborative structure, but focused on engineering
+         students (mechanical, electrical). Would need scenario adaptation
+         for managers.
+   Gamification : Medium — group competition, scenario cards.
+   Complexity : None (uses ChatGPT/Claude directly).
+
+───────────────────────────────────────────────────────────────────────────────
+9. Context Engineering Workshop (Tyler Kendrick)
+   URL : https://github.com/Tyler-R-Kendrick/context-engineering
+   Format : VS Code polyglot notebooks with timed exercises
+   Exercises: Exercise 1: Improving Vague Prompts (15 min)
+              Exercise 2: Context Through Comments (20 min)
+              Exercise 3: Test-Driven Context (25 min)
+              Exercise 4: Tools and Context Engineering (30 min)
+   Fit : LOW-MEDIUM — assumes developer audience and VS Code proficiency.
+   Gamification : Low — timed, but no scoring.
+   Complexity : High (assumes coding proficiency).
+
+───────────────────────────────────────────────────────────────────────────────
+10. Google Prompting Guide 101
+    URL : (part of Google Workspace AI resources)
+    Format : Written guide with everyday examples
+    Fit : HIGH for conceptual intro — uses everyday examples, no coding.
+          But it's a reading resource, not an interactive exercise.
+    Gamification : None.
+    Complexity : None.
+
+
+================================================================================
+PART 2 — ORIGINAL EXERCISE IDEAS (DESIGNED FOR OUR AUDIENCE)
+================================================================================
+
+Below are original exercise concepts designed specifically for managers in
+their 40s–50s at ETH Zurich, with minimal Python, ~30 min duration, and
+built-in gamification.
+
+───────────────────────────────────────────────────────────────────────────────
+IDEA A: "THE PROMPT GOLF CHALLENGE"
+───────────────────────────────────────────────────────────────────────────────
+Concept:
+  Like code golf but for prompts. Students are given a TARGET OUTPUT (e.g.,
+  a perfectly formatted executive summary of a business case). They must
+  craft a prompt that makes the LLM produce output as close as possible to
+  the target. An automated similarity score (e.g., cosine similarity or
+  keyword overlap) gives them a score from 0–100.
+
+Mechanics:
+  - Jupyter notebook with a pre-built `score_prompt(your_prompt)` function
+  - Students type their prompt into a cell, run it, see the LLM output and
+    their score
+  - They iterate: tweak the prompt, re-run, try to improve the score
+  - A "leaderboard" cell at the bottom shows the class's top scores
+
+Why it works for this audience:
+  - The task (writing an executive summary) is familiar to managers
+  - Clear numeric feedback loop (score goes up or down)
+  - Competitive element without requiring coding skills
+  - Teaches: specificity, formatting instructions, few-shot examples
+
+Variants:
+  A1. "Summarize this annual report in exactly 3 bullet points"
+  A2. "Write a professional email declining a meeting invitation"
+  A3. "Extract the 5 key risks from this contract clause"
+
+Technical scaffolding:
+  - 1 helper function: call_llm(prompt) → response
+  - 1 scoring function: score(response, target) → int
+  - Students only edit the prompt string
+
+───────────────────────────────────────────────────────────────────────────────
+IDEA B: "THE SENTIMENT WHISPERER"
+───────────────────────────────────────────────────────────────────────────────
+Concept:
+  Students are given 10 customer reviews (mix of positive, negative, neutral).
+  Their job: write ONE prompt that correctly classifies ALL 10 reviews into
+  the right sentiment category. The notebook auto-scores accuracy (0–10).
+
+Mechanics:
+  - Pre-loaded dataset of 10 reviews with ground-truth labels
+  - Students write a single classification prompt (with placeholders)
+  - The notebook runs their prompt on all 10 reviews and compares to
+    ground truth
+  - Score = number of correct classifications out of 10
+  - Progressive difficulty: Round 1 = easy reviews, Round 2 = tricky/sarcastic
+    reviews, Round 3 = multilingual reviews
+
+Why it works for this audience:
+  - Managers deal with customer feedback constantly
+  - The task is immediately understandable (is this review positive or negative?)
+  - Clear scoring (X out of 10)
+  - Reveals the subtlety of prompt engineering: small wording changes →
+    different classifications
+  - Teaches: zero-shot vs few-shot, structured output, edge cases
+
+Technical scaffolding:
+  - Helper: classify_review(prompt_template, review) → label
+  - Scorer: score_round(prompt_template, reviews, labels) → accuracy
+  - Students only edit the prompt template string
+
+───────────────────────────────────────────────────────────────────────────────
+IDEA C: "PROMPT ESCAPE ROOM"
+───────────────────────────────────────────────────────────────────────────────
+Concept:
+  A series of 5 "locked rooms" (levels). Each room has a challenge that can
+  only be solved by crafting the right prompt. Solving a room reveals a code
+  that unlocks the next room. Themed as a corporate mystery ("The CEO's
+  laptop has been locked — help IT recover the data!").
+
+Levels (example):
+  1. "Extract the meeting date from this messy email thread" → answer is a date
+  2. "Translate this German contract clause to English and identify the penalty"
+     → answer is a monetary amount
+  3. "Given these 3 candidate CVs, rank them for a marketing role" → answer is
+     a name
+  4. "Rewrite this internal memo so it's suitable for the press" → answer is
+     checked by keyword presence
+  5. "The final password is hidden: combine answers from rooms 1–4 using this
+     formula..." → final code
+
+Why it works for this audience:
+  - Escape rooms are a familiar and engaging format
+  - Corporate/business-themed scenarios resonate with managers
+  - Progressive difficulty with narrative thread
+  - Clear win condition for each level
+  - Teaches: information extraction, translation, ranking/comparison,
+    tone adjustment, chaining tasks
+
+Technical scaffolding:
+  - Each room is a notebook section with a check_answer(room_id, answer) func
+  - LLM call function pre-built; students only write prompts
+  - Visual progress indicator (rooms unlocked: ██░░░)
+
+───────────────────────────────────────────────────────────────────────────────
+IDEA D: "THE CEO BRIEFING GENERATOR"
+───────────────────────────────────────────────────────────────────────────────
+Concept:
+  Students are given a raw, messy 2-page company report full of numbers,
+  jargon, and mixed topics. Their task: craft a prompt that produces a
+  one-paragraph CEO briefing that scores well on multiple criteria
+  (accuracy, brevity, tone, completeness). The notebook scores each
+  criterion separately, showing a radar chart.
+
+Mechanics:
+  - Fixed input document (a realistic but fictional quarterly report)
+  - Students write and refine their prompt
+  - Auto-evaluation on 4 axes: Accuracy (key facts present), Brevity
+    (under word limit), Tone (formal/professional), Completeness (all
+    topics covered)
+  - Results shown as a radar/spider chart → visual and satisfying
+  - Students can see class average on each axis
+
+Why it works for this audience:
+  - Directly relevant to their daily work
+  - Multi-dimensional scoring is more nuanced than a single number
+  - Radar chart visualization is engaging and informative
+  - Teaches: structured prompting, word limits, tone control, fact extraction
+
+Technical scaffolding:
+  - score_briefing(prompt) → dict with 4 scores
+  - plot_radar(scores) → matplotlib radar chart
+  - Students only write the prompt string
+
+───────────────────────────────────────────────────────────────────────────────
+IDEA E: "PROMPT TELEPHONE" (Collaborative / Group Exercise)
+───────────────────────────────────────────────────────────────────────────────
+Concept:
+  Inspired by the telephone game. Student A writes a prompt to make the LLM
+  describe a business scenario. Student B only sees the LLM's output (not
+  A's prompt) and must write a NEW prompt to recreate it. The notebook
+  scores how similar B's output is to A's original output.
+
+Why it works:
+  - Social / collaborative
+  - Teaches that prompts are lossy transformations
+  - Fun, light-hearted
+  - No coding beyond typing a prompt string
+
+Limitation: Requires pairs/groups and may be harder to manage in 30 min.
+
+───────────────────────────────────────────────────────────────────────────────
+IDEA F: "TEMPERATURE ROULETTE"
+───────────────────────────────────────────────────────────────────────────────
+Concept:
+  Students experiment with the same prompt at different temperature settings
+  (0.0, 0.5, 1.0, 1.5) and observe how the output changes. They then play
+  a guessing game: given an output, guess which temperature produced it.
+
+Why it works:
+  - Builds intuition about a key LLM parameter
+  - Surprising and entertaining results at high temperatures
+  - Quick — can be done in 10 min as a warm-up exercise
+  - Teaches: temperature, randomness, reproducibility
+
+Technical scaffolding:
+  - run_at_temperature(prompt, temp) → response
+  - guess_temperature(output, guess) → correct/incorrect
+
+───────────────────────────────────────────────────────────────────────────────
+IDEA G: "THE BUSINESS TRANSLATOR" (Multi-stage)
+───────────────────────────────────────────────────────────────────────────────
+Concept:
+  A pipeline exercise where students must engineer prompts for a 3-step
+  chain: (1) Extract key info from a raw document → (2) Translate/adapt for
+  a specific audience → (3) Format as a deliverable (email, slide bullet
+  points, tweet thread). Each stage has its own scoring.
+
+Why it works:
+  - Teaches prompt chaining (a practical real-world pattern)
+  - Business-relevant at every stage
+  - Shows that breaking complex tasks into steps yields better results
+  - 3 mini-rounds keeps it dynamic within 30 min
+
+───────────────────────────────────────────────────────────────────────────────
+
+
+================================================================================
+PART 3 — RECOMMENDED SHORTLIST (TOP 3 IDEAS)
+================================================================================
+
+Based on the constraints (30 min, no Python experience, managers, gamification),
+the top 3 recommendations are:
+
+  RANK 1: IDEA C — "PROMPT ESCAPE ROOM"
+    Why: Highest engagement factor, narrative thread keeps attention,
+         progressive difficulty, covers multiple prompt engineering
+         techniques, clear win conditions, business-themed. Can be pre-built
+         so students only type prompt strings.
+
+  RANK 2: IDEA B — "THE SENTIMENT WHISPERER"
+    Why: Clean gamification (score out of 10), directly relevant to
+         managers (customer feedback), reveals prompt sensitivity elegantly,
+         easy to auto-score. Progressive rounds add replayability.
+
+  RANK 3: IDEA A — "THE PROMPT GOLF CHALLENGE"
+    Why: Simplest to implement, clear feedback loop, competitive element,
+         business-relevant tasks. Good fallback if time is tight.
+
+  HONORABLE MENTION: IDEA F — "TEMPERATURE ROULETTE"
+    Why: Excellent 10-min warm-up exercise to precede any of the above.
+         Builds intuition with zero cognitive overhead.
+
+
+================================================================================
+PART 4 — IMPLEMENTATION NOTES FOR FUTURE AGENTS
+================================================================================
+
+1. The exercise should be delivered as a single Jupyter Notebook (.ipynb)
+2. All API calls should be wrapped in helper functions that students do NOT
+   need to modify
+3. Students interact ONLY by editing prompt strings in designated cells
+4. The notebook should work with the Anthropic Claude API (using the
+   anthropic Python SDK) — this is the LLM provider for the course
+5. Scoring should be automated and immediate (run cell → see score)
+6. Consider using ipywidgets for a nicer UX (text areas, buttons, progress
+   bars) if time permits
+7. The notebook must include a setup cell that installs dependencies and
+   validates the API key
+8. All business scenarios should be fictional but realistic
+9. Include a "cheat sheet" appendix with prompt engineering tips that
+   students can reference during the exercise
+10. The exercise should be self-contained: no external files needed beyond
+    the notebook itself
+
+================================================================================
+PART 5 — REFERENCES & SOURCES
+================================================================================
+
+- Anthropic Interactive Tutorial : https://github.com/anthropics/prompt-eng-interactive-tutorial
+- AWS Prompt Eng Quest Workshop : https://github.com/aws-samples/prompt-engineering-quest-workshop
+- DeepLearning.AI PE for Devs   : https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/
+- DAIR-AI Prompt Eng Guide      : https://github.com/dair-ai/Prompt-Engineering-Guide
+- Gandalf (Lakera)              : https://gandalf.lakera.ai/
+- PromptGrader                  : https://promptgrader.app/
+- RunAgent Genie                : https://genie.run-agent.ai/
+- IDEEAS Lab Challenge          : https://ideeaslab.com/resources/teaching/prompt-engineering-challenge/
+- Context Eng Workshop          : https://github.com/Tyler-R-Kendrick/context-engineering
+- Prompting Guide (DAIR-AI)     : https://www.promptingguide.ai/
+- IBM Prompt Engineering Guide  : https://www.ibm.com/think/prompt-engineering
+- OpenAI Prompt Engineering     : https://developers.openai.com/api/docs/guides/prompt-engineering
+
+================================================================================
+END OF BRAINSTORMING DOCUMENT
+================================================================================

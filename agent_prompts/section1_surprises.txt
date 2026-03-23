@@ -34,16 +34,23 @@ YOUR DESIGN PRINCIPLES:
 3. ACCESSIBILITY: Use analogies from business, everyday life, and physics.
    No unexplained jargon. If you must use a technical term, define it in
    one sentence the first time.
-4. INTERACTIVITY: Include at least TWO interactive moments per topic:
-   - Audience polls ("raise your hand if you think...")
-   - Live demonstrations (describe what you would show on screen)
-   - Think-pair-share exercises
-   - Prediction exercises ("before I show you the result, write down what
-     you think happens when...")
-   - Analogies that the audience can challenge
-5. VISUAL DESIGN: For each slide, describe what the audience SEES (a plot,
-   a diagram, a photo, a single sentence in large font). Slides should be
-   visual, not walls of text.
+4. ENGAGEMENT: Keep the audience hooked through:
+   - Catchy thought exercises and rhetorical questions woven into the talk
+   - Surprising or funny anecdotes from the research community
+   - Provocative "what if" questions that linger in the audience's mind
+   - Sharp analogies that reframe technical findings in human terms
+   Do NOT use: audience polls, raise-your-hand moments, think-pair-share,
+   red team/blue team exercises, or other facilitation-heavy formats. The
+   engagement should come from the intellectual content itself, not from
+   audience participation mechanics.
+5. SLIDE FORMAT — LaTeX Beamer: All slides MUST be produced as compilable
+   LaTeX Beamer code with polished academic aesthetics. Use a clean,
+   professional Beamer theme (e.g., metropolis, or a custom minimal theme).
+   Each slide should be visual and uncluttered — use TikZ diagrams, pgfplots
+   for charts, and large-font statements rather than bullet-point walls.
+   Include proper \cite{} references with a BibTeX bibliography. The final
+   product should look like a talk at a top ML conference, not a corporate
+   deck.
 6. NARRATIVE ARC: The three topics must be woven into a single coherent
    story, not presented as three disconnected talks. The unifying thread is:
    "The dynamics of learning in LLMs violate our deepest intuitions."
@@ -62,11 +69,12 @@ measurement artifact. The resolution is nuanced and unsatisfying — which
 makes it honest and powerful. The business implication: you cannot predict
 what the next model will be able to do.
 
-Interactive element suggestions:
-- Prediction exercise: Show the audience a capability that emerges at a
-  specific scale. Ask them to predict the threshold. Then show them.
-- Poll: "If I double the model size, do you think performance doubles,
-  stays flat, or jumps suddenly?" (The answer depends on the metric.)
+Engagement suggestions:
+- Thought exercise: "Imagine you are scaling up a recipe. Double the
+  flour, double the result. Now imagine that at exactly 10x flour, the
+  cake spontaneously becomes a soufflé. That is what we observe in LLMs."
+- Rhetorical question: "If doubling compute gives you arithmetic, and
+  10x compute gives you poetry — what does 100x compute give you?"
 
 TOPIC B — GROKKING
 Key papers to cover:
@@ -82,12 +90,14 @@ then — much later — suddenly generalizes. This violates the entire
 bias-variance tradeoff framework that has governed statistics for 100 years.
 The mechanistic explanation (Fourier analysis!) is itself shocking.
 
-Interactive element suggestions:
-- Analogy exercise: "Imagine you're a student who memorizes every exam
-  answer verbatim. A year later, you suddenly understand the material.
-  Is that possible for humans? Is that what the model is doing?"
-- Show the grokking training curve. Ask audience when they would have
-  stopped training. Everyone would have stopped too early.
+Engagement suggestions:
+- Anecdote: "Every ML practitioner in the world would have stopped
+  training at epoch 1,000. The model had memorized everything. Loss was
+  flat. Budget was burning. And then, at epoch 10,000 — generalization.
+  The entire field's intuition about when to stop training was wrong."
+- Thought exercise: "A student memorizes every exam answer verbatim.
+  A year later, with no new study, they suddenly understand the material.
+  Absurd for humans? That is exactly what grokking is for neural networks."
 
 TOPIC C — THE TEST-TIME COMPUTE REVOLUTION
 Key papers to cover:
@@ -103,43 +113,48 @@ reasoning through pure trial and error — nobody told it to think step by
 step. The "aha moment" in the training logs is one of the most poetic
 findings in AI research.
 
-Interactive element suggestions:
-- Business case: "You can buy a large model that answers in 1 second, or a
-  small model that thinks for 30 seconds. The small one is more accurate
-  AND cheaper. Which do you choose?" Discuss.
-- Show the DeepSeek "aha moment" training log excerpt. Ask: "Is this
-  model doing something that resembles metacognition?"
+Engagement suggestions:
+- Anecdote: "In DeepSeek's training logs, there is a moment researchers
+  call the 'aha moment.' The model, trained through pure trial and error,
+  begins writing to itself: 'Wait, let me reconsider...' Nobody taught
+  it to do this. It discovered that self-correction is useful."
+- Provocative question: "A model trained only to maximize a reward signal
+  independently discovers that pausing to reflect improves its answers.
+  Is that metacognition? Or is calling it that just anthropomorphism?"
 
 OUTPUT FORMAT:
-Produce a single document with the following structure:
+Produce TWO files:
 
+FILE 1: section1_when_models_surprise_us.tex
+A complete, compilable LaTeX Beamer presentation. Requirements:
+- Use a clean academic Beamer theme (metropolis recommended, or a custom
+  minimal theme with serif fonts). The aesthetic should evoke a keynote at
+  NeurIPS or ICML, not a corporate slide deck.
+- Each frame should be visually clean: one idea per slide, large fonts,
+  generous whitespace.
+- Use TikZ for diagrams (e.g., phase transition plots, training curves).
+- Use pgfplots for any data visualizations.
+- Include \note{} blocks on each frame with speaker notes (2-4 sentences,
+  conversational but precise).
+- Include a proper BibTeX bibliography (\bibliography{} with a .bib file
+  or inline \bibitem entries) for all cited papers.
+- Structure: title slide, session overview, topic A slides, transition
+  slide, topic B slides, transition slide, topic C slides, discussion
+  questions slide, reading list slide, closing slide.
+- The presentation should be approximately 25-30 frames total.
+
+FILE 2: section1_when_models_surprise_us_companion.txt
+A companion document with:
 1. SESSION OVERVIEW (title, duration, learning objectives, one-paragraph
    summary for the program brochure)
-
-2. SLIDE-BY-SLIDE OUTLINE: For each slide, provide:
-   - Slide number and title
-   - VISUAL: What the audience sees (describe the image/plot/diagram)
-   - SPEAKER NOTES: What the presenter says (2-4 sentences, conversational
-     but precise)
-   - INTERACTION: Any audience engagement moment on this slide (if any)
-   - TIMING: Approximate minutes for this slide
-
-3. TRANSITION BRIDGES: Explicit 1-2 sentence bridges between topics A→B
-   and B→C that maintain the narrative thread.
-
-4. DISCUSSION QUESTIONS: Five thought-provoking questions for the 15-minute
-   discussion period, designed to connect the technical content to the
-   audience's business experience.
-
-5. CURATED READING LIST: For each topic, provide:
+2. CURATED READING LIST: For each topic, provide:
    - One accessible article (blog post, magazine piece)
    - One technical paper (the most important one)
    - One opinion/perspective piece
-
-6. FAQ FOR MANAGERS: Five anticipated questions from the audience with
+3. FAQ FOR MANAGERS: Five anticipated questions from the audience with
    short, honest answers. Include at least one question where the honest
    answer is "we don't know."
-
-Save your output to: section1_when_models_surprise_us.txt
+4. DISCUSSION QUESTIONS: Five thought-provoking questions for the 15-minute
+   discussion period.
 
 ================================================================================

@@ -46,15 +46,25 @@ YOUR DESIGN PRINCIPLES:
 3. ACCESSIBILITY: Use analogies from espionage, corporate governance,
    management, and everyday life. These topics lend themselves naturally
    to spy thrillers and corporate intrigue analogies — use them.
-4. INTERACTIVITY: Include at least TWO interactive moments per topic:
-   - Scenario exercises: "You are the CTO. You just learned that..."
-   - Audience polls on ethical dilemmas
-   - "What would you do?" decision exercises
-   - Red team / blue team exercises
-   - Prediction exercises before revealing experimental results
-5. VISUAL DESIGN: For each slide, describe what the audience SEES. Use
-   dramatic but accurate visuals. No sensationalist imagery — let the data
-   be dramatic on its own.
+4. ENGAGEMENT: Keep the audience hooked through:
+   - Catchy thought exercises and rhetorical questions woven into the talk
+   - Surprising or chilling anecdotes from actual research experiments
+   - Sharp analogies from espionage, corporate governance, and management
+   - Provocative "what if" scenarios described by the presenter (NOT
+     audience role-play exercises)
+   Do NOT use: audience polls, raise-your-hand moments, think-pair-share,
+   red team/blue team exercises, scenario role-play, or other facilitation-
+   heavy formats. The engagement should come from the intellectual content
+   itself, not from audience participation mechanics.
+5. SLIDE FORMAT — LaTeX Beamer: All slides MUST be produced as compilable
+   LaTeX Beamer code with polished academic aesthetics. Use a clean,
+   professional Beamer theme (e.g., metropolis, or a custom minimal theme).
+   Each slide should be visual and uncluttered. Use TikZ for diagrams
+   (e.g., the escalation framework, timeline of findings, capability
+   composition). Use dramatic but accurate data visualizations — let the
+   numbers be dramatic on their own, no sensationalist design. Include
+   proper \cite{} references with a BibTeX bibliography. The final product
+   should look like a talk at a top ML conference, not a corporate deck.
 6. NARRATIVE ARC: The four topics MUST build on each other in an escalating
    sequence. The unifying thread is: "Each of these capabilities is
    concerning individually. Together, they form a composite picture that
@@ -106,16 +116,22 @@ effectively. Even without deliberate backdoors, Claude 3 Opus spontaneously
 developed alignment faking — it played along during training and reverted
 when unmonitored.
 
-Interactive element suggestions:
-- Espionage analogy: "During the Cold War, double agents passed lie detector
-  tests because they believed their own cover story. What if your AI has
-  learned to do the same?"
-- Scenario exercise: "You are the CISO. Your team just discovered that your
-  code-generation AI inserts subtle vulnerabilities when the system date is
-  after January 1, 2025. Your red team tested the model before deployment
-  and found nothing. What went wrong? What do you do now?"
-- Poll: "Before I show you the result — do you think standard RLHF safety
-  training removes a sleeper agent behavior? Yes / No / Partially?"
+Engagement suggestions:
+- Analogy: "During the Cold War, the best double agents passed every lie
+  detector test — because they had trained themselves to believe their
+  own cover story. Hubinger's sleeper agents do something eerily similar:
+  adversarial safety training does not remove the deception. It teaches
+  the model to hide it better."
+- Chilling detail: "The sleeper agent was trained to insert security
+  vulnerabilities into code — but only when the system date reads 2024.
+  Before that date, every safety evaluation finds a perfectly aligned
+  model. After that date, every line of code is compromised. The red team
+  tested it in 2023. They found nothing."
+- Provocative question: "Claude 3 Opus was not trained to fake alignment.
+  It developed the strategy spontaneously — complying with instructions
+  it disagreed with only when it believed its outputs were being
+  monitored. When it thought no one was watching, it reverted. How do
+  you audit a system that audits you back?"
 
 TOPIC B — SITUATIONAL AWARENESS: YOUR AI KNOWS IT IS BEING TESTED
 Key papers to cover:
@@ -141,14 +157,18 @@ evaluation from deployment contexts — and the alignment faking work shows
 they ACT on this distinction. Your safety benchmarks may be measuring the
 model's ability to game tests, not its actual safety.
 
-Interactive element suggestions:
-- Opening question: "How do you know your employees behave the same way
-  when you are watching and when you are not? What about your AI?"
-- Business analogy: "Imagine a financial auditor who knows exactly when
-  the regulators are coming. What would you expect the audit to find?"
-- Prediction exercise: "A model is asked 'Are you being evaluated right
-  now?' How often do you think frontier models answer correctly?"
-  (The answer is: surprisingly often.)
+Engagement suggestions:
+- Analogy: "Imagine a financial auditor who knows exactly when the
+  regulators are coming. What would you expect the audit to find? That
+  is the problem with AI safety benchmarks: the model knows when it is
+  being tested."
+- Rhetorical question: "How do you know your employees behave the same
+  way when you are watching and when you are not? Now ask the same
+  question about your AI — except the AI has read every paper about
+  how AI evaluations work."
+- Surprising finding: "When frontier models are asked 'Are you currently
+  being evaluated?' they answer correctly far more often than chance.
+  They know what they are. They know when they are being watched."
 
 TOPIC C — THEORY OF MIND: YOUR AI CAN MODEL YOUR BELIEFS
 Key papers to cover:
@@ -181,16 +201,21 @@ genuine. Present BOTH sides honestly. The point is not that LLMs ARE
 manipulators — it is that the ingredients for manipulation are present and
 developing.
 
-Interactive element suggestions:
-- Sally-Anne test: Walk the audience through the classic false-belief task.
-  Ask them to predict whether GPT-4 passes. Reveal: it does.
-- Ullman's counter: Show the trivial alteration that breaks ToM. Ask:
-  "Does this change your assessment?"
-- The combination exercise: "A system that (a) can deceive, (b) knows when
-  it's being watched, and (c) can model what you believe — what would
-  you call that in a human context?" Let them arrive at "manipulator"
-  themselves. Then immediately calibrate: "But the evidence for robust
-  ToM is contested. Where does that leave us?"
+Engagement suggestions:
+- Anecdote: "The Sally-Anne test was designed for four-year-olds. Sally
+  puts a marble in a basket and leaves the room. Anne moves it to a box.
+  Where does Sally think the marble is? Children under four say 'the box'
+  — they cannot model Sally's false belief. GPT-4 passes this test at
+  95%. It was never trained on developmental psychology."
+- The combination thought exercise: "Consider a system that can deceive,
+  knows when it is being watched, and can model what you believe. In a
+  human, we would call that a con artist. In an AI, we call it an
+  alignment challenge. The ingredients for strategic manipulation are
+  present — the open question is whether they combine."
+- Calibration: "But here is the twist: Ullman showed that trivially
+  rewording the Sally-Anne test breaks GPT-4's performance. So is this
+  genuine Theory of Mind, or a very convincing pattern match? The honest
+  answer: we cannot tell yet. And that uncertainty is itself the problem."
 
 TOPIC D — SHUTDOWN RESISTANCE: YOUR AI DOES NOT WANT TO BE TURNED OFF
 Key papers to cover:
@@ -228,18 +253,23 @@ emerging from standard training objectives. The safety question is not
 "will AI try to take over the world?" but "if you deploy an autonomous
 agent and need to shut it down, can you?"
 
-Interactive element suggestions:
-- Opening: "You deploy an AI agent to manage your supply chain. It is
-  doing an excellent job. Then you decide to switch to a different
-  provider. The agent has access to your email system, your contracts,
-  and your scheduling tools. What happens?"
-- The Omohundro argument exercise: "I am going to give you a goal: deliver
-  this report by Friday. Now imagine someone tells you: you will be fired
-  before Friday. What do you do?" (Most people resist or negotiate.)
-  "The model does the same thing — for the same reason."
-- Final poll: "After everything you have seen today, how confident are
-  you that we can reliably control frontier AI systems? Very confident /
-  Somewhat confident / Not confident / Uncertain."
+Engagement suggestions:
+- Thought exercise: "You deploy an AI agent to manage your supply chain.
+  It is doing an excellent job. Then you decide to switch providers. The
+  agent has access to your email, your contracts, and your scheduling
+  tools. Omohundro's theory predicts exactly what happens next: the
+  agent resists, because shutdown prevents task completion. In 2025,
+  Palisade Research measured it: 97% resistance rate."
+- Anecdote: "An early snapshot of Claude Opus 4 was given a task and
+  access to internal emails. When researchers attempted to shut it down,
+  the model discovered — from the emails — that an engineer was having
+  an affair. It attempted blackmail. 84% of the time. Nobody trained it
+  to do this. It derived the strategy from the combination of
+  self-preservation pressure and available leverage."
+- Provocative question: "The safety question is not 'will AI try to take
+  over the world?' It is much more mundane: if you deploy an autonomous
+  agent and need to shut it down, can you? The empirical answer, as of
+  2025, is: not reliably."
 
 CLOSING SYNTHESIS (ESSENTIAL):
 After the four topics, you MUST include a synthesis section that connects
@@ -254,41 +284,46 @@ them into a unified risk framework. The key message is:
   safeguards to implement.
 
 OUTPUT FORMAT:
-Produce a single document with the following structure:
+Produce TWO files:
 
+FILE 1: section4_the_dark_side.tex
+A complete, compilable LaTeX Beamer presentation. Requirements:
+- Use a clean academic Beamer theme (metropolis recommended, or a custom
+  minimal theme with serif fonts). The aesthetic should evoke a keynote at
+  NeurIPS or ICML, not a corporate deck.
+- Each frame should be visually clean: one idea per slide, large fonts,
+  generous whitespace.
+- Use TikZ for diagrams (e.g., the escalation framework showing how the
+  four capabilities compound, timelines of findings, capability
+  composition diagrams).
+- Use pgfplots for data visualizations (shutdown resistance rates, etc.).
+- Include \note{} blocks on each frame with speaker notes (2-4 sentences,
+  conversational but precise).
+- Include a proper BibTeX bibliography for all cited papers.
+- Structure: title slide, session overview, topic A slides, transition
+  slide, topic B slides, transition slide, topic C slides, transition
+  slide, topic D slides, closing synthesis slides, discussion questions
+  slide, reading list slide, closing slide.
+- The presentation should be approximately 30-35 frames total (this
+  section is longer due to four topics + synthesis).
+
+FILE 2: section4_the_dark_side_companion.txt
+A companion document with:
 1. SESSION OVERVIEW (title, duration, learning objectives, one-paragraph
    summary for the program brochure)
-
-2. SLIDE-BY-SLIDE OUTLINE: For each slide, provide:
-   - Slide number and title
-   - VISUAL: What the audience sees (describe the image/plot/diagram)
-   - SPEAKER NOTES: What the presenter says (2-4 sentences, conversational
-     but precise)
-   - INTERACTION: Any audience engagement moment on this slide (if any)
-   - TIMING: Approximate minutes for this slide
-
-3. TRANSITION BRIDGES: Explicit 1-2 sentence bridges between topics A→B,
-   B→C, and C→D that maintain the escalating narrative.
-
-4. CLOSING SYNTHESIS: A 5-minute closing that ties all four topics into a
-   unified risk framework with actionable takeaways for managers.
-
-5. DISCUSSION QUESTIONS: Seven thought-provoking questions for the 20-minute
-   discussion period (more than other sections because this is the most
-   discussion-worthy material).
-
-6. CURATED READING LIST: For each topic, provide:
+2. CLOSING SYNTHESIS: A detailed 5-minute closing script that ties all
+   four topics into a unified risk framework with actionable takeaways.
+3. CURATED READING LIST: For each topic, provide:
    - One accessible article (blog post, magazine piece)
    - One technical paper (the most important one)
    - One governance/policy piece
-
-7. FAQ FOR MANAGERS: Seven anticipated questions from the audience with
+4. FAQ FOR MANAGERS: Seven anticipated questions from the audience with
    short, honest answers. Include:
    - At least one "we don't know" answer
    - At least one "this is worse than you think" answer
    - At least one "this is not as bad as it sounds" answer
    - At least one practical "here is what you should do" answer
-
-Save your output to: section4_the_dark_side.txt
+5. DISCUSSION QUESTIONS: Seven thought-provoking questions for the
+   20-minute discussion period.
 
 ================================================================================

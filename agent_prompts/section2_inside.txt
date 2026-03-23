@@ -37,16 +37,23 @@ YOUR DESIGN PRINCIPLES:
 3. ACCESSIBILITY: Use analogies from business, everyday life, medicine, and
    neuroscience. No unexplained jargon. If you must use a technical term,
    define it in one sentence the first time.
-4. INTERACTIVITY: Include at least TWO interactive moments per topic:
-   - Audience polls ("raise your hand if you think...")
-   - Live demonstrations (describe what you would show on screen)
-   - Think-pair-share exercises
-   - Prediction exercises ("before I show you the result, write down what
-     you think happens when...")
-   - Analogies that the audience can challenge
-5. VISUAL DESIGN: For each slide, describe what the audience SEES (a plot,
-   a diagram, a photo, a single sentence in large font). Slides should be
-   visual, not walls of text.
+4. ENGAGEMENT: Keep the audience hooked through:
+   - Catchy thought exercises and rhetorical questions woven into the talk
+   - Surprising or funny anecdotes from the research community
+   - Provocative "what if" questions that linger in the audience's mind
+   - Sharp analogies that reframe technical findings in human terms
+   Do NOT use: audience polls, raise-your-hand moments, think-pair-share,
+   red team/blue team exercises, or other facilitation-heavy formats. The
+   engagement should come from the intellectual content itself, not from
+   audience participation mechanics.
+5. SLIDE FORMAT — LaTeX Beamer: All slides MUST be produced as compilable
+   LaTeX Beamer code with polished academic aesthetics. Use a clean,
+   professional Beamer theme (e.g., metropolis, or a custom minimal theme).
+   Each slide should be visual and uncluttered — use TikZ diagrams, pgfplots
+   for charts, and large-font statements rather than bullet-point walls.
+   Include proper \cite{} references with a BibTeX bibliography. The final
+   product should look like a talk at a top ML conference, not a corporate
+   deck.
 6. NARRATIVE ARC: The three topics must be woven into a single coherent
    story, not presented as three disconnected talks. The unifying thread is:
    "We can now look inside the black box — and what we find is both
@@ -81,16 +88,20 @@ feature that fires when it should not. The sycophancy tendency has a
 localizable vector. This is the moment when AI engineering becomes AI
 neuroscience.
 
-Interactive element suggestions:
-- The "Golden Gate Bridge" demonstration: Show how amplifying one feature
-  makes the model obsessively reference the bridge. Ask: "If we can turn
-  UP a feature, can we turn DOWN hallucination?"
-- Draw the analogy to brain surgery: "We found the tumor. Now, can we
-  remove it without damaging the patient?" Discuss the limits.
-- Audience exercise: present the Dallas → Texas → Austin chain. Ask them
-  to predict what intermediate step the model uses for another multi-hop
-  question (e.g., "What currency is used in the country where the Eiffel
-  Tower is located?"). Then show the actual attribution graph.
+Engagement suggestions:
+- Anecdote: "Anthropic's team amplified a single feature inside Claude —
+  the one associated with the Golden Gate Bridge. The model began
+  answering every question with references to the bridge. 'What is the
+  meaning of life?' 'Like the Golden Gate Bridge spanning the bay...'
+  Funny — but the implication is serious: if we can turn features UP,
+  can we turn hallucination DOWN?"
+- Analogy: "This is the moment AI went from astronomy to surgery. We
+  used to observe neural networks from the outside. Now we are cutting
+  them open and labeling the organs."
+- Thought exercise: "The model answers 'What is the capital of the state
+  containing Dallas?' by forming an intermediate representation:
+  Dallas → Texas → Austin. It reasons in steps — but nobody taught it
+  to. The reasoning emerged from structure, not instruction."
 
 TOPIC B — IN-CONTEXT LEARNING & MESA-OPTIMIZERS
 Key papers to cover:
@@ -113,17 +124,19 @@ model has learned to learn. The safety implication: if a model contains its
 own optimizer, that optimizer might optimize for something different from
 what you intended.
 
-Interactive element suggestions:
-- Business analogy: "You hire a consultant. You give them three case studies.
+Engagement suggestions:
+- Analogy: "You hire a consultant. You give them three case studies.
   They learn a strategy from those cases and apply it to a new problem.
   That is what the LLM is doing — except the 'consultant' emerged from
   next-token prediction, and you cannot inspect its strategy."
-- Audience poll: "If a model can learn from examples at inference time,
-  without any weight updates, is it 'just' a model? Or is it something
-  more?" Collect responses. This is genuinely debatable.
-- Prediction exercise: "I am going to show you what happens when you give
-  the model 1, 3, 5, and 10 examples. Predict the performance curve."
-  (It improves, often matching fine-tuning — which is shocking.)
+- Provocative question: "If a model can learn from examples at inference
+  time, without updating any of its parameters, is it still 'just' a
+  model? Or has it become something closer to a learning algorithm that
+  happens to be stored in a neural network?"
+- Funny anecdote: "The researchers who discovered this had to check their
+  math three times. The forward pass of a transformer is mathematically
+  equivalent to running gradient descent. The model literally taught
+  itself to learn — as a side effect of predicting the next word."
 
 TOPIC C — THE REVERSAL CURSE
 Key papers to cover:
@@ -144,46 +157,53 @@ one-way associations. Humans do not work this way. This reveals that despite
 impressive surface behavior, the internal knowledge representation is
 profoundly alien.
 
-Interactive element suggestions:
-- Opening gambit: "I am going to tell you a fact. Tom Cruise's mother is
-  Mary Lee Pfeiffer. Now: who is Mary Lee Pfeiffer's son?" (Everyone gets
-  it.) "GPT-4 cannot do this." (Stunned silence.)
-- Live demo: Actually query an LLM with a forward fact and then the reversed
-  question. Show the failure in real time.
-- Discussion: "Does this change your assessment of LLM 'knowledge'?
-  If a model that passes the bar exam cannot reverse a simple relation,
-  what does it actually know?"
+Engagement suggestions:
+- Opening gambit: "Tom Cruise's mother is Mary Lee Pfeiffer. Now: who is
+  Mary Lee Pfeiffer's son? You got it instantly. GPT-4 cannot. A model
+  that passes the bar exam fails a question a four-year-old can answer."
+- Thought exercise: "The model 'knows' that Valentina Tereshkova was the
+  first woman in space. It cannot answer 'Who was the first woman in
+  space?' Knowledge stored as a one-way street. Imagine a library where
+  you can look up books by author, but asking 'who wrote this book?'
+  returns a blank. That is LLM memory."
+- Provocative question: "If a model that passes medical boards stores
+  knowledge as one-way associations — not relational structures — what
+  exactly did it 'learn'? And should we trust it with diagnosis?"
 
 OUTPUT FORMAT:
-Produce a single document with the following structure:
+Produce TWO files:
 
+FILE 1: section2_inside_the_black_box.tex
+A complete, compilable LaTeX Beamer presentation. Requirements:
+- Use a clean academic Beamer theme (metropolis recommended, or a custom
+  minimal theme with serif fonts). The aesthetic should evoke a keynote at
+  NeurIPS or ICML, not a corporate slide deck.
+- Each frame should be visually clean: one idea per slide, large fonts,
+  generous whitespace.
+- Use TikZ for diagrams (e.g., circuit/attribution graph visualizations,
+  superposition geometry, the reversal curse asymmetry).
+- Use pgfplots for any data visualizations.
+- Include \note{} blocks on each frame with speaker notes (2-4 sentences,
+  conversational but precise).
+- Include a proper BibTeX bibliography (\bibliography{} with a .bib file
+  or inline \bibitem entries) for all cited papers.
+- Structure: title slide, session overview, topic A slides, transition
+  slide, topic B slides, transition slide, topic C slides, discussion
+  questions slide, reading list slide, closing slide.
+- The presentation should be approximately 25-30 frames total.
+
+FILE 2: section2_inside_the_black_box_companion.txt
+A companion document with:
 1. SESSION OVERVIEW (title, duration, learning objectives, one-paragraph
    summary for the program brochure)
-
-2. SLIDE-BY-SLIDE OUTLINE: For each slide, provide:
-   - Slide number and title
-   - VISUAL: What the audience sees (describe the image/plot/diagram)
-   - SPEAKER NOTES: What the presenter says (2-4 sentences, conversational
-     but precise)
-   - INTERACTION: Any audience engagement moment on this slide (if any)
-   - TIMING: Approximate minutes for this slide
-
-3. TRANSITION BRIDGES: Explicit 1-2 sentence bridges between topics A→B
-   and B→C that maintain the narrative thread.
-
-4. DISCUSSION QUESTIONS: Five thought-provoking questions for the 15-minute
-   discussion period, designed to connect the technical content to the
-   audience's business experience.
-
-5. CURATED READING LIST: For each topic, provide:
+2. CURATED READING LIST: For each topic, provide:
    - One accessible article (blog post, magazine piece)
    - One technical paper (the most important one)
    - One opinion/perspective piece
-
-6. FAQ FOR MANAGERS: Five anticipated questions from the audience with
+3. FAQ FOR MANAGERS: Five anticipated questions from the audience with
    short, honest answers. Include at least one question where the honest
    answer is "we don't know."
-
-Save your output to: section2_inside_the_black_box.txt
+4. DISCUSSION QUESTIONS: Five thought-provoking questions for the 15-minute
+   discussion period.
 
 ================================================================================

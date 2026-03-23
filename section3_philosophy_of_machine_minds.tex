@@ -3,16 +3,13 @@
 %  Prediction=Compression=Intelligence · The Platonic Representation Hypothesis
 %  · The Chinese Room Revisited
 % ============================================================================
-\documentclass[aspectratio=169, 12pt, usenames, dvipsnames]{beamer}
+\documentclass[aspectratio=169, 12pt]{beamer}
 
 % --- Theme ---
 \usetheme{metropolis}
 \usepackage{appendixnumberbeamer}
 
-% --- Fonts ---
-\usepackage{fontspec}
-\setsansfont{Fira Sans}
-\setmonofont{Fira Mono}
+% --- Fonts (metropolis loads FiraSans/FiraMono automatically) ---
 
 % --- Packages ---
 \usepackage{amsmath, amssymb}
@@ -20,7 +17,6 @@
 \usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing, calc, fit, backgrounds}
 \usepackage{booktabs}
 \usepackage{graphicx}
-\usepackage{xcolor}
 \usepackage{hyperref}
 
 % --- Colours ---
@@ -29,7 +25,7 @@
 \definecolor{highlight}{HTML}{FF6F00}
 \setbeamercolor{alerted text}{fg=accent}
 \setbeamercolor{frametitle}{bg=normal text.bg}
-\setbeamercolor{block title}{fg=white, bg=mBlack}
+\setbeamercolor{block title}{fg=white, bg=mDarkTeal}
 
 % --- Meta ---
 \title{The Philosophy of Machine Minds}
@@ -113,20 +109,20 @@ also the deepest form of understanding we have.}
 
 \begin{center}
 \begin{tikzpicture}[
-    box/.style={draw, rounded corners=4pt, minimum width=3.8cm,
-                minimum height=1.6cm, align=center, font=\large\bfseries,
+    box/.style={draw, rounded corners=4pt, minimum width=2.8cm,
+                minimum height=1.3cm, align=center, font=\large\bfseries,
                 line width=1pt},
-    eq/.style={font=\Huge\bfseries, text=accent}
+    eq/.style={font=\LARGE\bfseries, text=accent}
   ]
   \node[box] (pred) {Prediction};
-  \node[eq, right=1.2cm of pred] (e1) {=};
-  \node[box, right=1.2cm of e1] (comp) {Compression};
-  \node[eq, right=1.2cm of comp] (e2) {=};
-  \node[box, right=1.2cm of e2] (intel) {Intelligence};
+  \node[eq, right=0.5cm of pred] (e1) {=};
+  \node[box, right=0.5cm of e1] (comp) {Compression};
+  \node[eq, right=0.5cm of comp] (e2) {=};
+  \node[box, right=0.5cm of e2] (intel) {Intelligence};
 
-  \node[below=0.5cm of pred, font=\small\color{muted}] {Shannon, 1948};
-  \node[below=0.5cm of comp, font=\small\color{muted}] {Kolmogorov, 1963};
-  \node[below=0.5cm of intel, font=\small\color{muted}] {Hutter, 2005};
+  \node[below=0.4cm of pred, font=\small\color{muted}] {Shannon, 1948};
+  \node[below=0.4cm of comp, font=\small\color{muted}] {Kolmogorov, 1963};
+  \node[below=0.4cm of intel, font=\small\color{muted}] {Hutter, 2005};
 \end{tikzpicture}
 \end{center}
 
@@ -154,7 +150,7 @@ mathematical identity \cite{shannon1948, hutter2005}.}
 
 \begin{center}
 \begin{tikzpicture}[
-    bar/.style={fill=mBlack, minimum width=1cm},
+    bar/.style={fill=mDarkTeal, minimum width=1cm},
     barh/.style={fill=accent, minimum width=1cm},
     label/.style={font=\footnotesize, anchor=north},
   ]
@@ -445,12 +441,12 @@ starts with a philosopher and a room full of Chinese characters.}
 
   % Input slot
   \draw[thick, accent] (-0.3, 3.5) -- (0.3, 3.5);
-  \node[font=\Large, anchor=east] at (-0.5, 3.5) {你好};
+  \node[font=\Large, anchor=east] at (-0.5, 3.5) {\textit{Chinese}};
   \draw[-{Stealth}, thick, accent] (0.3, 3.5) -- (1.5, 3.0);
 
   % Output slot
   \draw[thick, accent] (7.7, 3.5) -- (8.3, 3.5);
-  \node[font=\Large, anchor=west] at (8.5, 3.5) {你好};
+  \node[font=\Large, anchor=west] at (8.5, 3.5) {\textit{Chinese}};
   \draw[-{Stealth}, thick, accent] (6.5, 3.0) -- (7.7, 3.5);
 
   % Caption
@@ -481,17 +477,17 @@ billion parameters large?}
                      align=center, font=\normalsize},
     ref/.style={font=\scriptsize, text=muted}
   ]
-  \node[evidence] (e1) at (0, 3.5)
+  \node[evidence] (e1) at (0, 3.8)
     {Builds world models from sequences alone};
-  \node[ref, right=0.3cm of e1] {Othello-GPT, 2023};
+  \node[ref, below=0.05cm of e1] {Othello-GPT, 2023};
 
-  \node[evidence] (e2) at (0, 1.8)
+  \node[evidence] (e2) at (0, 1.9)
     {Compresses domains it has never seen};
-  \node[ref, right=0.3cm of e2] {D\'{e}letang et al., 2024};
+  \node[ref, below=0.05cm of e2] {D\'{e}letang et al., 2024};
 
-  \node[evidence] (e3) at (0, 0.1)
+  \node[evidence] (e3) at (0, 0.0)
     {Develops spatial \& temporal coordinate systems};
-  \node[ref, right=0.3cm of e3] {Gurnee \& Tegmark, 2024};
+  \node[ref, below=0.05cm of e3] {Gurnee \& Tegmark, 2024};
 \end{tikzpicture}
 \end{center}
 
@@ -521,12 +517,12 @@ manipulation'' with no connection to meaning.}
   \node[evidence] (e1) at (0, 3.0)
     {LLMs capture abstract conceptual features\\
      but \alert{fail on sensorimotor, embodied features}};
-  \node[ref, right=0.3cm of e1] {\emph{Nature Human Behav.}, 2025};
+  \node[ref, below=0.05cm of e1] {\emph{Nature Human Behav.}, 2025};
 
-  \node[evidence] (e2) at (0, 0.8)
+  \node[evidence] (e2) at (0, 0.5)
     {Multimodality is neither necessary\\
      nor sufficient for grounding};
-  \node[ref, right=0.3cm of e2] {``Vector Grounding Problem,'' 2023--25};
+  \node[ref, below=0.05cm of e2] {``Vector Grounding Problem,'' 2023--25};
 \end{tikzpicture}
 \end{center}
 
@@ -603,7 +599,7 @@ that does not yet exist.}
 % ---------- READING LIST ----------
 \begin{frame}{Further Reading}
 
-\small
+\footnotesize
 \begin{description}
   \item[Prediction = Compression]~\\
     D\'{e}letang et al., ``Language Modeling Is Compression'' (ICLR 2024)\\
@@ -657,7 +653,7 @@ philosophers have not yet resolved. Thank you.}
 %   BIBLIOGRAPHY
 % ============================================================================
 \begin{frame}[allowframebreaks]{References}
-\scriptsize
+\scriptsize\raggedright
 \begin{thebibliography}{99}
 
 \bibitem{shannon1948}

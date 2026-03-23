@@ -1,0 +1,882 @@
+% =============================================================================
+%  LECTURE NOTES — SECTION 1: WHEN MODELS SURPRISE US
+%  Phase Transitions · Grokking · Test-Time Compute
+%  Comprehensive notes for presenter preparation (master's-level depth)
+% =============================================================================
+\documentclass[11pt, a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, decorations.pathreplacing}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{parskip}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=green!40!black,
+  urlcolor=blue!60!black,
+}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{remark}{Remark}[section]
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Z}{\mathbb{Z}}
+
+\title{\textbf{Lecture Notes: When Models Surprise Us}\\[0.3em]
+  \large Phase Transitions, Grokking, and the Test-Time Compute Revolution}
+\author{LLM Lab --- Executive Education Program}
+\date{2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Introduction: The Unifying Thread}
+% =============================================================================
+
+These notes accompany the 30-minute presentation ``When Models Surprise Us.'' They provide the technical depth behind each slide, suitable for a presenter with a master's-level background in computer science or machine learning.
+
+The three topics share a single message: \textbf{the dynamics of learning in large language models violate our deepest intuitions about how systems acquire capabilities.}
+
+\begin{enumerate}
+  \item \textbf{Phase transitions in capabilities:} Scaling a model can produce discontinuous jumps in what it can do --- but some of these jumps may be measurement artifacts.
+  \item \textbf{Grokking:} A model can memorise its training data perfectly, appear to stop learning, and then --- much later --- suddenly generalise. This challenges the bias-variance tradeoff that has governed statistics for over a century.
+  \item \textbf{Test-time compute:} A smaller model that ``thinks longer'' at inference time can outperform a model 14$\times$ its size. This opens a second axis of scaling that fundamentally changes the economics of deploying LLMs.
+\end{enumerate}
+
+
+% =============================================================================
+\section{Topic A: Phase Transitions in Capabilities}
+\label{sec:emergence}
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+\subsection{Background: Neural Scaling Laws}
+% -----------------------------------------------------------------------------
+
+Before discussing emergence, we must understand the baseline expectation: \emph{smooth, predictable scaling}.
+
+\subsubsection{Kaplan et al.\ (2020): Power-Law Scaling}
+
+Kaplan et al.~\cite{kaplan2020scaling} established that cross-entropy loss follows power-law relationships with model size~$N$ (non-embedding parameters), dataset size~$D$ (tokens), and compute~$C$ (FLOPs):
+\begin{align}
+  L(N) &= \left(\frac{N_c}{N}\right)^{\alpha_N}, \quad N_c = 8.8 \times 10^{13},\; \alpha_N = 0.076 \label{eq:kaplan-n} \\
+  L(D) &= \left(\frac{D_c}{D}\right)^{\alpha_D}, \quad D_c = 5.4 \times 10^{13},\; \alpha_D = 0.095 \label{eq:kaplan-d} \\
+  L(C) &= \left(\frac{C_{\min}}{C}\right)^{\alpha_C}, \quad C_{\min} = 3.1 \times 10^{8},\;\, \alpha_C = 0.050 \label{eq:kaplan-c}
+\end{align}
+These hold when each variable is scaled independently without the others becoming a bottleneck. The key implication: multiplying parameters by 10 reduces loss by a factor of $10^{-0.076} \approx 0.84$ (a 16\% reduction). Loss improves smoothly and predictably.
+
+Kaplan concluded that compute-optimal allocation should scale parameters much faster than data: $N_{\mathrm{opt}} \propto C^{0.73}$, $D_{\mathrm{opt}} \propto C^{0.27}$. This was later corrected by Hoffmann et al.
+
+\subsubsection{Hoffmann et al.\ (2022): The Chinchilla Scaling Law}
+
+Hoffmann et al.~\cite{hoffmann2022chinchilla} proposed a parametric loss function:
+\begin{equation}
+  L(N, D) = E + \frac{A}{N^{\alpha}} + \frac{B}{D^{\beta}}
+  \label{eq:chinchilla}
+\end{equation}
+where $E$ is the irreducible entropy of natural language. Their fitted constants:
+\[
+  E = 1.69,\quad A = 406.4,\quad \alpha = 0.34,\quad B = 410.7,\quad \beta = 0.28.
+\]
+A replication by Besiroglu et al.~\cite{besiroglu2024chinchilla} found somewhat different values ($E = 1.82$, $\alpha = 0.35$, $\beta = 0.37$) due to numerical issues in the original optimisation, but the qualitative conclusion held.
+
+The critical correction of Kaplan: compute-optimal allocation should scale parameters and data \emph{equally}:
+\begin{equation}
+  N_{\mathrm{opt}} \propto C^{a}, \quad D_{\mathrm{opt}} \propto C^{b}, \quad a \approx b \approx 0.5.
+\end{equation}
+This yields the famous ``20 tokens per parameter'' heuristic. Chinchilla (70B parameters, 1.4T tokens) matched the performance of Gopher (280B parameters, 300B tokens) with the same compute budget.
+
+\begin{remark}
+These scaling laws describe \textbf{loss} (cross-entropy), which improves smoothly. Emergence concerns \textbf{downstream task accuracy}, which can behave very differently. This disconnect is the crux of the emergence debate.
+\end{remark}
+
+% -----------------------------------------------------------------------------
+\subsection{Emergent Abilities: Wei et al.\ (TMLR 2022)}
+\label{subsec:wei}
+% -----------------------------------------------------------------------------
+
+\begin{definition}[Emergent Ability~\cite{wei2022emergent}]
+An ability is \emph{emergent} if it is not present in smaller models but is present in larger models. Specifically, performance remains near-random for all models below some critical scale threshold, then jumps sharply to well-above-random. This emergence ``cannot be predicted by extrapolating a scaling law based on small-scale models.''
+\end{definition}
+
+Wei et al.\ examined eight model families: GPT-3 (350M--175B), LaMDA (40M--137B), PaLM (8B--540B), Chinchilla (7B--70B), and Gopher (7.1B--280B), among others. The primary scaling variable is \textbf{training compute} (FLOPs), though parameter count is roughly proportional.
+
+\subsubsection{Scale of Emergence}
+
+The paper catalogued emergent abilities across two major evaluation suites:
+\begin{itemize}
+  \item \textbf{BIG-Bench:} 67 out of ${\sim}210$ tasks showed emergent behaviour.
+  \item \textbf{MMLU:} 51 tasks showed emergent behaviour.
+  \item Wei later compiled 137 emergent abilities across the literature.
+\end{itemize}
+
+Concrete thresholds (approximate):
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Task} & \textbf{Model family} & \textbf{Emergence threshold} \\
+  \midrule
+  3-digit addition & GPT-3 & ${\sim}$13B params ($2.3 \times 10^{22}$ FLOPs) \\
+  Modular arithmetic & GPT-3 & ${\sim}$13B params \\
+  Chain-of-thought reasoning & LaMDA & ${\sim}$68B params ($1.3 \times 10^{23}$ FLOPs) \\
+  College-level exams (MMLU) & GPT-3 & ${\sim}$175B params ($3.1 \times 10^{23}$ FLOPs) \\
+  Word in Context & PaLM & ${\sim}$540B params \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{The Physics Analogy: Anderson's ``More Is Different'' (1972)}
+
+Wei et al.\ explicitly invoke the framework of P.W.~Anderson's seminal essay~\cite{anderson1972more}. Anderson argued that \textbf{reductionism does not imply constructionism}: knowing the fundamental laws governing a system's components does not allow you to predict the emergent properties of the system at scale.
+
+Anderson's central mechanism is \textbf{broken symmetry}: the solutions to equations can have lower symmetry than the equations themselves. His hierarchy:
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{X (higher level)} & \textbf{Y (lower level)} \\
+  \midrule
+  Solid-state physics & Elementary particle physics \\
+  Chemistry & Many-body physics \\
+  Molecular biology & Chemistry \\
+  Cell biology & Molecular biology \\
+  Psychology & Physiology \\
+  Social sciences & Psychology \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Key examples from Anderson:
+\begin{itemize}
+  \item \textbf{Ammonia (NH$_3$):} Tunnels between two mirror-image states ${\sim}3 \times 10^{10}$ times per second. For larger molecules, tunnelling times exceed the age of the universe --- symmetry is effectively broken by scale alone.
+  \item \textbf{Crystallisation:} A gas with continuous translational symmetry spontaneously forms a crystal lattice with discrete symmetry. Rigidity is an emergent property.
+  \item \textbf{Superconductivity:} Broken gauge symmetry (BCS theory). The fundamental equations were known for 30 years before the phenomenon could be explained.
+\end{itemize}
+
+The analogy to LLMs: knowing the transformer architecture and training loss does not, in Anderson's framework, allow you to predict what capabilities emerge at what scale --- just as knowing quantum mechanics does not allow you to predict superconductivity from first principles.
+
+% -----------------------------------------------------------------------------
+\subsection{The Mirage Rebuttal: Schaeffer et al.\ (NeurIPS 2023)}
+\label{subsec:schaeffer}
+% -----------------------------------------------------------------------------
+
+Schaeffer, Miranda, and Koyejo~\cite{schaeffer2023mirage} (Outstanding Paper Award) argued that emergent abilities are \textbf{not a property of the model, but of the researcher's choice of evaluation metric.}
+
+\subsubsection{The Core Mathematical Argument}
+
+Suppose per-token probability of correctness $p(N)$ improves smoothly with scale $N$. For a task requiring a correct output sequence of length $L$, the \textbf{Exact String Match} metric scores:
+\begin{equation}
+  \text{Accuracy}(N) = p(N)^L
+  \label{eq:exactmatch}
+\end{equation}
+
+This exponential creates artificial sharpness:
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  Per-token accuracy $p$ & Sequence length $L$ & Exact-match accuracy $p^L$ \\
+  \midrule
+  60\% & 4 & 13.0\% \\
+  80\% & 4 & 40.9\% \\
+  90\% & 4 & 65.6\% \\
+  98\% & 4 & 92.2\% \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+The improvement from $p = 0.6$ to $p = 0.98$ is smooth and gradual, but the exact-match metric transforms it into an apparent phase transition (13\% $\to$ 92\%).
+
+\subsubsection{Resolution Effects}
+
+With a test set of size $T$, the smallest measurable nonzero performance is $1/T$. Any true performance below $1/T$ reads as exactly zero, creating an artificial plateau that makes the eventual rise appear more sudden.
+
+\subsubsection{The BIG-Bench Meta-Analysis}
+
+\textbf{More than 92\% of claimed emergent abilities in BIG-Bench appeared under just two metrics: Multiple Choice Grade and Exact String Match.} Both are discontinuous. Of the 39 metrics available in BIG-Bench, emergent abilities appeared with at most 5 of them.
+
+\subsubsection{Three Predictions Tested on GPT-3/InstructGPT}
+
+Schaeffer et al.\ tested three predictions using arithmetic tasks (2-shot multiplication of two 2-digit integers, addition of two 4-digit integers):
+
+\begin{enumerate}
+  \item \textbf{Changing the metric:} Switching from Exact String Match to Token Edit Distance made the sharp transition disappear --- performance improved smoothly and predictably. \textit{Confirmed.}
+  \item \textbf{Increasing test set size:} Improving measurement resolution smoothed out apparent emergence even under nonlinear metrics. \textit{Confirmed.}
+  \item \textbf{Varying sequence length:} Under Exact String Match, accuracy fell geometrically with $L$ (as predicted by Eq.~\ref{eq:exactmatch}). Under Token Edit Distance, the decrease was approximately quasi-linear. \textit{Confirmed.}
+\end{enumerate}
+
+\subsubsection{Vision Experiments}
+
+To demonstrate that emergence is not special to language models, they \emph{induced} apparent emergent abilities in vision models (CNNs, autoencoders, Vision Transformers) on CIFAR-100:
+\begin{itemize}
+  \item Under smooth metrics (Brier Score, mean per-class recall): smooth scaling.
+  \item Under thresholded metrics analogous to Exact String Match: apparent sharp transitions.
+\end{itemize}
+No vision researcher has ever claimed emergent abilities --- precisely because the vision community does not use harsh all-or-nothing metrics.
+
+% -----------------------------------------------------------------------------
+\subsection{The Nuanced Resolution}
+% -----------------------------------------------------------------------------
+
+The truth is that \textbf{both sides are partly right}:
+
+\begin{enumerate}
+  \item \textbf{Some emergence is metric artifact:} Schaeffer's argument is mathematically rigorous and empirically confirmed for many BIG-Bench tasks.
+  \item \textbf{Some emergence may be real:} Tasks with composite structure (requiring $k$ correct sub-steps) have success rates ${\sim}p^k$, which creates genuine threshold behaviour even under continuous per-step metrics. Multi-step reasoning tasks may exhibit real phase transitions.
+  \item \textbf{The unresolved question:} Whether \emph{all} apparent emergence can be explained by metric choice and finite test-set resolution, or whether some phenomena are genuinely discontinuous, remains actively debated. The Berti et al.\ (2025) survey~\cite{berti2025survey} provides the most balanced current assessment.
+\end{enumerate}
+
+\textbf{Key message for the audience:} We genuinely cannot predict what the next model will be able to do. Both the optimists and the sceptics are partly right --- which makes the uncertainty irreducible and strategically important.
+
+
+% =============================================================================
+\section{Topic B: Grokking}
+\label{sec:grokking}
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+\subsection{The Discovery: Power et al.\ (2022)}
+\label{subsec:power}
+% -----------------------------------------------------------------------------
+
+Power et al.~\cite{power2022grokking} (OpenAI, ICLR 2022 Workshop) discovered that neural networks trained on small algorithmic datasets can exhibit \textbf{delayed generalisation}: the model memorises the training data quickly, then --- orders of magnitude later in training --- suddenly generalises to the test set.
+
+\subsubsection{Experimental Setup}
+
+\begin{itemize}
+  \item \textbf{Tasks:} Binary operations on $\Z/97\Z$ (modular arithmetic with prime $p = 97$): addition, subtraction, division, polynomials ($x^2 + y^2$, $x^2 + xy + y^2$, $x^3 + xy$, etc.), and composition in the symmetric group $S_5$.
+  \item \textbf{Data format:} Sequences ``$a \;\circ\; b = c$'' where $c$ is masked and must be predicted.
+  \item \textbf{Train/test split:} 50\% of all $(a,b)$ pairs for training; remainder for validation. A critical threshold exists between 30--40\% --- near 25\% of data, a 1\% decrease in training fraction leads to a 40--50\% increase in median time to generalisation.
+  \item \textbf{Architecture:} 2-layer decoder-only transformer, embedding dimension 128, 4 attention heads, ${\sim}4 \times 10^5$ non-embedding parameters.
+  \item \textbf{Optimiser:} AdamW, learning rate $10^{-3}$, weight decay $\lambda = 1$ (notably large), $\beta_1 = 0.9$, $\beta_2 = 0.98$.
+\end{itemize}
+
+\subsubsection{Training Dynamics (Division mod 97, 50\% data)}
+
+\begin{center}
+\begin{tabular}{lrl}
+  \toprule
+  \textbf{Phase} & \textbf{Optimisation steps} & \textbf{What happens} \\
+  \midrule
+  Memorisation & $< 10^3$ & Training accuracy $\to 100\%$ \\
+  Stall & $10^3$--$10^5$ & No visible improvement in test accuracy \\
+  Generalisation & ${\sim}10^6$ & Test accuracy $\to 100\%$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+The gap between memorisation and generalisation spans roughly \textbf{three orders of magnitude} in optimisation steps. Every practitioner in the field would have stopped training during the stall phase.
+
+\subsubsection{Which Operations Grokked}
+
+\textbf{All tested operations generalised except one:} $x^3 + xy^2 + y \pmod{97}$ did not generalise within the optimisation budget at any training fraction up to 95\%. Symmetric operations (e.g., $x + y$, $x^2 + y^2$) required less data to grok than asymmetric ones.
+
+\subsubsection{The Role of Regularisation}
+
+Weight decay was the single most important factor --- it more than halved the data fraction needed for generalisation. Full-batch gradient descent was less effective than minibatch SGD, suggesting that stochastic noise also plays a role.
+
+% -----------------------------------------------------------------------------
+\subsection{Mechanistic Explanation: Nanda et al.\ (ICLR 2023)}
+\label{subsec:nanda}
+% -----------------------------------------------------------------------------
+
+Nanda et al.~\cite{nanda2023grokking} (ICLR 2023 Oral) fully \textbf{reverse-engineered the algorithm} learned by a small transformer trained on modular addition, revealing that the network discovers \textbf{discrete Fourier analysis}.
+
+\subsubsection{Setup}
+
+\begin{itemize}
+  \item \textbf{Task:} $(a + b) \bmod 113$ (prime modulus).
+  \item \textbf{Architecture:} 1-layer transformer, embedding dimension $d = 128$, 4 attention heads (each $d/4 = 32$ dimensions), MLP hidden layer with 512 neurons, ReLU activation.
+  \item \textbf{Training data:} 30\% of all $113 \times 113 = 12{,}769$ input pairs (${\approx}3{,}831$ training pairs).
+  \item \textbf{Optimiser:} AdamW, $\text{lr} = 10^{-3}$, $\lambda = 1$, trained for 40{,}000 epochs.
+\end{itemize}
+
+\subsubsection{The Learned Algorithm: Discrete Fourier Transform}
+
+The network learns to compute $(a + b) \bmod 113$ using five key frequencies $k \in \{14, 35, 41, 42, 52\}$ with angular frequencies $\omega_k = 2\pi k / 113$. The algorithm proceeds in four stages:
+
+\textbf{Stage 1 --- Embedding ($W_E$):} The embedding matrix maps each integer $a \in \{0, \ldots, 112\}$ to its Fourier components:
+\begin{equation}
+  a \;\longmapsto\; \bigl(\sin(\omega_k a),\; \cos(\omega_k a)\bigr) \quad \text{for each key frequency } k.
+\end{equation}
+The embedding is \textbf{sparse in the Fourier basis}: only ${\sim}6$ frequencies have significant norm.
+
+\textbf{Stage 2 --- Composition via trigonometric identities (Attention + MLP):} The network computes:
+\begin{align}
+  \cos\bigl(\omega_k(a + b)\bigr) &= \cos(\omega_k a)\cos(\omega_k b) - \sin(\omega_k a)\sin(\omega_k b) \label{eq:trig-cos}\\
+  \sin\bigl(\omega_k(a + b)\bigr) &= \sin(\omega_k a)\cos(\omega_k b) + \cos(\omega_k a)\sin(\omega_k b) \label{eq:trig-sin}
+\end{align}
+This is the standard product-to-sum identity, implemented by the attention heads and MLP.
+
+\textbf{Stage 3 --- Unembedding ($W_U$):} For each candidate output $c \in \{0, \ldots, 112\}$, the network computes:
+\begin{equation}
+  \cos\bigl(\omega_k(a + b - c)\bigr) = \cos(\omega_k(a{+}b))\cos(\omega_k c) + \sin(\omega_k(a{+}b))\sin(\omega_k c)
+\end{equation}
+
+\textbf{Stage 4 --- Constructive interference:} The logit for the correct answer $c^* = (a + b) \bmod 113$ receives constructive interference from all five key frequencies (all cosine terms equal 1 when $a + b - c^* \equiv 0 \pmod{113}$), while incorrect answers receive destructive interference. This gives $c^*$ the largest logit.
+
+\subsubsection{Quality of the Approximation}
+
+The neuron-logit map $W_L = W_U W_{\text{out}}$ is approximately rank~10 and can be decomposed as:
+\[
+  W_L \;\approx\; \sum_k \bigl[\cos(\omega_k)\, \mathbf{u}_k^\top + \sin(\omega_k)\, \mathbf{v}_k^\top\bigr]
+\]
+with residual Frobenius norm under \textbf{0.55\%} of $\|W_L\|_F$. The final logit approximation explains ${\sim}$95\% of variance.
+
+\subsubsection{Three Training Phases}
+
+\begin{center}
+\begin{tabular}{lrl}
+  \toprule
+  \textbf{Phase} & \textbf{Epochs} & \textbf{Characteristics} \\
+  \midrule
+  Memorisation & 0--1{,}400 & Train/excluded loss decline; test loss high \\
+  Circuit formation & 1{,}400--9{,}400 & Generalising circuit grows; $\|W\|_2$ falls \\
+  Cleanup & 9{,}400--14{,}000 & Memorising circuit pruned; test loss drops sharply \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Progress Measures}
+
+Nanda et al.\ defined continuous metrics that track the formation of the generalising circuit:
+
+\begin{definition}[Restricted Loss]
+Set all Fourier logit terms to zero except (a) the constant term and (b) the 20 terms corresponding to $\cos(\omega_k(a{+}b))$ and $\sin(\omega_k(a{+}b))$ for the five key frequencies. Then measure the resulting cross-entropy loss. This measures how well the Fourier circuit alone performs.
+\end{definition}
+
+\begin{definition}[Excluded Loss]
+Remove only the key frequency components from the logits on the training data; measure the resulting training loss. This measures how well the memorising circuit performs \emph{without} help from the generalising circuit.
+\end{definition}
+
+Additional metrics include the \textbf{Gini coefficient} of Fourier component norms (measuring sparsity) and the $L_2$ norm of weights (tracking weight decay pressure). Crucially, these progress measures show \textbf{continuous, monotonic improvement} throughout training --- even while test accuracy remains at chance. Grokking appears sudden on the test accuracy curve but is gradual in the underlying representation.
+
+\subsubsection{The Role of Weight Decay}
+
+Weight decay creates a pressure that penalises the high-norm memorising solution and favours the more parameter-efficient generalising (Fourier) solution. Without weight decay, no grokking occurs. The memorising and generalising circuits have \textbf{different norm-to-performance tradeoffs}, and weight decay selects for the more efficient one.
+
+% -----------------------------------------------------------------------------
+\subsection{Circuit Efficiency: Varma et al.\ (ICLR 2025)}
+\label{subsec:varma}
+% -----------------------------------------------------------------------------
+
+Varma et al.~\cite{varma2025grokking} (Google DeepMind) provided a unifying theoretical framework for grokking based on \textbf{circuit efficiency}.
+
+\subsubsection{The Efficiency Framework}
+
+The total loss decomposes into two competing terms:
+\begin{equation}
+  \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{CE}} + \frac{\lambda}{2}\|\boldsymbol{\theta}\|_2^2
+\end{equation}
+where $\mathcal{L}_{\text{CE}}$ is the cross-entropy loss and $\lambda$ is the weight decay coefficient.
+
+\begin{definition}[Circuit Efficiency]
+The efficiency of a circuit is the \textbf{logit-to-parameter-norm ratio}: the magnitude of output logits achievable per unit of $L_2$ parameter norm. A circuit is more efficient if it achieves the same cross-entropy loss with lower parameter norm.
+\end{definition}
+
+\subsubsection{Three Conditions for Grokking}
+
+Grokking occurs when:
+\begin{enumerate}
+  \item The generalising circuit $C_{\text{gen}}$ generalises well while the memorising circuit $C_{\text{mem}}$ does not.
+  \item $C_{\text{gen}}$ is \textbf{more efficient} than $C_{\text{mem}}$ (larger logits per unit parameter norm).
+  \item $C_{\text{gen}}$ is \textbf{learned more slowly} than $C_{\text{mem}}$.
+\end{enumerate}
+
+The key empirical finding: $C_{\text{mem}}$'s efficiency \textbf{decreases} with larger training datasets (memorisation cost grows with data), while $C_{\text{gen}}$'s efficiency \textbf{remains constant} (the generalising algorithm's parameter cost is fixed). This creates a critical dataset size $D_{\text{crit}}$ where the efficiencies cross over.
+
+\subsubsection{Ungrokking}
+
+\begin{definition}[Ungrokking]
+A network that has already grokked (achieved perfect generalisation) \textbf{regresses to near-chance test accuracy} --- a reversal of grokking.
+\end{definition}
+
+To trigger ungrokking: take a network that has grokked on a large dataset (above $D_{\text{crit}}$), then retrain it on a significantly smaller dataset (below $D_{\text{crit}}$). Because $C_{\text{mem}}$ is now more efficient, gradient descent with weight decay shifts the network back toward memorisation.
+
+\subsubsection{Semi-Grokking}
+
+Near $D_{\text{crit}}$, where both circuits have comparable efficiency, the network plateaus at \textbf{partial} test accuracy rather than completing the transition to perfect generalisation.
+
+% -----------------------------------------------------------------------------
+\subsection{Grokking at Scale: Li et al.\ (2025)}
+\label{subsec:li}
+% -----------------------------------------------------------------------------
+
+Li et al.~\cite{li2025grokking7b} demonstrated that grokking occurs during \textbf{real LLM pretraining} at the 7B-parameter scale, confirming that it is not merely a toy phenomenon.
+
+\subsubsection{Model and Setup}
+
+\begin{itemize}
+  \item \textbf{Model:} OLMoE-1B-7B --- decoder-only transformer with Mixture-of-Experts (MoE), 7B total parameters, ${\sim}$1.3B active per forward pass. 64 routed experts per layer, top-8 selected per token.
+  \item \textbf{Training data:} ${\sim}$5.1 trillion tokens.
+\end{itemize}
+
+\subsubsection{Local Grokking}
+
+Unlike the global, synchronous grokking in toy settings, LLM pretraining exhibits \textbf{asynchronous, domain-level} grokking:
+\begin{itemize}
+  \item Different domains (maths, code, commonsense) are memorised at different training steps.
+  \item Each domain takes varying amounts of additional training to generalise.
+  \item The training loss has converged globally, but downstream benchmark performance continues to improve.
+\end{itemize}
+
+\subsubsection{Pathway Evolution Metrics}
+
+The MoE architecture provides a natural lens. Li et al.\ defined:
+\begin{enumerate}
+  \item \textbf{Edit Distance:} Levenshtein distance between different samples' expert routing sequences. During grokking, this \textbf{declines} --- pathways become more structured.
+  \item \textbf{Pathway Consistency:} Cosine similarity between consecutive layers' expert embeddings. This \textbf{increases} during grokking --- routing becomes smoother.
+\end{enumerate}
+
+These metrics showed correlation $r > 0.97$ with downstream test accuracy, while training loss showed weak, inconsistent correlations. Four domains demonstrated grokking: arithmetic reasoning, code generation, commonsense QA, and domain-specific QA.
+
+% -----------------------------------------------------------------------------
+\subsection{Connection to Classical Learning Theory}
+\label{subsec:biasvariance}
+% -----------------------------------------------------------------------------
+
+\subsubsection{Violation of the Bias-Variance Tradeoff}
+
+In classical statistics, a model that has overfit (high variance, low bias) is expected to \emph{stay} overfit. Grokking directly contradicts this: the model first interpolates the training data perfectly, then transitions to perfect generalisation under continued training. This should not happen under classical assumptions.
+
+\subsubsection{Connection to Double Descent}
+
+Double descent~\cite{belkin2018reconciling} describes a non-monotonic test error curve: classical U-shape, peak at the interpolation threshold, then improvement in the overparameterised regime. Davies~\cite{davies2023grokking} proposed that \textbf{grokking and double descent are instances of the same phenomenon}: inductive biases (weight decay) prefer better-generalising but slower-to-learn patterns.
+
+Three pattern types in the unified framework:
+\begin{enumerate}
+  \item \textbf{Heuristics:} Fast-learning, well-generalising (Type~1).
+  \item \textbf{Memorisation:} Fast-learning, poorly-generalising (Type~2).
+  \item \textbf{Slow generalising:} Slow-learning, well-generalising, ultimately preferred by inductive biases (Type~3).
+\end{enumerate}
+
+Grokking = \textbf{epoch-wise} transition from Type~2 to Type~3 dominance.\\
+Double descent = the same transition viewed as a function of \textbf{model capacity}.
+
+
+% =============================================================================
+\section{Topic C: The Test-Time Compute Revolution}
+\label{sec:ttc}
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+\subsection{The Paradigm Shift}
+% -----------------------------------------------------------------------------
+
+The old paradigm for improving LLM performance: \textbf{make models bigger} (more parameters, more training data, more training FLOPs). The new paradigm adds a second axis: \textbf{let models think longer at inference time.}
+
+The fundamental insight: you can trade \emph{inference-time compute} for \emph{model size}, and in many cases, a smaller model that thinks longer beats a larger model that answers immediately.
+
+% -----------------------------------------------------------------------------
+\subsection{Foundations: Chain-of-Thought Prompting}
+\label{subsec:cot}
+% -----------------------------------------------------------------------------
+
+Wei et al.~\cite{wei2022cot} (NeurIPS 2022) demonstrated that including intermediate reasoning steps in few-shot exemplars dramatically improves performance on reasoning tasks:
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Model / Method} & \textbf{GSM8K accuracy} \\
+  \midrule
+  PaLM 540B (standard prompting) & ${\sim}$18\% \\
+  PaLM 540B (chain-of-thought) & ${\sim}$57\% \\
+  Prior SOTA (fine-tuned GPT-3 + verifier) & 55\% \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Chain-of-thought is the simplest form of test-time compute scaling: the model generates intermediate reasoning tokens that mediate the computation, spending additional FLOPs at inference time.
+
+\textbf{Crucially, CoT is an emergent ability:} it only works above ${\sim}$100B parameters. For small models ($<$10B), CoT \textbf{hurts} performance --- the models produce fluent but logically incoherent chains of thought.
+
+% -----------------------------------------------------------------------------
+\subsection{Test-Time Compute Scaling: Snell et al.\ (ICLR 2025)}
+\label{subsec:snell}
+% -----------------------------------------------------------------------------
+
+Snell et al.~\cite{snell2025scaling} (ICLR 2025 Oral) provided the most rigorous framework for understanding when and how to scale test-time compute.
+
+\subsubsection{Formal Framework}
+
+Given a question $q$ with ground-truth answer $y^*(q)$, a test-time compute budget $N$ (number of generated tokens/samples), and hyperparameters $\theta$ controlling how that budget is spent:
+\begin{equation}
+  \theta^*_{q, y^*(q)}(N) = \arg\max_{\theta}\; \E_{y \sim \text{Target}(\theta, N, q)}\bigl[\mathbf{1}\{y = y^*(q)\}\bigr]
+\end{equation}
+The optimal strategy should be \textbf{prompt-dependent}: different questions call for different allocation strategies.
+
+\subsubsection{Two Strategies}
+
+\textbf{Strategy (a): Search against a process-based verifier (PRM).}
+\begin{itemize}
+  \item Sample $N$ candidate solutions from the base LM.
+  \item Score using a Process Reward Model (PRM) that provides step-level correctness judgements.
+  \item Sub-approaches: best-of-$N$ weighted selection, beam search against the PRM (retain top $N/M$ candidates per step, expand $M$ proposals each), and lookahead search with $k$-step rollouts.
+\end{itemize}
+
+\textbf{Strategy (b): Sequential revision.}
+\begin{itemize}
+  \item Generate solutions \textbf{sequentially}, each conditioned on all previous attempts.
+  \item The model iteratively refines its answer, seeing the original question plus its own prior outputs.
+  \item Can be combined with a verifier for selection among revisions.
+\end{itemize}
+
+\subsubsection{The Difficulty-Dependent Result}
+
+\textbf{Which strategy is optimal depends critically on problem difficulty:}
+\begin{itemize}
+  \item \textbf{Easy problems} (high base pass@1): Sequential revision is most effective. Beam search shows signs of over-optimisation.
+  \item \textbf{Medium-difficulty:} Beam search against the PRM demonstrates consistent improvements.
+  \item \textbf{Hard problems} (very low base pass@1): Neither strategy helps much. For these, a larger pretrained model remains preferable.
+\end{itemize}
+
+The compute-optimal adaptive strategy yields a $>$\textbf{4$\times$ efficiency gain} over a uniform best-of-$N$ baseline.
+
+\subsubsection{The Headline Result}
+
+In a FLOPs-matched comparison, a small base model with optimal test-time compute scaling can \textbf{outperform a 14$\times$ larger model} using standard decoding --- but only on problems where the smaller model has a somewhat non-trivial base success rate. On the very hardest problems, the larger pretrained model still wins.
+
+\textbf{Benchmark:} MATH dataset (Hendrycks et al.) with PaLM 2-S* (Codey) as the base model.
+
+% -----------------------------------------------------------------------------
+\subsection{DeepSeek-R1: Reasoning from Pure Reinforcement Learning}
+\label{subsec:deepseek}
+% -----------------------------------------------------------------------------
+
+DeepSeek-R1~\cite{deepseek2025r1} (January 2025, published in Nature) demonstrated that reasoning capabilities can emerge from \textbf{pure reinforcement learning}, without any human demonstrations of step-by-step reasoning.
+
+\subsubsection{Two Systems: R1-Zero and R1}
+
+\textbf{DeepSeek-R1-Zero (pure RL):}
+\begin{itemize}
+  \item Base model: DeepSeek-V3-Base (MoE LLM).
+  \item No supervised fine-tuning before RL --- trained directly with GRPO.
+  \item Only rule-based reward signals: accuracy (deterministic verification of boxed answers) and format compliance.
+\end{itemize}
+
+\textbf{DeepSeek-R1 (with cold start):} A four-stage pipeline:
+\begin{enumerate}
+  \item Cold start SFT on thousands of human-curated long-CoT examples.
+  \item Reasoning-oriented RL with GRPO (accuracy + language consistency rewards).
+  \item Rejection sampling + SFT (${\sim}$600K reasoning + 200K non-reasoning samples).
+  \item All-scenario RL for helpfulness and harmlessness.
+\end{enumerate}
+
+\subsubsection{GRPO: Group Relative Policy Optimisation}
+
+GRPO eliminates the critic network entirely. For each question $q$, sample a group of $G$ outputs $\{o_1, \ldots, o_G\}$ from the current policy. Compute reward $r_i$ for each. The advantage is the \textbf{z-score normalised reward within the group}:
+\begin{equation}
+  \hat{A}_i = \frac{r_i - \text{mean}(\{r_1, \ldots, r_G\})}{\text{std}(\{r_1, \ldots, r_G\})}
+\end{equation}
+
+The objective function is:
+\begin{equation}
+  J_{\text{GRPO}}(\theta) = \E_{q \sim P(Q),\, \{o_i\} \sim \pi_{\theta_{\text{old}}}} \left[ \frac{1}{G} \sum_{i=1}^{G} \Bigl( \min\bigl(\rho_i\hat{A}_i,\; \text{clip}(\rho_i, 1{\pm}\epsilon)\hat{A}_i\bigr) - \beta\, D_{\mathrm{KL}}(\pi_\theta \| \pi_{\mathrm{ref}}) \Bigr) \right]
+  \label{eq:grpo}
+\end{equation}
+where $\rho_i = \pi_\theta(o_i|q) / \pi_{\theta_{\text{old}}}(o_i|q)$ is the importance sampling ratio and $\pi_{\text{ref}}$ is the initial model. This halves the memory requirements compared to PPO by avoiding a separate critic model.
+
+\subsubsection{The ``Aha Moment''}
+
+During R1-Zero training, the model \textbf{spontaneously} developed self-reflection capabilities. At an intermediate checkpoint, the model began producing text like:
+
+\begin{quote}
+\itshape ``Wait, wait. Wait. That's an aha moment I can flag here.''
+\end{quote}
+
+Nobody told the model to think step by step. Nobody provided examples of self-correction. Through pure trial-and-error optimisation of a reward signal, the model discovered that \textbf{pausing to reconsider improves its answers.}
+
+The emergent behaviours include: chain-of-thought reasoning, self-verification, reflection, and dynamic strategy adaptation (switching approaches mid-solution).
+
+\subsubsection{Benchmark Results}
+
+\begin{center}
+\begin{tabular}{lccc}
+  \toprule
+  \textbf{Benchmark} & \textbf{R1-Zero} & \textbf{R1 (full)} & \textbf{For reference: o1} \\
+  \midrule
+  AIME 2024 & 71.0\% & 79.8\% & 74\% \\
+  MATH-500 & 95.9\% & 97.3\% & --- \\
+  GPQA Diamond & 50.0\% & 71.5\% & --- \\
+  Codeforces (rating) & 1444 & 2029 & --- \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+R1-Zero improved from 15.6\% to 71.0\% on AIME 2024 over the course of RL training. With consensus@64 sampling, R1-Zero achieves 86.7\% --- matching OpenAI o1.
+
+\subsubsection{The Readability Problem}
+
+R1-Zero suffers from language mixing (Chinese/English interspersed) and poor formatting --- the RL reward does not penalise these, so the model uses whatever internal representation maximises accuracy. R1's cold-start SFT and language consistency rewards fix this.
+
+\subsubsection{Distillation Results}
+
+Distilled from R1 into smaller models:
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Distilled model} & \textbf{AIME 2024} & \textbf{MATH-500} \\
+  \midrule
+  Qwen-1.5B & 28.9\% & 83.9\% \\
+  Qwen-7B & 55.5\% & 92.8\% \\
+  Qwen-14B & 69.7\% & 93.9\% \\
+  Qwen-32B & 72.6\% & 94.3\% \\
+  Llama-70B & 70.0\% & 94.5\% \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+The 1.5B distilled model outperforms GPT-4o on maths benchmarks. Distillation from a strong reasoning teacher is remarkably effective.
+
+% -----------------------------------------------------------------------------
+\subsection{Budget Forcing: s1-32B (Muennighoff et al., 2025)}
+\label{subsec:s1}
+% -----------------------------------------------------------------------------
+
+Muennighoff et al.~\cite{muennighoff2025s1} demonstrated that \textbf{1,000 curated training examples} are sufficient to unlock test-time scaling, beating OpenAI o1-preview on competition maths.
+
+\subsubsection{The s1K Dataset}
+
+Starting from 59,029 samples, curated through three-stage filtering:
+\begin{enumerate}
+  \item \textbf{Quality filtering} (59K $\to$ 51.5K): Remove API errors, formatting issues.
+  \item \textbf{Difficulty filtering} (51.5K $\to$ 24.5K): Remove problems both Qwen-7B and Qwen-32B solve correctly. Use reasoning trace length as difficulty proxy.
+  \item \textbf{Diversity filtering} (24.5K $\to$ 1K): Classify into 50 domains; sample uniformly across domains, favouring longer traces.
+\end{enumerate}
+
+53.6\% of the reasoning traces in s1K are correct --- the presence of incorrect traces did not prevent effective training.
+
+\subsubsection{Budget Forcing}
+
+Two operations controlling test-time compute:
+\begin{itemize}
+  \item \textbf{Enforce maximum:} Append the end-of-thinking token to force early termination.
+  \item \textbf{Enforce minimum:} Suppress the end-of-thinking token in sampling logits, then append ``Wait'' to the reasoning trace. This triggers the model to re-examine its work and self-correct.
+\end{itemize}
+
+Budget forcing can be applied multiple times (2$\times$, 4$\times$, 6$\times$) for progressively deeper thinking.
+
+\subsubsection{Results}
+
+\begin{center}
+\begin{tabular}{lc}
+  \toprule
+  \textbf{Model} & \textbf{AIME 2024} \\
+  \midrule
+  o1-preview & 44.6\% \\
+  s1-32B (no budget forcing) & 50.0\% \\
+  s1-32B (Wait 2$\times$) & 53.3\% \\
+  s1-32B (Wait 6$\times$) & 57.0\% \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Why 1,000 Examples Suffice}
+
+The authors invoke the \textbf{Superficial Alignment Hypothesis} (from the LIMA paper): the model is already exposed to vast amounts of reasoning data during pretraining. The 1,000-example SFT stage does not teach reasoning from scratch --- it \textbf{activates} latent reasoning capabilities already encoded during pretraining. Training took \textbf{26 minutes on 16 NVIDIA H100 GPUs}.
+
+% -----------------------------------------------------------------------------
+\subsection{The Broader Landscape}
+\label{subsec:landscape}
+% -----------------------------------------------------------------------------
+
+\subsubsection{Taxonomy of Test-Time Compute Methods}
+
+\begin{center}
+\begin{tabular}{llll}
+  \toprule
+  \textbf{Method} & \textbf{Type} & \textbf{Year} & \textbf{Key mechanism} \\
+  \midrule
+  Chain-of-Thought & Sequential (prompting) & 2022 & Few-shot exemplars with reasoning \\
+  Self-Consistency~\cite{wang2023selfconsistency} & Parallel (sampling) & 2023 & Multiple paths + majority vote \\
+  Tree-of-Thoughts~\cite{yao2023tree} & Tree search & 2023 & BFS/DFS over thought candidates \\
+  OpenAI o1/o3 & Sequential (learned) & 2024 & RL-trained internal reasoning tokens \\
+  DeepSeek-R1 & Sequential (learned) & 2025 & GRPO-trained extended CoT \\
+  Snell et al. & Hybrid (adaptive) & 2025 & PRM-guided beam search + revision \\
+  s1-32B & Sequential (forced) & 2025 & ``Wait'' token injection \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Self-Consistency (Wang et al., ICLR 2023)}
+
+Sample multiple diverse reasoning paths, extract the final answer from each, select by majority vote. Improvements over CoT: GSM8K +17.9\%, SVAMP +11.0\%, AQuA +12.2\%.
+
+\subsubsection{Tree of Thoughts (Yao et al., NeurIPS 2023)}
+
+Organise reasoning into a tree where the LM generates multiple candidates per step, evaluates them, and uses BFS/DFS to search. GPT-4 on Game of 24: 4\% with CoT $\to$ 74\% with ToT.
+
+\subsubsection{OpenAI o1 and o3}
+
+OpenAI o1 (September 2024): RL-trained to produce internal reasoning tokens (hidden from user). AIME 2024: 74\% pass@1.
+
+OpenAI o3 (December 2024): Further scaling of test-time compute. AIME 2024: \textbf{96.7\%}. ARC-AGI: \textbf{87.5\%} (high-compute; o1 scored only 32\%).
+
+\subsubsection{The System 1 / System 2 Analogy}
+
+The connection to Kahneman's dual-process theory:
+\begin{itemize}
+  \item \textbf{System 1} (fast, intuitive): Standard LLM inference --- a single forward pass, pattern matching, associative.
+  \item \textbf{System 2} (slow, deliberate): Test-time compute scaling --- extended reasoning, search, verification, self-correction.
+\end{itemize}
+
+The fundamental insight: without retraining the underlying LLM, you can improve its reasoning capabilities simply by allowing it to explore more possibilities. This decouples \textbf{capability acquisition} (training) from \textbf{capability deployment} (inference), creating a new strategic variable for organisations.
+
+% -----------------------------------------------------------------------------
+\subsection{Two Axes of Scaling: Strategic Implications}
+% -----------------------------------------------------------------------------
+
+The capability frontier now has two dimensions: train-time compute (one-time capital expense) and test-time compute (per-query operating expense). The strategic question: where on this frontier should you invest?
+
+Key considerations:
+\begin{itemize}
+  \item \textbf{High-volume, low-latency tasks} (autocomplete, classification): Invest in a fast, large model. Test-time compute overhead is too costly at scale.
+  \item \textbf{High-stakes, low-volume tasks} (complex analysis, planning, coding): Invest in a smaller model with extended thinking. The per-query cost is acceptable when accuracy matters.
+  \item \textbf{Difficulty matters:} Test-time compute is most effective for medium-difficulty problems. For very easy problems, it is wasteful. For very hard problems, it does not help --- a larger model is needed.
+\end{itemize}
+
+
+% =============================================================================
+\section{Synthesis: What the Audience Should Take Away}
+% =============================================================================
+
+\begin{enumerate}
+  \item \textbf{Unpredictability of capabilities:} Phase transitions mean we cannot reliably forecast what the next model will do. Strategic planning must account for this uncertainty.
+  \item \textbf{Delayed understanding:} Grokking shows that models can develop capabilities long after training loss has converged. For safety-critical deployments, post-training evaluation is not a one-time event.
+  \item \textbf{A new cost structure:} Test-time compute creates a new trade-off axis. The right deployment strategy depends on task difficulty, volume, latency tolerance, and accuracy requirements.
+  \item \textbf{The honest answer to ``do we understand these systems?'':} Partially. We can reverse-engineer small models (Nanda's Fourier circuits). We can empirically characterise scaling behaviour (Chinchilla, Snell). But we cannot predict emergence, and we do not fully understand why grokking happens at scale. The frontier of understanding is advancing, but it lags behind the frontier of capability.
+\end{enumerate}
+
+
+% =============================================================================
+\begin{thebibliography}{99}
+% =============================================================================
+
+\bibitem{anderson1972more}
+P.W.~Anderson.
+\newblock More Is Different.
+\newblock \emph{Science}, 177(4047):393--396, 1972.
+
+\bibitem{kaplan2020scaling}
+J.~Kaplan, S.~McCandlish, T.~Henighan, T.B.~Brown, B.~Chess, R.~Child,
+S.~Gray, A.~Radford, J.~Wu, and D.~Amodei.
+\newblock Scaling Laws for Neural Language Models.
+\newblock \emph{arXiv:2001.08361}, 2020.
+
+\bibitem{hoffmann2022chinchilla}
+J.~Hoffmann, S.~Borgeaud, A.~Mensch, E.~Buchatskaya, T.~Cai, E.~Rutherford,
+et al.
+\newblock Training Compute-Optimal Large Language Models.
+\newblock \emph{NeurIPS}, 2022.
+
+\bibitem{besiroglu2024chinchilla}
+T.~Besiroglu, E.~Erdil, M.~Barnett, and J.~You.
+\newblock Chinchilla Scaling: A Replication Attempt.
+\newblock \emph{arXiv:2404.10102}, 2024.
+
+\bibitem{wei2022emergent}
+J.~Wei, Y.~Tay, R.~Bommasani, C.~Raffel, B.~Zoph, S.~Borgeaud, et al.
+\newblock Emergent Abilities of Large Language Models.
+\newblock \emph{Transactions on Machine Learning Research (TMLR)}, 2022.
+
+\bibitem{schaeffer2023mirage}
+R.~Schaeffer, B.~Miranda, and S.~Koyejo.
+\newblock Are Emergent Abilities of Large Language Models a Mirage?
+\newblock \emph{NeurIPS}, 2023. Outstanding Paper Award.
+
+\bibitem{berti2025survey}
+L.~Berti, F.~Giorgi, and G.~Kasneci.
+\newblock Emergent Abilities in Large Language Models: A Survey.
+\newblock \emph{arXiv:2503.05788}, 2025.
+
+\bibitem{power2022grokking}
+A.~Power, Y.~Burda, H.~Edwards, I.~Babuschkin, and V.~Misra.
+\newblock Grokking: Generalization Beyond Overfitting on Small Algorithmic
+Datasets.
+\newblock \emph{ICLR Workshop}, 2022.
+
+\bibitem{nanda2023grokking}
+N.~Nanda, L.~Chan, T.~Lieberum, J.~Smith, and J.~Steinhardt.
+\newblock Progress Measures for Grokking via Mechanistic Interpretability.
+\newblock \emph{ICLR}, 2023. Oral.
+
+\bibitem{varma2025grokking}
+V.~Varma, R.~Shah, Z.~Kenton, J.~Kramar, and R.~Kumar.
+\newblock Explaining Grokking Through Circuit Efficiency.
+\newblock \emph{ICLR}, 2025.
+
+\bibitem{li2025grokking7b}
+Z.~Li, C.~Fan, and T.~Zhou.
+\newblock Where to Find Grokking in LLM Pretraining?
+\newblock \emph{arXiv:2506.21551}, 2025.
+
+\bibitem{belkin2018reconciling}
+M.~Belkin, D.~Hsu, S.~Ma, and S.~Mandal.
+\newblock Reconciling Modern Machine Learning Practice and the Bias-Variance
+Trade-off.
+\newblock \emph{PNAS}, 116(32):15849--15854, 2019.
+
+\bibitem{davies2023grokking}
+X.~Davies, L.~Langosco, and D.~Krueger.
+\newblock Unifying Grokking and Double Descent.
+\newblock \emph{arXiv:2303.06173}, 2023.
+
+\bibitem{wei2022cot}
+J.~Wei, X.~Wang, D.~Schuurmans, M.~Bosma, B.~Ichter, F.~Xia, E.~Chi,
+Q.V.~Le, and D.~Zhou.
+\newblock Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.
+\newblock \emph{NeurIPS}, 2022.
+
+\bibitem{snell2025scaling}
+C.~Snell, J.~Lee, K.~Xu, and A.~Kumar.
+\newblock Scaling LLM Test-Time Compute Optimally Can Be More Effective Than
+Scaling Model Parameters.
+\newblock \emph{ICLR}, 2025. Oral.
+
+\bibitem{deepseek2025r1}
+DeepSeek-AI, D.~Guo, D.~Yang, et al.
+\newblock DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via
+Reinforcement Learning.
+\newblock \emph{arXiv:2501.12948}, 2025. Published in \emph{Nature}.
+
+\bibitem{muennighoff2025s1}
+N.~Muennighoff, Z.~Yang, W.~Shi, X.L.~Li, L.~Fei-Fei, et al.
+\newblock s1: Simple Test-Time Scaling.
+\newblock \emph{arXiv:2501.19393}, 2025.
+
+\bibitem{wang2023selfconsistency}
+X.~Wang, J.~Wei, D.~Schuurmans, Q.V.~Le, E.~Chi, S.~Narang, A.~Chowdhery,
+and D.~Zhou.
+\newblock Self-Consistency Improves Chain of Thought Reasoning in Language
+Models.
+\newblock \emph{ICLR}, 2023.
+
+\bibitem{yao2023tree}
+S.~Yao, D.~Yu, J.~Zhao, I.~Shafran, T.L.~Griffiths, Y.~Cao, and
+K.~Narasimhan.
+\newblock Tree of Thoughts: Deliberate Problem Solving with Large Language
+Models.
+\newblock \emph{NeurIPS}, 2023.
+
+\end{thebibliography}
+
+\end{document}

@@ -14,7 +14,7 @@ This repository contains a **prompt engineering lab exercise** for a continuing 
 ## Exercise Constraints
 
 - **Duration**: ~30 minutes
-- **Format**: Jupyter Notebook (.ipynb)
+- **Format**: Google Colab notebook (.ipynb, opened in-browser — no local install)
 - **Interaction model**: Students only edit **prompt strings** in designated cells; all Python/API code is pre-built and hidden behind helper functions
 - **LLM provider**: Anthropic Claude API (using the `anthropic` Python SDK)
 - **Gamification**: Every exercise must have automated scoring, clear feedback, and ideally a competitive/progressive element (scores, levels, leaderboards)
@@ -27,26 +27,41 @@ This repository contains a **prompt engineering lab exercise** for a continuing 
 4. **Progressive difficulty** — Start easy, build confidence, then introduce subtlety
 5. **Self-contained** — The notebook should have no external dependencies beyond the API key; all data is embedded in the notebook
 
-## Repository Structure (Planned)
+## Repository Structure
 
 ```
 git_llm_lab/
 ├── CLAUDE.md                                    # This file — project context for AI agents
 ├── README.md                                    # Student-facing instructions
-├── brainstorming_prompt_engineering_exercises.txt # Brainstorming research and ideas
+├── brainstorming_prompt_engineering_exercises.txt # Landscape scan + 7 original ideas
+├── agent_prompt_1_escape_room.md                # Agent brief: Prompt Escape Room exercise
+├── agent_prompt_2_sentiment_arena.md            # Agent brief: Sentiment classification exercise
+├── agent_prompt_3_prompt_golf.md                # Agent brief: Target-matching golf exercise
+├── agent_prompt_4_ceo_briefing.md               # Agent brief: Multi-axis CEO briefing exercise
+├── agent_prompt_5_email_rewriter.md             # Agent brief: A/B email rewriting exercise
 ├── exercise.ipynb                               # The main exercise notebook (to be created)
 └── solutions.ipynb                              # Instructor solutions (to be created)
 ```
+
+## Agent Prompts
+
+Five agent prompt files (`agent_prompt_*.md`) each describe a different exercise concept in detail. Each is designed so that an independent agent can read it + `brainstorming_prompt_engineering_exercises.txt` and produce a complete, detailed plan for a Google Colab notebook. The 5 exercises are:
+
+1. **Prompt Escape Room** — Narrative-driven, 4–5 locked rooms with business scenarios
+2. **Sentiment Arena** — 3-round customer review classification with accuracy scoring
+3. **Prompt Golf** — 4-hole target-matching game with transparent scoring breakdown
+4. **CEO Briefing Challenge** — Multi-axis radar chart scoring on executive summaries
+5. **Email Rewriter** — A/B prompt comparison on business email rewrites
+
+All exercises share the same hard requirements: Google Colab notebook, 30 minutes, zero Python for students, fully automated deterministic validation.
 
 ## Brainstorming Summary
 
 The file `brainstorming_prompt_engineering_exercises.txt` contains:
 - A landscape scan of 10 existing prompt engineering exercises/resources from the internet
 - 7 original exercise ideas designed for this audience
-- A ranked shortlist of the top 3 recommended approaches:
-  1. **"Prompt Escape Room"** — 5 business-themed locked rooms, each solved by crafting the right prompt
-  2. **"The Sentiment Whisperer"** — Classify customer reviews with a single prompt; score = accuracy out of 10
-  3. **"Prompt Golf"** — Match a target output as closely as possible; automated similarity scoring
+- A ranked shortlist of the top 3 recommended approaches
+- Critical requirements around validation and assessment
 
 ## Technical Notes for Implementing Agents
 

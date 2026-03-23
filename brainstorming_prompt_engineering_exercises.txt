@@ -5,9 +5,29 @@ BRAINSTORMING: PROMPT ENGINEERING EXERCISES FOR MANAGERS AT ETH ZURICH
 Target audience : Managers in their 40s–50s, CAS/DAS programme at ETH Zurich
 Prior coding knowledge : Essentially none (they can run a Jupyter cell)
 Time budget : ~30 minutes per exercise
-Delivery medium : Jupyter Notebook (pre-filled scaffolding, minimal Python)
+Delivery medium : Google Colab notebook (.ipynb, runnable in-browser via
+                   Google Colab — no local Python installation required)
 Key pedagogic goals : Hands-on experimentation, intuition building,
                        gamification / fun, immediate feedback loops
+
+CRITICAL REQUIREMENT — CONCRETE VALIDATION / ASSESSMENT
+────────────────────────────────────────────────────────
+Every exercise MUST include an unambiguous, automated way to determine whether
+the student completed the task successfully. This means:
+  - Each task must have a MEASURABLE outcome (a numeric score, a pass/fail
+    check, a correct answer, or a set of criteria checked programmatically)
+  - It must be crystal clear to the student whether they succeeded or not
+  - The validation must NOT rely on subjective human judgment — it must be
+    automated in the notebook code
+  - Examples of acceptable validation:
+      • Score ≥ 8/10 on sentiment classification accuracy
+      • All 5 escape room codes correctly extracted
+      • Output matches target keywords (≥ 80% keyword overlap)
+      • Exact-match on a structured answer (a date, a number, a name)
+  - Examples of UNACCEPTABLE validation:
+      • "Read the output and decide if it looks good"
+      • "Compare your output to the sample and see if it's similar"
+      • Open-ended generation with no scoring rubric
 
 ================================================================================
 PART 1 — LANDSCAPE SCAN OF EXISTING RESOURCES
@@ -346,22 +366,30 @@ the top 3 recommendations are:
 PART 4 — IMPLEMENTATION NOTES FOR FUTURE AGENTS
 ================================================================================
 
-1. The exercise should be delivered as a single Jupyter Notebook (.ipynb)
-2. All API calls should be wrapped in helper functions that students do NOT
+1. The exercise MUST be delivered as a Google Colab notebook (.ipynb) that
+   students open via a shared link — no local installation whatsoever
+2. The first cell must: `!pip install anthropic`, set up the API key
+   (from Colab Secrets or a text input widget), and define ALL helper
+   functions. Students never touch this cell.
+3. All API calls should be wrapped in helper functions that students do NOT
    need to modify
-3. Students interact ONLY by editing prompt strings in designated cells
-4. The notebook should work with the Anthropic Claude API (using the
+4. Students interact ONLY by editing prompt strings in designated cells
+5. The notebook should work with the Anthropic Claude API (using the
    anthropic Python SDK) — this is the LLM provider for the course
-5. Scoring should be automated and immediate (run cell → see score)
-6. Consider using ipywidgets for a nicer UX (text areas, buttons, progress
-   bars) if time permits
-7. The notebook must include a setup cell that installs dependencies and
-   validates the API key
+6. Scoring MUST be automated and immediate (run cell → see score / pass/fail)
+   — this is non-negotiable (see CRITICAL REQUIREMENT above)
+7. Consider using ipywidgets for a nicer UX (text areas, buttons, progress
+   bars) — they work well in Google Colab
 8. All business scenarios should be fictional but realistic
 9. Include a "cheat sheet" appendix with prompt engineering tips that
    students can reference during the exercise
 10. The exercise should be self-contained: no external files needed beyond
-    the notebook itself
+    the notebook itself — all data is embedded as Python strings/dicts
+11. Google Colab specifics: use `google.colab.userdata` for secrets, or
+    `getpass` as a fallback. Avoid dependencies beyond `anthropic`.
+12. Target completion time: 30 minutes. Structure content so a slow reader
+    can finish in time. Err on the side of fewer, deeper challenges rather
+    than many shallow ones.
 
 ================================================================================
 PART 5 — REFERENCES & SOURCES

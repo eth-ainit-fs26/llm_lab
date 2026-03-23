@@ -1,0 +1,764 @@
+% =============================================================================
+%  SECTION 1: WHEN MODELS SURPRISE US
+%  Phase Transitions · Grokking · Test-Time Compute
+%  30-minute session for executive education
+% =============================================================================
+\documentclass[aspectratio=169, 12pt, xcolor=dvipsnames]{beamer}
+
+% --- Theme & Appearance -------------------------------------------------------
+\usetheme{metropolis}
+\setbeamercolor{normal text}{fg=black!85, bg=white}
+\setbeamercolor{alerted text}{fg=BrickRed}
+\setbeamercolor{frametitle}{bg=black!85, fg=white}
+\setbeamertemplate{navigation symbols}{}
+\setbeamerfont{title}{size=\Large, series=\bfseries}
+\setbeamerfont{frametitle}{size=\large, series=\bfseries}
+\setbeamerfont{footnote}{size=\tiny}
+
+% --- Packages -----------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath, amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, decorations.pathreplacing, calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{booktabs}
+\usepackage{appendixnumberbeamer}
+
+% --- Macros -------------------------------------------------------------------
+\newcommand{\bigquote}[1]{%
+  \begin{center}
+    \large\itshape ``#1''
+  \end{center}
+}
+\newcommand{\sourcemark}[1]{\hfill{\tiny\color{gray}#1}}
+
+% --- Metadata -----------------------------------------------------------------
+\title{When Models Surprise Us}
+\subtitle{Phase Transitions, Grokking, and the Test-Time Compute Revolution}
+\author{LLM Lab --- Executive Education Program}
+\date{2026}
+\institute{}
+
+% ==============================================================================
+\begin{document}
+
+% --- SLIDE 1: TITLE ----------------------------------------------------------
+\begin{frame}[plain]
+  \titlepage
+  \note{Welcome. In the next 25 minutes I will show you three phenomena from
+    recent AI research that violate deep intuitions about how learning works.
+    These are not curiosities --- they reshape how we should think about the
+    capabilities, costs, and risks of large language models.}
+\end{frame}
+
+% --- SLIDE 2: SESSION OVERVIEW ------------------------------------------------
+\begin{frame}{The Unifying Thread}
+
+\bigquote{The dynamics of learning in LLMs violate our deepest intuitions.}
+
+\vspace{1em}
+
+\begin{columns}[T]
+  \begin{column}{0.32\textwidth}
+    \centering
+    \textbf{A. Phase Transitions}\\[0.3em]
+    {\small Scale a model 10$\times$ and it\\suddenly writes poetry.}
+  \end{column}
+  \begin{column}{0.32\textwidth}
+    \centering
+    \textbf{B. Grokking}\\[0.3em]
+    {\small A model memorises,\\stalls --- then \emph{understands}.}
+  \end{column}
+  \begin{column}{0.32\textwidth}
+    \centering
+    \textbf{C. Test-Time Compute}\\[0.3em]
+    {\small Let a small model think\\longer and it beats a giant.}
+  \end{column}
+\end{columns}
+
+\note{Three stories, one message: we cannot predict when or how AI systems
+  will acquire new capabilities. Each story challenges a different piece of
+  conventional wisdom. Together, they explain why the last three years of AI
+  research have surprised even the researchers who built the systems.}
+\end{frame}
+
+% ==============================================================================
+%  TOPIC A — PHASE TRANSITIONS IN CAPABILITIES
+% ==============================================================================
+
+% --- SLIDE 3: THE SOUFFLÉ ANALOGY --------------------------------------------
+\begin{frame}{Emergent Abilities: The Souffl\'{e} Problem}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \begin{axis}[
+    width=12cm, height=5.5cm,
+    xlabel={Model scale (parameters)},
+    ylabel={Task accuracy (\%)},
+    xmin=0.5, xmax=4.5,
+    ymin=-5, ymax=105,
+    xtick={1,2,3,4},
+    xticklabels={1B, 10B, 100B, 500B},
+    ytick={0,25,50,75,100},
+    grid=major,
+    grid style={gray!20},
+    legend pos=north west,
+    legend style={font=\small, draw=none, fill=none},
+    every axis plot/.append style={ultra thick},
+  ]
+    % Emergent ability: near-zero then sudden jump
+    \addplot[BrickRed, mark=square*, mark size=3pt] coordinates {
+      (1,2) (2,3) (3,8) (3.5,72) (4,95)
+    };
+    \addlegendentry{3-digit addition (exact match)}
+
+    % Smooth ability
+    \addplot[NavyBlue, mark=triangle*, mark size=3pt, dashed] coordinates {
+      (1,15) (2,35) (3,58) (3.5,74) (4,88)
+    };
+    \addlegendentry{Sentiment analysis}
+  \end{axis}
+\end{tikzpicture}
+\end{center}
+
+\vspace{-0.5em}
+{\small Imagine scaling a recipe: double the flour, double the output.
+Now imagine that at exactly 10$\times$ flour, \alert{the cake spontaneously
+becomes a souffl\'{e}}. That is what Wei et al.\ observed in LLMs.}
+\sourcemark{\cite{wei2022emergent}}
+
+\note{Wei et al.\ documented dozens of tasks where performance was near-zero
+  across many model sizes and then jumped sharply at a critical threshold ---
+  much like a phase transition in physics. The analogy to P.W.\ Anderson's
+  ``More Is Different'' is deliberate: quantitative changes in scale produce
+  qualitative changes in capability.}
+\end{frame}
+
+% --- SLIDE 4: MORE IS DIFFERENT -----------------------------------------------
+\begin{frame}{``More Is Different'' --- From Physics to AI}
+
+\begin{columns}[c]
+  \begin{column}{0.55\textwidth}
+    \begin{tikzpicture}[
+      every node/.style={font=\small},
+      phase/.style={draw, rounded corners, minimum width=3cm,
+                    minimum height=1cm, align=center, thick},
+    ]
+      \node[phase, fill=NavyBlue!15] (water) at (0,0) {Water molecules};
+      \node[phase, fill=NavyBlue!15] (ice) at (0,-2) {Ice crystal};
+      \draw[-{Stealth[length=3mm]}, thick, BrickRed]
+        (water) -- (ice) node[midway, right=5mm]
+        {\alert{Cool below 0\textdegree{}C}};
+
+      \node[phase, fill=Dandelion!20] (small) at (6,0) {7B-param model};
+      \node[phase, fill=Dandelion!20] (large) at (6,-2) {100B-param model};
+      \draw[-{Stealth[length=3mm]}, thick, BrickRed]
+        (small) -- (large) node[midway, right=5mm]
+        {\alert{Scale 10$\times$}};
+
+      \node[font=\footnotesize\itshape, text=gray, anchor=north] at (0,-3.2)
+        {Same H\textsubscript{2}O molecules,\\new macroscopic property};
+      \node[font=\footnotesize\itshape, text=gray, anchor=north] at (6,-3.2)
+        {Same architecture,\\new cognitive capability};
+    \end{tikzpicture}
+  \end{column}
+  \begin{column}{0.42\textwidth}
+    \bigquote{The ability to reduce everything to simple fundamental laws
+      does not imply the ability to start from those laws and reconstruct
+      the universe.}
+
+    \vspace{0.5em}
+    \hfill --- P.W.\ Anderson, 1972 \cite{anderson1972more}
+
+    \vspace{1em}
+    {\small Nobel laureate. The same principle that explains why ice
+    is rigid may explain why GPT-4 can write code.}
+  \end{column}
+\end{columns}
+
+\note{Anderson's 1972 essay in Science is the intellectual ancestor of the
+  emergence framing. He argued that at each level of complexity, entirely new
+  properties appear that cannot be predicted from the laws governing the
+  level below. Wei et al.\ explicitly invoke this framing.}
+\end{frame}
+
+% --- SLIDE 5: THE MIRAGE REBUTTAL ---------------------------------------------
+\begin{frame}{Or Is It a Mirage?}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \begin{axis}[
+    width=12cm, height=5cm,
+    xlabel={Model scale (parameters)},
+    ylabel={Performance},
+    xmin=0.5, xmax=4.5,
+    ymin=-5, ymax=105,
+    xtick={1,2,3,4},
+    xticklabels={1B, 10B, 100B, 500B},
+    ytick={0,25,50,75,100},
+    grid=major,
+    grid style={gray!20},
+    legend pos=south east,
+    legend style={font=\small, draw=none, fill=none},
+    every axis plot/.append style={ultra thick},
+  ]
+    % Exact match: looks emergent
+    \addplot[BrickRed, mark=square*, mark size=3pt] coordinates {
+      (1,0) (2,0) (3,5) (3.5,68) (4,92)
+    };
+    \addlegendentry{Exact string match (discontinuous)}
+
+    % Token edit distance: smooth
+    \addplot[ForestGreen, mark=o, mark size=3pt, dashed] coordinates {
+      (1,12) (2,30) (3,52) (3.5,73) (4,90)
+    };
+    \addlegendentry{Token edit distance (continuous)}
+  \end{axis}
+\end{tikzpicture}
+\end{center}
+
+\vspace{-0.5em}
+\alert{Schaeffer et al.\ (NeurIPS 2023, Outstanding Paper):} 92\% of
+claimed emergent abilities in BIG-Bench appeared only under
+\textbf{discontinuous metrics} (exact match, multiple-choice grade).
+Switch to a continuous metric $\Rightarrow$ smooth, predictable improvement.
+
+\vspace{0.3em}
+{\small The resolution: \emph{some} emergence is real, \emph{some} is
+measurement artifact. Honest and unsatisfying --- which makes it powerful.}
+\sourcemark{\cite{schaeffer2023mirage}}
+
+\note{Schaeffer, Miranda, and Koyejo showed that the choice of evaluation
+  metric can create or destroy the appearance of emergence. Exact string match
+  is binary: the model either nails the answer or gets zero. Token edit
+  distance reveals smooth improvement underneath. 92\% of BIG-Bench emergence
+  claims used discontinuous metrics. The business implication: the truth
+  about what the next model can do is genuinely uncertain --- and both
+  the optimists and the skeptics are partly right.}
+\end{frame}
+
+% --- TRANSITION SLIDE A → B --------------------------------------------------
+\begin{frame}[standout]
+  So capabilities can appear suddenly at scale.\\[1em]
+  But what if a model already \emph{has} the data it needs ---\\
+  and still takes forever to understand it?
+\end{frame}
+
+% ==============================================================================
+%  TOPIC B — GROKKING
+% ==============================================================================
+
+% --- SLIDE 6: THE GROKKING PHENOMENON ----------------------------------------
+\begin{frame}{Grokking: Memorisation $\to$ Stall $\to$ Understanding}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \begin{axis}[
+    width=12cm, height=5.5cm,
+    xlabel={Training epochs},
+    ylabel={Accuracy (\%)},
+    xmin=0, xmax=120,
+    ymin=-5, ymax=105,
+    xtick={0,10,20,40,60,80,100,120},
+    ytick={0,25,50,75,100},
+    grid=major,
+    grid style={gray!20},
+    legend pos=east,
+    legend style={font=\small, draw=none, fill=none},
+    every axis plot/.append style={ultra thick},
+  ]
+    % Training accuracy: quick memorisation
+    \addplot[NavyBlue, mark=none] coordinates {
+      (0,5) (2,20) (5,55) (8,85) (10,98) (15,100) (30,100)
+      (60,100) (90,100) (120,100)
+    };
+    \addlegendentry{Train accuracy}
+
+    % Test accuracy: delayed generalisation
+    \addplot[BrickRed, mark=none, densely dashed] coordinates {
+      (0,5) (2,10) (5,12) (10,12) (20,13) (40,14) (60,15)
+      (80,25) (90,55) (95,80) (100,95) (110,99) (120,100)
+    };
+    \addlegendentry{Test accuracy}
+
+    % Annotation: the stall
+    \draw[decorate, decoration={brace, amplitude=6pt, mirror},
+          thick, gray]
+      (axis cs:15,-8) -- (axis cs:75,-8)
+      node[midway, below=8pt, font=\small\itshape, text=gray]
+      {Every practitioner would stop here};
+
+    % Annotation: the grok
+    \draw[-{Stealth[length=2.5mm]}, thick, BrickRed]
+      (axis cs:88,60) -- (axis cs:93,60)
+      node[right, font=\small] {\alert{Grokking!}};
+  \end{axis}
+\end{tikzpicture}
+\end{center}
+
+\vspace{-0.5em}
+{\small A model memorises every training example, loss goes flat, and
+\emph{long after you would have stopped training} --- generalisation
+appears. \cite{power2022grokking}}
+
+\note{Every ML practitioner in the world would have stopped training at
+  epoch 15. The model had memorised everything. Loss was flat. Budget was
+  burning. And then, at epoch 100, generalisation emerged from nowhere.
+  The entire field's intuition about when to stop training was wrong.}
+\end{frame}
+
+% --- SLIDE 7: FOURIER ANALYSIS -----------------------------------------------
+\begin{frame}{The Shocking Explanation: Fourier Circuits}
+
+\begin{columns}[c]
+  \begin{column}{0.55\textwidth}
+    \begin{tikzpicture}[scale=0.85]
+      % Circle for modular arithmetic
+      \draw[thick, NavyBlue!60] (0,0) circle (2cm);
+
+      % Points on circle
+      \foreach \a/\lab in {0/0, 30/1, 60/2, 90/3, 120/4, 150/5,
+                           180/6, 210/7, 240/8, 270/9, 300/10, 330/11} {
+        \filldraw[NavyBlue] (\a:2) circle (2pt);
+        \node[font=\scriptsize] at (\a:2.4) {\lab};
+      }
+
+      % Rotation arrow for a
+      \draw[-{Stealth[length=2.5mm]}, ultra thick, BrickRed]
+        (0:2) arc[start angle=0, end angle=90, radius=2];
+      \node[BrickRed, font=\small\bfseries] at (45:2.7) {$a$};
+
+      % Rotation arrow for b
+      \draw[-{Stealth[length=2.5mm]}, ultra thick, ForestGreen]
+        (90:2) arc[start angle=90, end angle=210, radius=2];
+      \node[ForestGreen, font=\small\bfseries] at (150:2.7) {$b$};
+
+      % Result
+      \node[font=\small, anchor=north] at (0,-2.7)
+        {$(a + b) \bmod 12$};
+    \end{tikzpicture}
+  \end{column}
+  \begin{column}{0.42\textwidth}
+    \textbf{What the network learns:}
+
+    \vspace{0.5em}
+    \begin{enumerate}
+      \item[\textbf{1.}] Embed inputs as\\
+        $\sin(\omega a), \cos(\omega a)$
+      \item[\textbf{2.}] Compose rotations via\\
+        trig identities:\\
+        {\small $\cos\omega(a{+}b) = \cos\omega a \cos\omega b$\\
+        $\phantom{\cos\omega(a{+}b) =}{} - \sin\omega a \sin\omega b$}
+      \item[\textbf{3.}] Read off $(a{+}b) \bmod p$
+    \end{enumerate}
+
+    \vspace{0.5em}
+    {\small The network independently discovers\\
+    \alert{discrete Fourier analysis}.}
+    \sourcemark{\cite{nanda2023grokking}}
+  \end{column}
+\end{columns}
+
+\note{Nanda et al.\ fully reverse-engineered the algorithm learned by a
+  small transformer on modular addition. The network represents each input as
+  sine and cosine components, composes rotations using trig identities, and
+  reads off the result. Three training phases: memorisation, circuit formation,
+  cleanup. The grokking moment is when weight decay suppresses the inefficient
+  memorisation circuit and the elegant Fourier circuit takes over.}
+\end{frame}
+
+% --- SLIDE 8: GROKKING AT SCALE + UNGROKKING ----------------------------------
+\begin{frame}{Grokking Is Not a Toy Phenomenon}
+
+\begin{columns}[T]
+  \begin{column}{0.48\textwidth}
+    \textbf{Grokking at 7B scale}\\[0.5em]
+    {\small Li et al.\ (2025): ``local grokking'' during standard
+    pretraining of a 7B-parameter model. Different domains (maths, code,
+    commonsense) grok \emph{asynchronously}. Training loss has converged;
+    generalisation improves silently underneath.}
+    \sourcemark{\cite{li2025grokking7b}}
+
+    \vspace{1em}
+    \textbf{Business implication:}\\
+    {\small A model's capabilities may still be\\\emph{emerging} even after
+    training loss has\\plateaued and the budget is spent.}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \textbf{Ungrokking}\\[0.5em]
+    {\small Varma et al.\ (ICLR 2025): grokking can run \emph{in reverse}.
+    A model that has achieved perfect generalisation can regress back to
+    memorisation under changed conditions. Generalisation is not permanent.}
+    \sourcemark{\cite{varma2025grokking}}
+
+    \vspace{1em}
+    \begin{center}
+    \begin{tikzpicture}[font=\small, >=Stealth, thick]
+      \node[draw, rounded corners, fill=NavyBlue!10,
+            minimum width=2.2cm, minimum height=0.8cm] (mem) {Memorise};
+      \node[draw, rounded corners, fill=ForestGreen!10,
+            minimum width=2.2cm, minimum height=0.8cm,
+            below=1cm of mem] (gen) {Generalise};
+      \draw[->, BrickRed] ([xshift=-3mm]mem.south) -- ([xshift=-3mm]gen.north)
+        node[midway, left, font=\scriptsize] {Grok};
+      \draw[->, BrickRed] ([xshift=3mm]gen.north) -- ([xshift=3mm]mem.south)
+        node[midway, right, font=\scriptsize] {Ungrok};
+    \end{tikzpicture}
+    \end{center}
+  \end{column}
+\end{columns}
+
+\note{Li et al.\ showed that grokking is not confined to modular arithmetic
+  on tiny networks --- it happens during real LLM pretraining at the 7B scale.
+  Varma et al.\ showed that grokking is reversible: change the data distribution
+  and the model can ``ungrok,'' losing its generalisation. Together: the path
+  from memorisation to understanding is neither guaranteed nor permanent.}
+\end{frame}
+
+% --- TRANSITION SLIDE B → C --------------------------------------------------
+\begin{frame}[standout]
+  Phase transitions say: \emph{scale changes what a model can do.}\\[0.5em]
+  Grokking says: \emph{time changes what a model understands.}\\[1em]
+  What if we give the model more time --- \emph{at inference}?
+\end{frame}
+
+% ==============================================================================
+%  TOPIC C — THE TEST-TIME COMPUTE REVOLUTION
+% ==============================================================================
+
+% --- SLIDE 9: THE PARADIGM SHIFT ----------------------------------------------
+\begin{frame}{The New Paradigm: Let Models Think Longer}
+
+\begin{center}
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners, thick, minimum width=4cm,
+              minimum height=1.2cm, align=center},
+]
+  \node[box, fill=NavyBlue!10] (old) at (0,0)
+    {\textbf{Old paradigm}\\Make models \emph{bigger}};
+  \node[box, fill=BrickRed!10] (new) at (8,0)
+    {\textbf{New paradigm}\\Let models \emph{think longer}};
+  \draw[-{Stealth[length=4mm]}, ultra thick, BrickRed]
+    (old) -- (new) node[midway, above=3mm] {2024--2025};
+
+  \node[font=\footnotesize, text=gray, align=center, below=5mm of old]
+    {GPT-3 $\to$ GPT-4\\175B $\to$ 1.8T params};
+  \node[font=\footnotesize, text=gray, align=center, below=5mm of new]
+    {o1, DeepSeek-R1, s1\\Same model, more thinking};
+\end{tikzpicture}
+\end{center}
+
+\vspace{1em}
+\textbf{Key result} (Snell et al., ICLR 2025 Oral):\\
+A smaller model using optimal test-time compute can outperform a
+\alert{14$\times$ larger model} in a FLOPs-matched comparison.
+\sourcemark{\cite{snell2025scaling}}
+
+\note{The old playbook was simple: more parameters, more data, more training
+  compute. The new playbook adds a second axis: let the model spend more
+  compute at inference time, essentially letting it think before it answers.
+  Snell et al.\ showed that for problems where the base model has some
+  chance of success, spending FLOPs at test time beats spending them on a
+  bigger model.}
+\end{frame}
+
+% --- SLIDE 10: THE AHA MOMENT -------------------------------------------------
+\begin{frame}{The ``Aha Moment'': Reasoning from Pure Trial and Error}
+
+\begin{center}
+\begin{tikzpicture}[font=\small]
+  % Timeline
+  \draw[ultra thick, NavyBlue!40] (0,0) -- (12,0);
+
+  % Phase labels
+  \node[above, font=\footnotesize\itshape, text=gray] at (2,0.3)
+    {Early RL training};
+  \node[above, font=\footnotesize\itshape, text=gray] at (6,0.3)
+    {Intermediate};
+  \node[above, font=\footnotesize\itshape, BrickRed] at (10,0.3)
+    {The ``aha moment''};
+
+  % Markers
+  \filldraw[NavyBlue] (2,0) circle (3pt);
+  \filldraw[NavyBlue] (6,0) circle (3pt);
+  \filldraw[BrickRed] (10,0) circle (5pt);
+
+  % Speech bubbles
+  \node[draw, rounded corners, fill=gray!5, align=left,
+        text width=3cm, below=0.8cm of {(2,0)}]
+    {\scriptsize Model output:\\``The answer is 42.''};
+
+  \node[draw, rounded corners, fill=gray!5, align=left,
+        text width=3cm, below=0.8cm of {(6,0)}]
+    {\scriptsize Model output:\\``Let me calculate\ldots\\The answer is 42.''};
+
+  \node[draw, rounded corners, fill=BrickRed!8, align=left,
+        text width=3.5cm, below=0.8cm of {(10,0)}]
+    {\scriptsize Model output:\\``\alert{Wait, let me reconsider\ldots}\\
+     I made an error in step 2.\\The answer is 37.''};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5em}
+\textbf{DeepSeek-R1} (2025): trained with \emph{pure} reinforcement
+learning --- no human demonstrations of reasoning.  The model independently
+discovered that \alert{pausing to self-correct improves its answers}.
+Nobody taught it to think step by step. \cite{deepseek2025r1}
+
+\vspace{0.3em}
+{\small\itshape A model trained only to maximise a reward signal independently
+discovers that reflection is useful. Is that metacognition --- or just
+anthropomorphism?}
+
+\note{In DeepSeek's RL training logs, there is a specific inflection point
+  where the model starts writing ``Wait, let me reconsider'' to itself.
+  The team called it the ``aha moment.'' Trained only with reward signals for
+  correct answers, the model discovered that self-correction is useful ---
+  no one showed it chain-of-thought examples. This is one of the most
+  striking findings in recent AI research.}
+\end{frame}
+
+% --- SLIDE 11: BUDGET FORCING -------------------------------------------------
+\begin{frame}{Budget Forcing: Controlling How Long a Model Thinks}
+
+\begin{center}
+\begin{tikzpicture}[
+  font=\small,
+  step/.style={draw, rounded corners, thick, minimum height=0.9cm,
+               align=center, fill=NavyBlue!8},
+]
+  \node[step, minimum width=3cm] (think) at (0,0) {Model thinks\ldots};
+  \node[step, minimum width=3cm] (stop) at (5,0) {About to stop};
+
+  % Branch: inject "Wait"
+  \node[step, fill=BrickRed!10, minimum width=3.5cm] (wait) at (10,1)
+    {Inject ``\alert{Wait}''\\$\Rightarrow$ deeper reasoning};
+
+  % Branch: force stop
+  \node[step, fill=ForestGreen!10, minimum width=3.5cm] (force) at (10,-1)
+    {Inject end-token\\$\Rightarrow$ answer now};
+
+  \draw[-{Stealth}, thick] (think) -- (stop);
+  \draw[-{Stealth}, thick, BrickRed] (stop) -- (wait)
+    node[midway, above, font=\scriptsize] {Need more thought};
+  \draw[-{Stealth}, thick, ForestGreen] (stop) -- (force)
+    node[midway, below, font=\scriptsize] {Budget exhausted};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5em}
+\textbf{s1-32B} (Muennighoff et al., 2025): fine-tuned on only
+\textbf{1,000 examples}, beats OpenAI o1-preview on competition maths
+by up to 27\% using budget forcing at test time. \cite{muennighoff2025s1}
+
+\vspace{0.3em}
+{\small More thinking $\Rightarrow$ better answers. The relationship is
+remarkably clean --- a new scaling axis that is \emph{cheaper} than
+training a larger model.}
+
+\note{Budget forcing is elegant in its simplicity. When the model is about
+  to stop thinking, you suppress the stop token and append ``Wait.'' The
+  model then re-examines its work, often catching errors. s1-32B was trained
+  on just 1,000 curated reasoning traces and beats o1-preview. The implication:
+  you do not always need a bigger model --- you can invest compute at
+  inference time instead.}
+\end{frame}
+
+% --- SLIDE 12: THE SCALING FRONTIER -------------------------------------------
+\begin{frame}{Two Axes of Scaling}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \begin{axis}[
+    width=11cm, height=6cm,
+    xlabel={Train-time compute (pre-training FLOPs)},
+    ylabel={Test-time compute (inference tokens)},
+    xmin=0, xmax=10,
+    ymin=0, ymax=10,
+    xtick=\empty,
+    ytick=\empty,
+    axis lines=left,
+    every axis x label/.style={at={(axis description cs:0.5,-0.05)},
+                                anchor=north},
+    every axis y label/.style={at={(axis description cs:-0.05,0.5)},
+                                anchor=south, rotate=90},
+  ]
+    % Old paradigm arrow
+    \draw[-{Stealth[length=3mm]}, ultra thick, NavyBlue!60]
+      (axis cs:1,1) -- (axis cs:8,1.5);
+    \node[NavyBlue!80, font=\small, anchor=south] at (axis cs:5,1)
+      {GPT-2 $\to$ GPT-3 $\to$ GPT-4};
+
+    % New paradigm arrow
+    \draw[-{Stealth[length=3mm]}, ultra thick, BrickRed]
+      (axis cs:3,1) -- (axis cs:3.5,8);
+    \node[BrickRed, font=\small, anchor=west, align=left] at (axis cs:3.8,5)
+      {o1, o3, DeepSeek-R1\\(same model, more thinking)};
+
+    % Frontier
+    \draw[ultra thick, Dandelion, dashed]
+      (axis cs:1,9) .. controls (axis cs:3,4) and (axis cs:6,2.5)
+      .. (axis cs:9,2);
+    \node[Dandelion!80!black, font=\small\itshape, anchor=south west]
+      at (axis cs:6.5,2.5) {Capability frontier};
+
+    % Optimal region
+    \filldraw[BrickRed!20, opacity=0.4]
+      (axis cs:4,4) circle [x radius=2, y radius=2.5];
+    \node[font=\small, BrickRed!80!black] at (axis cs:4,4) {Optimal?};
+  \end{axis}
+\end{tikzpicture}
+\end{center}
+
+\vspace{-0.5em}
+{\small The capability frontier now has \emph{two dimensions}. The strategic
+question for any organisation deploying LLMs: where on this frontier should
+you invest? \cite{snell2025scaling}}
+
+\note{This is the strategic takeaway for the audience. The old playbook ---
+  just make models bigger --- now competes with a second axis: let models
+  think longer at inference time. The cost structure is different: training
+  is a one-time capital expense, inference compute is a per-query operating
+  expense. Where you invest depends on your use case, volume, and latency
+  tolerance. This is a genuinely new strategic variable.}
+\end{frame}
+
+% --- SLIDE 13: DISCUSSION QUESTIONS -------------------------------------------
+\begin{frame}{Questions to Take Home}
+
+\begin{enumerate}
+  \item[\textbf{1.}] If we cannot predict what the next model will be capable
+    of, \alert{how should organisations plan for AI adoption}?\\
+    {\small (Phase transitions mean capability forecasting is unreliable.)}
+
+  \vspace{0.8em}
+  \item[\textbf{2.}] Grokking suggests that understanding can emerge
+    \emph{long after} the data is memorised.
+    \alert{What does this mean for AI safety}?\\
+    {\small (A model might develop dangerous capabilities after we think
+    training is ``done.'')}
+
+  \vspace{0.8em}
+  \item[\textbf{3.}] Test-time compute trades latency for accuracy.
+    \alert{Which of your business decisions warrant a model that ``thinks
+    longer''}?\\
+    {\small (Not all queries are equal --- when is 30 seconds of thinking
+    worth the cost?)}
+\end{enumerate}
+
+\note{These questions are designed to spark five minutes of discussion.
+  Question 1 connects phase transitions to business strategy. Question 2
+  connects grokking to AI safety --- a model might develop capabilities
+  silently, after training loss has converged. Question 3 connects test-time
+  compute to operational decisions.}
+\end{frame}
+
+% --- SLIDE 14: FURTHER READING -----------------------------------------------
+\begin{frame}{Further Reading}
+
+\small
+\begin{tabular}{@{}p{2.5cm}p{10.5cm}@{}}
+  \toprule
+  \textbf{Topic} & \textbf{Start here} \\
+  \midrule
+  Phase transitions &
+    Wei et al., ``Emergent Abilities of LLMs'' (TMLR 2022) \cite{wei2022emergent}\\
+  & Schaeffer et al., ``Are Emergent Abilities a Mirage?''
+    (NeurIPS 2023) \cite{schaeffer2023mirage}\\[0.5em]
+  Grokking &
+    Power et al., ``Grokking'' (ICLR 2022 Workshop) \cite{power2022grokking}\\
+  & Nanda et al., ``Progress Measures for Grokking'' (ICLR 2023) \cite{nanda2023grokking}\\[0.5em]
+  Test-time compute &
+    DeepSeek-AI, ``DeepSeek-R1'' (2025) \cite{deepseek2025r1}\\
+  & Snell et al., ``Scaling LLM Test-Time Compute'' (ICLR 2025) \cite{snell2025scaling}\\
+  \bottomrule
+\end{tabular}
+
+\vspace{1em}
+Full reading list with accessible summaries in the companion document.
+
+\note{Point the audience to the companion document for the curated reading
+  list with accessible articles, technical papers, and opinion pieces. These
+  six references are the essential starting points.}
+\end{frame}
+
+% --- SLIDE 15: CLOSING --------------------------------------------------------
+\begin{frame}[standout]
+  The dynamics of learning in LLMs\\
+  violate our deepest intuitions.\\[1.5em]
+  {\normalsize Plan accordingly.}
+\end{frame}
+
+% ==============================================================================
+%  BIBLIOGRAPHY
+% ==============================================================================
+\begin{frame}[allowframebreaks]{References}
+  \footnotesize
+  \begin{thebibliography}{99}
+
+    \bibitem{anderson1972more}
+    P.W.\ Anderson.
+    \newblock More Is Different.
+    \newblock \emph{Science}, 177(4047):393--396, 1972.
+
+    \bibitem{wei2022emergent}
+    J.\ Wei, Y.\ Tay, R.\ Bommasani, C.\ Raffel, B.\ Zoph, S.\ Borgeaud
+    et al.
+    \newblock Emergent Abilities of Large Language Models.
+    \newblock \emph{Transactions on Machine Learning Research (TMLR)}, 2022.
+
+    \bibitem{schaeffer2023mirage}
+    R.\ Schaeffer, B.\ Miranda, S.\ Koyejo.
+    \newblock Are Emergent Abilities of Large Language Models a Mirage?
+    \newblock \emph{NeurIPS}, 2023. \textbf{Outstanding Paper Award.}
+
+    \bibitem{berti2025survey}
+    L.\ Berti, F.\ Giorgi, G.\ Kasneci.
+    \newblock Emergent Abilities in Large Language Models: A Survey.
+    \newblock \emph{arXiv:2503.05788}, 2025.
+
+    \bibitem{power2022grokking}
+    A.\ Power, Y.\ Burda, H.\ Edwards, I.\ Babuschkin, V.\ Misra.
+    \newblock Grokking: Generalization Beyond Overfitting on Small Algorithmic
+    Datasets.
+    \newblock \emph{ICLR Workshop}, 2022.
+
+    \bibitem{nanda2023grokking}
+    N.\ Nanda, L.\ Chan, T.\ Lieberum, J.\ Smith, J.\ Steinhardt.
+    \newblock Progress Measures for Grokking via Mechanistic Interpretability.
+    \newblock \emph{ICLR}, 2023. Oral.
+
+    \bibitem{varma2025grokking}
+    V.\ Varma, R.\ Shah, Z.\ Kenton, J.\ Kramar, R.\ Kumar.
+    \newblock Explaining Grokking Through Circuit Efficiency.
+    \newblock \emph{ICLR}, 2025.
+
+    \bibitem{li2025grokking7b}
+    Z.\ Li, C.\ Fan, T.\ Zhou.
+    \newblock Where to Find Grokking in LLM Pretraining?
+    \newblock \emph{arXiv:2506.21551}, 2025.
+
+    \bibitem{deepseek2025r1}
+    DeepSeek-AI, D.\ Guo, D.\ Yang et al.
+    \newblock DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via
+    Reinforcement Learning.
+    \newblock \emph{arXiv:2501.12948}, 2025. Published in \emph{Nature}.
+
+    \bibitem{muennighoff2025s1}
+    N.\ Muennighoff, Z.\ Yang, W.\ Shi, X.L.\ Li, L.\ Fei-Fei et al.
+    \newblock s1: Simple Test-Time Scaling.
+    \newblock \emph{arXiv:2501.19393}, 2025.
+
+    \bibitem{snell2025scaling}
+    C.\ Snell, J.\ Lee, K.\ Xu, A.\ Kumar.
+    \newblock Scaling LLM Test-Time Compute Optimally Can Be More Effective
+    Than Scaling Model Parameters.
+    \newblock \emph{ICLR}, 2025. Oral.
+
+  \end{thebibliography}
+\end{frame}
+
+\end{document}

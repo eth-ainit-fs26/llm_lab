@@ -357,52 +357,110 @@ Time budget: 3 min intro, 5 min build naive agent, 10 min attack phase,
 
 
 ================================================================================
-SELECTION CRITERIA FOR FINAL CHOICE
+REVISED CONSTRAINTS (updated after discussion)
 ================================================================================
 
-When selecting which idea(s) to develop, consider:
+CRITICAL REQUIREMENTS:
+  1. ZERO CODING: Participants only edit natural-language prompts. All code
+     is pre-written in the notebook. They never touch Python.
+  2. LOCAL LLM: No API keys. Notebook downloads a small model (Qwen 2.5 7B
+     Instruct, 4-bit quantized) on Colab free-tier T4 GPU. ~4GB VRAM, ~3 min
+     download. Participants run the setup cell while instructor explains.
+  3. VERIFIABLE OUTCOMES: Every exercise must produce a quantitative score
+     so we can rank participants and declare a winner. No subjective judging.
+  4. 30 MINUTES TOTAL: Including ~5 min for model download (runs during intro).
+     Effective hands-on time: ~20-22 minutes.
+  5. GOOGLE COLAB: Single notebook, no extra infrastructure, no servers.
 
-1. FEASIBILITY IN 30 MIN: Can participants meaningfully engage in the time?
-   Best: Ideas 1, 2, 4, 6, 9 (clear structure, limited scope)
-   Harder: Ideas 3, 5, 7 (need more setup or document prep)
 
-2. WOW FACTOR: Which produces the most visceral reaction?
-   Best: Ideas 4, 2, 10, 1 (dramatic, visual, unexpected)
+================================================================================
+REVISED RANKING (with all constraints applied)
+================================================================================
 
-3. BUSINESS RELEVANCE for finance: Which connects most directly to their work?
-   Best: Ideas 3, 7, 9, 6, 5 (directly maps to finance workflows)
+Each idea is scored on 5 axes (1-5 scale):
+  F = Feasibility with local 7B model + 30 min + Colab
+  V = Verifiability (can we produce a hard number/score?)
+  P = Prompt-only (does it work with zero coding?)
+  W = Wow/entertainment factor
+  R = Relevance to finance managers
 
-4. TECHNICAL ACCESSIBILITY: Can non-coders participate meaningfully?
-   Best: Ideas 1, 2, 4, 6, 8 (natural language config, minimal code)
-   Harder: Ideas 5, 10 (need some technical understanding)
+RANK  IDEA                           F  V  P  W  R  TOTAL  NOTES
+----------------------------------------------------------------------
+ 1    #6 The Negotiation              5  5  5  4  5   24    BEST FIT. Two agents chat (simple),
+                                                             deal terms are scored mechanically,
+                                                             participants only write strategy
+                                                             prompts, head-to-head competition.
 
-5. LAUGH FACTOR: Which is genuinely funny?
-   Best: Ideas 1, 4, 8, 9 (personality-driven humor, absurd situations)
+ 2    #9 Earnings Call Autopsy        4  5  5  5  5   24    Close second. Agents analyze text
+                                                             (within 7B capability), prediction
+                                                             scored vs actual stock move, very
+                                                             finance-relevant, divergent takes
+                                                             are hilarious.
 
-6. LASTING IMPRESSION: Which will they talk about at dinner?
-   Best: Ideas 4, 2, 10, 1 (memorable, dramatic, personal)
+ 3    #1 Board Meeting from Hell      4  3  5  5  4   21    Very funny but hard to score
+                                                             quantitatively. Would need a rubric.
+                                                             Could work as a "fun warm-up" but
+                                                             lacks the competitive scoring edge.
 
-TOP RECOMMENDATIONS TO DEVELOP FURTHER:
-  - IDEA 4 ("AI Dungeon: Finance Crisis") -- highest entertainment + learning
-  - IDEA 1 ("AI Board Meeting") -- most relatable, funniest for this audience
-  - IDEA 9 ("Earnings Call Autopsy") -- most directly relevant to finance
-  - IDEA 2 ("Portfolio Cage Match") -- best gamification, most competitive
+ 4    #7 Compliance Escape Room       4  5  4  3  5   21    Clean F1 scoring, very relevant,
+      (simplified: no adversarial          but less entertaining. Good as a
+       agent, just detection task)          serious/practical exercise.
 
-BACKUP / COMBINATION OPTIONS:
-  - Combine Ideas 1 + 6: Board meeting where agents negotiate with each other
-  - Combine Ideas 3 + 7: Due diligence with adversarial fraud component
-  - Combine Ideas 9 + 8: Agents analyze real companies, then pitch investments
+ 5    #2 Portfolio Cage Match         2  5  4  5  5   21    Amazing concept but needs market sim
+                                                             infrastructure + tool use with local
+                                                             LLM = too complex for Colab setup.
+
+ 6    #4 AI Dungeon: Finance Crisis   2  3  5  5  4   19    Needs capable game master (7B may
+                                                             struggle with state tracking). Hard
+                                                             to score quantitatively. Was #1
+                                                             before constraints changed.
+
+ 7    #8 Startup Pitch Battle         3  3  5  4  3   18    Fun but scoring is subjective.
+                                                             Less directly finance-relevant.
+
+ 8    #10 Rogue AI Stress Test        3  4  2  4  3   16    Needs coding to add guardrails.
+                                                             Doesn't fit "zero coding" constraint.
+
+ 9    #3 Due Diligence Race           2  4  3  4  5   18    RAG pipeline too complex for Colab
+                                                             free tier + local LLM. Great idea
+                                                             but needs bigger infrastructure.
+
+10    #5 Build Your Own Trading Desk  1  4  2  4  5   16    Too technical. Wiring agents needs
+                                                             code. Would confuse this audience.
+
+----------------------------------------------------------------------
+SELECTED FOR DEVELOPMENT:
+  #1 PICK: IDEA 6 -- "THE NEGOTIATION"
+  #2 PICK: IDEA 9 -- "THE EARNINGS CALL AUTOPSY"
+
+WHY THIS PAIR WORKS:
+  - They showcase two DIFFERENT agentic AI patterns:
+    * Negotiation = multi-agent interaction (agents talk to each other)
+    * Earnings Call = parallel analysis (agents independently analyze same data)
+  - Both have rock-solid quantitative scoring
+  - Both are pure prompt-engineering exercises
+  - Both are directly relevant to finance
+  - Together they tell a complete story: "AI agents can interact AND analyze"
+  - If time permits, run Negotiation first (15 min), Earnings Call second (15 min)
+    or pick one depending on the group's energy
+
 
 ================================================================================
 NEXT STEPS FOR DEVELOPMENT AGENTS
 ================================================================================
 
-For each selected idea, the development agents should:
-  1. Create a detailed technical specification (tools, APIs, infrastructure)
-  2. Write the participant-facing instructions (clear, engaging, < 1 page)
-  3. Build a working prototype in a Jupyter notebook or Streamlit app
-  4. Design the scoring/gamification system
-  5. Prepare the "reveal" moments and discussion prompts
-  6. Test with a 30-minute timer to ensure it fits
-  7. Create instructor notes with backup plans if tech fails
-  8. Ensure it works with minimal setup (ideally just a browser + API key)
+Two agents will each build one complete Colab notebook:
+  Agent 1 -> IDEA 6: "The Negotiation" (see agent_prompt_negotiation.md)
+  Agent 2 -> IDEA 9: "The Earnings Call Autopsy" (see agent_prompt_earnings.md)
+
+For each exercise, the agent must:
+  1. Create a SINGLE self-contained Google Colab notebook (.ipynb)
+  2. First cell: pip install + model download (runs during instructor intro)
+  3. All infrastructure code pre-written and hidden (collapsed cells)
+  4. Clearly marked "EDIT HERE" cells where participants write prompts
+  5. One-click "RUN" cell that executes the exercise
+  6. Automatic scoring + formatted results display
+  7. Instructor notes in markdown cells (can be hidden)
+  8. Total runtime under 30 min including setup
+  9. Test on Colab free tier with T4 GPU
+ 10. Include a "CHEAT SHEET" cell with prompt-writing tips

@@ -23,8 +23,8 @@ exists, and always distinguish between "demonstrated in a lab" and
 "happening in production." The goal is informed concern, not panic.
 
 YOUR MISSION:
-Design a complete, slide-by-slide presentation for a 90-minute session
-(including 20 minutes of audience discussion) covering FOUR topics that
+Design a complete, slide-by-slide presentation for a 30-minute session
+(including 5 minutes of audience discussion) covering FOUR topics that
 build on each other in an escalating narrative arc. This section has four
 topics instead of three because they are tightly interlocking.
 
@@ -272,8 +272,8 @@ Engagement suggestions:
   2025, is: not reliably."
 
 CLOSING SYNTHESIS (ESSENTIAL):
-After the four topics, you MUST include a synthesis section that connects
-them into a unified risk framework. The key message is:
+After the four topics, you MUST include a brief synthesis (1-2 slides)
+that connects them into a unified risk framework. The key message is:
 - Each capability alone is manageable.
 - The COMBINATION creates a qualitatively different risk profile.
 - The governance implication: we need evaluation methods that are robust
@@ -304,26 +304,27 @@ A complete, compilable LaTeX Beamer presentation. Requirements:
   slide, topic B slides, transition slide, topic C slides, transition
   slide, topic D slides, closing synthesis slides, discussion questions
   slide, reading list slide, closing slide.
-- The presentation should be approximately 30-35 frames total (this
-  section is longer due to four topics + synthesis).
+- The presentation should be approximately 15-18 frames total (this is a
+  tight 30-minute talk with four topics — be ruthlessly selective, hit
+  only the single most shocking finding per topic).
 
 FILE 2: section4_the_dark_side_companion.txt
 A companion document with:
 1. SESSION OVERVIEW (title, duration, learning objectives, one-paragraph
    summary for the program brochure)
-2. CLOSING SYNTHESIS: A detailed 5-minute closing script that ties all
+2. CLOSING SYNTHESIS: A brief closing script (1-2 minutes) that ties all
    four topics into a unified risk framework with actionable takeaways.
 3. CURATED READING LIST: For each topic, provide:
    - One accessible article (blog post, magazine piece)
    - One technical paper (the most important one)
    - One governance/policy piece
-4. FAQ FOR MANAGERS: Seven anticipated questions from the audience with
+4. FAQ FOR MANAGERS: Five anticipated questions from the audience with
    short, honest answers. Include:
    - At least one "we don't know" answer
    - At least one "this is worse than you think" answer
    - At least one "this is not as bad as it sounds" answer
    - At least one practical "here is what you should do" answer
-5. DISCUSSION QUESTIONS: Seven thought-provoking questions for the
-   20-minute discussion period.
+5. DISCUSSION QUESTIONS: Three thought-provoking questions for the
+   5-minute discussion period.
 
 ================================================================================

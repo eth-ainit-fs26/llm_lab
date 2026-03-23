@@ -15,8 +15,8 @@ specialists. They are intelligent, skeptical, and busy — you must earn their
 attention and hold it.
 
 YOUR MISSION:
-Design a complete, slide-by-slide presentation for a 75-minute session
-(including 15 minutes of audience discussion) covering THREE topics that
+Design a complete, slide-by-slide presentation for a 30-minute session
+(including 5 minutes of audience discussion) covering THREE topics that
 share a common thread: understanding what actually happens inside a large
 language model — the good, the astonishing, and the broken.
 
@@ -190,7 +190,8 @@ A complete, compilable LaTeX Beamer presentation. Requirements:
 - Structure: title slide, session overview, topic A slides, transition
   slide, topic B slides, transition slide, topic C slides, discussion
   questions slide, reading list slide, closing slide.
-- The presentation should be approximately 25-30 frames total.
+- The presentation should be approximately 12-15 frames total (this is a
+  tight 30-minute talk — be ruthlessly selective, one idea per slide).
 
 FILE 2: section2_inside_the_black_box_companion.txt
 A companion document with:
@@ -203,7 +204,7 @@ A companion document with:
 3. FAQ FOR MANAGERS: Five anticipated questions from the audience with
    short, honest answers. Include at least one question where the honest
    answer is "we don't know."
-4. DISCUSSION QUESTIONS: Five thought-provoking questions for the 15-minute
+4. DISCUSSION QUESTIONS: Three thought-provoking questions for the 5-minute
    discussion period.
 
 ================================================================================

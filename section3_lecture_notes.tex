@@ -46,6 +46,10 @@
   colback=warnbg, colframe=Red, fonttitle=\bfseries,
   title={Caution}, breakable, #1}
 
+\newtcolorbox{example}[1][]{%
+  colback=green!5, colframe=OliveGreen, fonttitle=\bfseries,
+  title={Example}, breakable, #1}
+
 % --- Headers ---
 \pagestyle{fancy}
 \fancyhf{}
@@ -119,130 +123,371 @@ day --- no longer means what you thought it did.''
 \section{Topic A: Prediction = Compression = Intelligence}
 % ============================================================================
 
-\subsection{Opening Hook: The Fibonacci Compression}
+\subsection{Opening Hook: Compression as Understanding}
 
+The central claim of Topic A is that \textbf{compression and understanding
+are the same thing}. Before making this rigorous, we build intuition through
+a series of examples. In each one, notice that ``understanding'' a pattern
+is equivalent to finding a short rule that reproduces it.
+
+\begin{example}[title={Example 1: The Fibonacci Sequence}]
 Display the sequence: $1, 1, 2, 3, 5, 8, 13, \;?$
 
-Pause. Let the audience's brains do the work. Then:
+You replaced an infinite list with a two-word rule: \emph{``add the
+previous two.''} Formally, the rule is $a_n = a_{n-1} + a_{n-2}$, with
+$a_1 = a_2 = 1$. This rule is far shorter than the sequence it generates.
+That act of compression \textbf{is} understanding.
+\end{example}
 
-\begin{quote}
-``You just replaced an infinite list with a two-word rule: \emph{add the
-previous two}. That act of compression \textbf{is} understanding. Your
-brain is, at its core, a compression engine.''
-\end{quote}
+\begin{example}[title={Example 2: A Coin Toss vs.\ a Heartbeat}]
+Consider two sequences of 1,000 numbers:
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Sequence A:} Fair coin tosses: $0, 1, 1, 0, 1, 0, 0, 1, 0, 1, \ldots$ --- There is no pattern. Each bit is independent. You cannot do better than recording all 1,000 bits. This sequence is \emph{incompressible}.
+  \item \textbf{Sequence B:} A resting heartbeat: $72, 71, 73, 72, 71, 72, 73, \ldots$ --- The values hover around 72 with small fluctuations. You could compress this to: ``$72 \pm$ small noise.'' Perhaps 50 bits suffice instead of 1,000. The sequence is highly \emph{compressible}.
+\end{itemize}
+The compressible sequence is the one you ``understand'' --- you can describe its generating process. The incompressible one is the one that surprises you at every step.
+\end{example}
 
-This is the intuitive version of the entire Topic A argument. The rest of
-this section makes it rigorous.
+\begin{example}[title={Example 3: Language Itself}]
+Consider the partial sentence: ``The cat sat on the \underline{\hspace{1.5cm}}.'' You can predict with high confidence that the next word is ``mat'' (or ``floor,'' ``chair,'' etc.). Your ability to predict reflects your knowledge of English grammar, common collocations, and the world. If you can predict the next word well, you need fewer bits to encode it --- you have compressed the language.
+
+Now consider: ``Colourless green ideas sleep \underline{\hspace{1.5cm}}.'' If you know Chomsky's famous example, you predict ``furiously.'' If not, the word is surprising --- you need more bits. Your background knowledge (or lack thereof) directly determines your compression rate.
+\end{example}
+
+\begin{example}[title={Example 4: Stock Prices}]
+A sequence of daily closing prices for a stock: \$142, \$145, \$143, \$148, \ldots If a model can predict tomorrow's price better than chance, it can compress the price sequence. To the extent that financial analysts ``understand'' a company's trajectory, they are compressing its price movements into a narrative (``growth stock with seasonal dips''). An analyst who understands the company better compresses its price history into a shorter description --- and makes better predictions.
+\end{example}
+
+\begin{keyinsight}
+In every example, the pattern is the same: \textbf{to understand a
+sequence is to find a short rule that generates it; to find a short rule
+is to compress it; to compress it is to predict the next element}. These
+three operations --- understanding, compression, prediction --- are not
+merely analogous. As we will now show, they are mathematically identical.
+\end{keyinsight}
 
 \begin{speakingnote}
-Do not rush past this moment. The Fibonacci example is doing real
-intellectual work --- it is establishing the intuition that compression and
-understanding are not merely related, but identical. Everything that follows
-is a formalisation of what the audience just experienced in their own heads.
+Do not rush past these examples. They are doing real intellectual work ---
+establishing the intuition that compression and understanding are not
+merely related, but identical. Everything that follows is a formalisation
+of what the audience just experienced in their own heads. Let the audience
+try to compress each example themselves before revealing the rule.
 \end{speakingnote}
 
 
 \subsection{Shannon's Foundational Result (1948)}
 
+We now make the prediction--compression equivalence precise. This requires
+a careful setup of notation and definitions.
+
+\subsubsection{Notation and Setup}
+
+We consider a sequence of symbols $x_1, x_2, x_3, \ldots, x_T$ drawn from
+a finite \textbf{alphabet} $\mathcal{A}$. For natural language, $\mathcal{A}$
+might be the set of all words in English (or, at a lower level, the set of
+all byte values $\{0, 1, \ldots, 255\}$). For a coin toss, $\mathcal{A} =
+\{0, 1\}$.
+
+We use the following notational conventions throughout:
+\begin{itemize}[leftmargin=2em]
+  \item $x_t$ denotes the $t$-th symbol in the sequence, where
+    $t \in \{1, 2, \ldots, T\}$.
+  \item $x_{<t}$ denotes the \textbf{prefix} (history) of the sequence up
+    to but not including position $t$: that is, $x_{<t} = (x_1, x_2,
+    \ldots, x_{t-1})$. For $t = 1$, we define $x_{<1} = \emptyset$ (the
+    empty sequence).
+  \item $x_{\leq t}$ denotes the prefix up to and including position $t$:
+    $x_{\leq t} = (x_1, x_2, \ldots, x_t)$.
+  \item $x_{1:T}$ denotes the full sequence $(x_1, x_2, \ldots, x_T)$.
+  \item $p(x_t \mid x_{<t})$ denotes the \textbf{conditional probability}
+    of symbol $x_t$ given the entire preceding history $x_{<t}$. This is
+    the probability that a particular symbol appears at position $t$,
+    given that we have already observed $x_1, \ldots, x_{t-1}$.
+  \item $\log_2$ denotes the base-2 logarithm. All information-theoretic
+    quantities are measured in \textbf{bits}.
+\end{itemize}
+
+\subsubsection{Shannon Entropy}
+
 \begin{definition}[title={Shannon Entropy}]
-For a discrete random variable $X$ with probability mass function $p$,
-the \textbf{Shannon entropy} is:
+Let $X$ be a discrete random variable taking values in a finite set
+$\mathcal{A} = \{a_1, a_2, \ldots, a_K\}$ with probability mass function
+$p$, so that $p(a_k) = \Pr[X = a_k]$ for each $k \in \{1, \ldots, K\}$.
+The \textbf{Shannon entropy} of $X$ is defined as:
 \[
-H(X) = -\sum_{x} p(x) \log_2 p(x)
+H(X) \;=\; -\sum_{k=1}^{K} p(a_k) \,\log_2 p(a_k)
 \]
-This is the theoretical minimum number of bits required, on average, to
-encode one sample from $X$. It is simultaneously a measure of uncertainty
-(how surprised you will be) and compressibility (how short your codes can be).
+with the convention that $0 \cdot \log_2 0 = 0$ (justified by the
+limit $\lim_{p \to 0^+} p \log_2 p = 0$).
 \end{definition}
 
-Shannon's 1948 paper, ``A Mathematical Theory of Communication,'' proved
-that the optimal code length for a symbol $x_t$ given its history $x_{<t}$
-is:
+\textbf{Interpretation.} $H(X)$ has three equivalent interpretations:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Uncertainty:} $H(X)$ measures how uncertain we are about
+    the outcome of $X$ before observing it. If $X$ is deterministic
+    (one outcome has probability 1), then $H(X) = 0$: no uncertainty.
+    If $X$ is uniformly distributed over $K$ outcomes, then
+    $H(X) = \log_2 K$: maximum uncertainty.
+
+  \item \textbf{Expected surprise:} The quantity $-\log_2 p(x)$ is called
+    the \textbf{surprisal} or \textbf{information content} of outcome $x$.
+    A very likely event ($p(x) \approx 1$) has low surprisal
+    ($-\log_2 p(x) \approx 0$); a rare event ($p(x) \approx 0$) has high
+    surprisal. The entropy $H(X)$ is the \emph{expected} surprisal:
+    $H(X) = \mathbb{E}[-\log_2 p(X)]$.
+
+  \item \textbf{Optimal compression rate:} $H(X)$ is the minimum average
+    number of bits required to encode one draw from $X$ using any lossless
+    code. This is Shannon's source coding theorem (stated precisely in the
+    appendix). You cannot, on average, use fewer than $H(X)$ bits per
+    symbol, and there exist codes (e.g., Huffman codes, arithmetic codes)
+    that come arbitrarily close to this limit.
+\end{enumerate}
+
+\subsubsection{Conditional Entropy and the Prediction--Compression Link}
+
+For sequences, the relevant quantity is the \textbf{conditional entropy}:
+
+\begin{definition}[title={Conditional Entropy}]
+The \textbf{conditional entropy} of $X_t$ given the history $X_{<t}$ is:
 \[
-\ell^*(x_t) = -\log_2 p(x_t \mid x_{<t})
+H(X_t \mid X_{<t}) \;=\; \mathbb{E}_{x_{<t}}\!\left[\,
+  -\sum_{a \in \mathcal{A}} p(a \mid x_{<t}) \,\log_2 p(a \mid x_{<t})
+\,\right]
 \]
+where the outer expectation is over all possible histories $x_{<t}$,
+drawn according to their probability under the true data distribution.
+\end{definition}
 
-This equation is the linchpin of the entire argument. Unpack it carefully
-for the audience:
+$H(X_t \mid X_{<t})$ measures how many bits you need to encode the $t$-th
+symbol, on average, \emph{after} you have already observed the preceding
+symbols. The better you can predict $x_t$ from $x_{<t}$, the lower
+$H(X_t \mid X_{<t})$ is.
 
+\textbf{The fundamental link.} Shannon's result can now be stated
+concisely: for any model $p_\theta$ that assigns conditional probabilities
+$p_\theta(x_t \mid x_{<t})$, the optimal code length for symbol $x_t$
+given history $x_{<t}$ is:
+\[
+\ell^*(x_t \mid x_{<t}) \;=\; -\log_2 p_\theta(x_t \mid x_{<t})
+\]
+This is exact for arithmetic coding (see Section~\ref{sec:arithmetic})
+and approximate for other coding schemes. The equation means:
 \begin{itemize}[leftmargin=2em]
-  \item If you can \textbf{predict} the next symbol with high probability
-    (i.e., $p(x_t \mid x_{<t})$ is close to 1), then $-\log_2 p$ is
-    small, so the optimal code is \textbf{short}. You have compressed the
-    data.
+  \item If $p_\theta(x_t \mid x_{<t})$ is close to 1 (the model is very
+    confident in the correct prediction), then $-\log_2 p_\theta \approx 0$
+    bits: the symbol costs almost nothing to encode. The model has
+    effectively ``known'' what was coming --- it has compressed the data.
 
-  \item If you \textbf{cannot} predict the next symbol (i.e., the
-    distribution is close to uniform), then $-\log_2 p$ is large, and
-    you need many bits. You cannot compress.
+  \item If $p_\theta(x_t \mid x_{<t})$ is close to $1/|\mathcal{A}|$ (the
+    model is essentially guessing uniformly), then
+    $-\log_2 p_\theta \approx \log_2 |\mathcal{A}|$ bits: the symbol
+    costs as many bits as if we had no model at all. No compression.
 
-  \item Therefore: \textbf{better prediction $\Leftrightarrow$ better
-    compression.} These are not two related tasks --- they are the
-    \emph{same} mathematical operation expressed in dual form.
+  \item Therefore: \textbf{better prediction $\Leftrightarrow$ shorter
+    code $\Leftrightarrow$ better compression.} These are not two related
+    tasks --- they are the \emph{same} mathematical operation expressed
+    in dual form.
 \end{itemize}
 
 \begin{keyinsight}
-Shannon's result means that any system that does next-token prediction is
-\emph{implicitly} performing data compression. When we train an LLM to
-minimise cross-entropy loss, we are literally training it to be a better
-compressor. The training objective $\mathcal{L} = -\frac{1}{T}\sum_{t=1}^T
-\log p_\theta(x_t \mid x_{<t})$ is the average code length under the
-model's distribution. Minimising this loss means minimising the number of
-bits needed to encode the training data.
+Any system that does next-token prediction is \emph{implicitly} performing
+data compression. When we train an LLM to minimise the cross-entropy
+loss, we are literally training it to be a better compressor. The
+standard LLM training objective is:
+\[
+\mathcal{L}(\theta) \;=\; -\frac{1}{T}\sum_{t=1}^{T}
+\log_2 p_\theta(x_t \mid x_{<t})
+\]
+where $\theta$ denotes the model parameters, $T$ is the sequence length,
+$x_t$ is the $t$-th token, and $x_{<t}$ is the history. This loss is
+\emph{exactly} the average number of bits per token that the model would
+use to compress the training data via arithmetic coding. Minimising
+$\mathcal{L}(\theta)$ is equivalent to making the model a better
+compressor.
 \end{keyinsight}
 
 \subsection{The Theoretical Chain: Solomonoff, Kolmogorov, Hutter}
 
-Shannon established prediction $=$ compression. The next link in the chain
-connects compression to intelligence itself. This requires three theorists:
+Shannon established that prediction and compression are two views of the
+same operation. The next link in the chain connects compression to
+intelligence itself. This requires three theorists and three decades.
 
-\textbf{Kolmogorov Complexity} (Kolmogorov, 1963; Solomonoff, 1960; Chaitin, 1966):
+\subsubsection{Kolmogorov Complexity (1963)}
 
 \begin{definition}[title={Kolmogorov Complexity}]
-The \textbf{Kolmogorov complexity} $K(x)$ of a string $x$ is the length
-of the shortest program (on a fixed universal Turing machine) that outputs
-$x$ and halts:
+Fix a universal Turing machine $U$ (a Turing machine that can simulate
+any other Turing machine given the appropriate program as input). The
+\textbf{Kolmogorov complexity} of a finite binary string $x$, denoted
+$K_U(x)$, is the length (in bits) of the shortest program $\pi$ that,
+when executed on $U$, outputs exactly $x$ and then halts:
 \[
-K(x) = \min_{p:\; U(p) = x} |p|
+K_U(x) \;=\; \min\bigl\{\,|\pi| \;:\; \pi \in \{0,1\}^*,\;
+U(\pi) = x\,\bigr\}
 \]
-This is the ultimate compression: find the shortest possible description
-of the data.
+where $|\pi|$ denotes the length of program $\pi$ in bits, $\{0,1\}^*$
+is the set of all finite binary strings, and $U(\pi) = x$ means that
+$U$ run on input $\pi$ produces output $x$ and halts.
 \end{definition}
 
-Kolmogorov complexity is uncomputable (this is a theorem, related to the
-halting problem). But it provides the theoretical ideal that all
-compression algorithms approximate.
-
-\textbf{Solomonoff Induction} (Solomonoff, 1964):
-
-Solomonoff showed that the optimal way to predict the next symbol in a
-sequence is to consider \emph{all} possible programs that could generate
-the observed prefix, weighted by their length (shorter programs get
-exponentially more weight). This is a Bayesian mixture over computable
-hypotheses:
-\[
-p_{\text{Sol}}(x_{t+1} \mid x_{\leq t}) = \sum_{\text{programs } q:\;
-q \text{ outputs } x_{\leq t}\ldots} 2^{-|q|}
-\cdot \mathbb{1}[q \text{ outputs } x_{t+1} \text{ next}]
-\]
-(Simplified; the actual formulation uses a universal semimeasure.)
-
-Solomonoff induction is the theoretically optimal predictor. It is also
-uncomputable. But it establishes the \emph{identity}: optimal prediction
-= optimal compression = Bayesian reasoning over all possible explanations.
-
-\textbf{AIXI} (Hutter, 2000, 2005):
-
-Marcus Hutter extended Solomonoff induction to the \emph{agent} setting.
-AIXI is a theoretical agent that:
+\textbf{Key properties:}
 \begin{enumerate}[leftmargin=2em]
-  \item Maintains a Solomonoff-style model of the environment
-  \item Selects actions that maximise expected future reward
-  \item Achieves theoretically optimal performance in \emph{any}
-    computable environment
+  \item \textbf{Invariance theorem.} For any two universal Turing machines
+    $U_1, U_2$, $|K_{U_1}(x) - K_{U_2}(x)| \leq c$ for some constant $c$
+    that depends on $U_1, U_2$ but not on $x$. So $K(x)$ is well-defined
+    up to an additive constant, and we write $K(x)$ without specifying $U$.
+
+  \item \textbf{Uncomputability.} $K(x)$ is not computable: there exists
+    no algorithm that takes $x$ as input and returns $K(x)$. (See proof
+    sketch in the appendix.) This is why we use \emph{approximations} to
+    $K(x)$ --- gzip, PNG, FLAC, and language models are all compressors
+    that approximate $K(x)$ from above.
+
+  \item \textbf{Incompressible strings.} A string $x$ of length $n$ is
+    \emph{incompressible} if $K(x) \geq n$: no program shorter than the
+    string itself can produce it. A counting argument shows that the
+    majority of $n$-bit strings are incompressible (or nearly so). Truly
+    random data cannot be compressed.
 \end{enumerate}
 
+\subsubsection{Solomonoff Induction (1964)}
+
+Ray Solomonoff asked: what is the \emph{optimal} way to predict the next
+symbol in a sequence, if you have unlimited computational resources?
+His answer constitutes one of the deepest results in the theory of
+inference.
+
+\begin{definition}[title={Solomonoff's Universal Prior}]
+Fix a prefix-free universal Turing machine $U$. (A machine is
+\emph{prefix-free} if no valid program is a prefix of another valid
+program; this is a technical condition ensuring that probabilities sum
+to at most 1.) The \textbf{Solomonoff prior} (also called the
+\emph{universal prior} or \emph{algorithmic probability}) of a finite
+binary string $x$ is:
+\[
+M(x) \;=\; \sum_{\substack{\pi \in \{0,1\}^*:\\
+  U(\pi) \text{ outputs a string}\\ \text{beginning with } x}}
+  2^{-|\pi|}
+\]
+In words: $M(x)$ is the probability that $U$, when given a \emph{random}
+program (each bit chosen independently with probability $\frac{1}{2}$),
+produces output that starts with $x$.
+\end{definition}
+
+\textbf{Prediction via the universal prior.} Given an observed sequence
+$x_{1:t} = (x_1, x_2, \ldots, x_t)$, Solomonoff induction predicts the
+next symbol $x_{t+1}$ using the conditional distribution derived from $M$:
+\[
+p_{\text{Sol}}(x_{t+1} \mid x_{1:t})
+\;=\; \frac{M(x_{1:t} \cdot x_{t+1})}{M(x_{1:t})}
+\]
+where $x_{1:t} \cdot x_{t+1}$ denotes the concatenation of $x_{1:t}$ and
+$x_{t+1}$, and the ratio is well-defined whenever $M(x_{1:t}) > 0$.
+Intuitively, this computes the fraction of ``algorithmic probability
+mass'' of programs that, having produced $x_{1:t}$ so far, continue by
+outputting $x_{t+1}$.
+
+\textbf{Why this is optimal.} Solomonoff proved a remarkable convergence
+result: $M$ \emph{dominates} every computable probability distribution.
+Formally, for any computable measure $\mu$ on infinite binary sequences,
+there exists a constant $c_\mu > 0$ (depending on $\mu$ but not on $x$)
+such that:
+\[
+M(x) \;\geq\; c_\mu \cdot \mu(x) \qquad \text{for all finite strings } x.
+\]
+This means that Solomonoff's predictor converges to the true data-generating
+distribution $\mu$ at a rate of $O(K(\mu) / t)$ in terms of expected
+KL divergence per step, regardless of what $\mu$ is --- as long as $\mu$
+is computable. In other words, Solomonoff induction is the best possible
+general-purpose predictor: it learns any computable pattern, and it does
+so as fast as is theoretically possible (up to the constant $K(\mu)$,
+which is the Kolmogorov complexity of the true distribution).
+
+\textbf{Connection to compression.} Solomonoff induction implicitly
+performs compression: programs that are short (i.e., that compress the data
+well) receive exponentially more weight ($2^{-|\pi|}$). The prediction is
+dominated by the simplest (most compressive) explanations consistent with
+the data. This is Occam's razor, formalised.
+
+\textbf{Uncomputability.} Like $K(x)$, the Solomonoff prior $M(x)$ is
+uncomputable --- computing it would require summing over all programs,
+which is equivalent to solving the halting problem. Solomonoff induction
+is a theoretical ideal, not a practical algorithm. But it provides the
+gold standard against which all practical prediction methods ---
+including neural language models --- can be measured.
+
+
+\subsubsection{AIXI: Universal Artificial Intelligence (Hutter, 2000, 2005)}
+
+Shannon showed that prediction = compression. Solomonoff showed that the
+optimal predictor is the one that implicitly finds the shortest programs
+(best compressions) consistent with the data. But prediction alone is not
+intelligence: intelligence also requires \emph{acting in an environment to
+achieve goals}. Marcus Hutter's AIXI framework (2000, monograph 2005)
+extends Solomonoff induction from passive prediction to active,
+goal-directed agency.
+
+\textbf{The agent--environment setup.} Consider an agent interacting with
+an environment over discrete time steps $t = 1, 2, 3, \ldots$ The
+interaction proceeds as follows:
+\begin{enumerate}[leftmargin=2em]
+  \item At each time step $t$, the agent chooses an \textbf{action}
+    $a_t \in \mathcal{A}$ from a finite set of possible actions.
+  \item The environment responds with an \textbf{observation}
+    $o_t \in \mathcal{O}$ and a \textbf{reward}
+    $r_t \in \mathcal{R} \subset \mathbb{R}$.
+  \item The agent's goal is to choose a sequence of actions
+    $a_1, a_2, a_3, \ldots$ that maximises the total expected
+    future reward $\sum_{t=1}^{\infty} r_t$ (or a discounted variant).
+\end{enumerate}
+The environment is modelled as a function (possibly stochastic) that maps
+the history of actions and observations so far to the next observation and
+reward. The agent does not know the environment's dynamics in advance; it
+must learn from interaction.
+
+\textbf{The AIXI agent.} AIXI combines Solomonoff induction (for learning
+the environment) with expectimax planning (for choosing optimal actions).
+At each time step $t$, having observed history $h_{<t} = (a_1, o_1, r_1,
+\ldots, a_{t-1}, o_{t-1}, r_{t-1})$, AIXI selects the action:
+\[
+a_t^{\text{AIXI}} \;=\; \arg\max_{a_t} \sum_{o_t, r_t}
+  \left[\, r_t + \max_{a_{t+1}} \sum_{o_{t+1}, r_{t+1}}
+  \left[\, r_{t+1} + \cdots \,\right]
+  \cdot M(o_{t:m}, r_{t:m} \mid h_{<t}, a_{t:m}) \,\right]
+\]
+where $m$ is the planning horizon and $M(\cdot \mid \cdot)$ is the
+Solomonoff-style universal mixture over all computable environment
+models. In words: AIXI considers all possible futures (all possible
+sequences of observations and rewards), weighs them by the universal
+prior (which favours simple, compressive environment models), and
+chooses the action that maximises expected cumulative reward under this
+mixture.
+
+\textbf{Optimality.} Hutter proved that AIXI is \emph{Pareto optimal}
+in the following sense: no other agent can achieve higher expected reward
+than AIXI in \emph{any} computable environment without achieving lower
+expected reward in some other computable environment. In simpler terms,
+AIXI is the best possible general-purpose agent --- it learns any
+computable environment as fast as theoretically possible and acts
+optimally given its knowledge.
+
+\textbf{Why this closes the chain.} AIXI establishes the final link:
+\begin{enumerate}[leftmargin=2em]
+  \item Shannon (1948): Prediction = Compression.
+  \item Solomonoff (1964): Optimal prediction requires optimal compression
+    (finding the shortest programs consistent with the data).
+  \item Hutter (2000, 2005): Optimal compression, combined with
+    expectimax planning, yields the most intelligent possible agent.
+    Therefore: Prediction = Compression = Intelligence.
+\end{enumerate}
+Like Solomonoff induction, AIXI is uncomputable. It is a mathematical
+ideal, not a blueprint for building an AI system. But it provides the
+theoretical foundation for a striking claim: \emph{any system that
+improves at next-token prediction is, in a precise mathematical sense,
+becoming more generally intelligent}.
+
 \begin{keyinsight}
-The AIXI result closes the chain:
+The prediction--compression--intelligence chain is now complete:
 
 \begin{center}
 \begin{tikzpicture}[
@@ -269,11 +514,11 @@ in the precise Hutter sense.
 \end{keyinsight}
 
 \begin{speakingnote}
-For this audience, you do not need to derive Solomonoff induction.
-The key message is: ``There is a chain of mathematical results, published
-over 60 years, that proves prediction, compression, and intelligence are
-the same thing. This is not a metaphor. It is as rigorous as the claim that
-addition and subtraction are inverse operations.''
+For a non-specialist audience, you do not need to present AIXI's
+mathematical details. The key message is: ``There is a chain of
+mathematical results, published over 60 years, proving that prediction,
+compression, and intelligence are the same thing. This is not a metaphor.
+It is a theorem.''
 \end{speakingnote}
 
 
@@ -284,13 +529,84 @@ performed a deceptively simple experiment: they used language models as
 general-purpose compressors and compared them to domain-specific
 compression algorithms.
 
-\textbf{Method.} Any probabilistic model $p_\theta$ can be turned into a
-compressor via arithmetic coding: encode symbol $x_t$ using
-$-\log_2 p_\theta(x_t \mid x_{<t})$ bits. The better the model predicts,
-the fewer bits it uses. D\'{e}letang et al.\ fed raw bytes of images
-(ImageNet patches) and audio (LibriSpeech) through Chinchilla 70B --- a
-model trained \emph{exclusively on text} --- and measured the resulting
-compression ratios.
+\subsubsection{Arithmetic Coding: Turning Predictions into Compression}
+\label{sec:arithmetic}
+
+The key technical idea is \textbf{arithmetic coding}, an algorithm that
+converts any probabilistic model into a lossless compressor. We explain it
+step by step.
+
+\textbf{Setup.} Suppose we want to encode a sequence $x_1, x_2, \ldots,
+x_T$ over alphabet $\mathcal{A}$, and we have a model
+$p_\theta$ that, for each position $t$, assigns a conditional distribution
+$p_\theta(\cdot \mid x_{<t})$ over the next symbol.
+
+\textbf{The algorithm.} Arithmetic coding works by maintaining a
+\emph{subinterval} of $[0, 1)$ that narrows as each symbol is encoded:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Initialise:} Set the current interval to $[0, 1)$.
+  \item \textbf{For each symbol $x_t$ ($t = 1, 2, \ldots, T$):}
+    query the model for $p_\theta(\cdot \mid x_{<t})$; partition the
+    current interval into sub-intervals with widths proportional to the
+    probabilities $p_\theta(a \mid x_{<t})$ for each $a \in \mathcal{A}$;
+    then select the sub-interval corresponding to the actual symbol $x_t$.
+    This becomes the new current interval.
+  \item \textbf{Output:} Any binary fraction within the final interval
+    uniquely identifies the encoded sequence. The number of bits needed
+    is approximately $-\log_2 w$, where $w$ is the final interval width.
+\end{enumerate}
+
+\textbf{Code length analysis.} After encoding all $T$ symbols, the width
+of the final interval is:
+\[
+\text{width} \;=\; \prod_{t=1}^{T} p_\theta(x_t \mid x_{<t})
+\]
+The number of bits required is:
+\[
+L(x_{1:T}) \;=\; \lceil -\log_2 \text{width} \rceil + 1
+\;=\; \left\lceil \sum_{t=1}^{T} \bigl(-\log_2 p_\theta(x_t \mid
+x_{<t})\bigr) \right\rceil + 1
+\]
+The $+1$ is a technical overhead that becomes negligible for long
+sequences. The key insight: \textbf{each symbol $x_t$ contributes
+exactly $-\log_2 p_\theta(x_t \mid x_{<t})$ bits to the compressed
+length.} If the model predicts $x_t$ with high probability, its
+contribution is small (cheap to encode). If the model is surprised by
+$x_t$, its contribution is large (expensive to encode).
+
+\textbf{Optimality.} If $p_\theta$ equals the true data distribution
+$p^*$, then arithmetic coding achieves the entropy rate --- the
+information-theoretically optimal compression. If $p_\theta$ differs from
+$p^*$, the code length exceeds the optimum by exactly the
+KL divergence:
+\[
+\frac{1}{T}\sum_{t=1}^{T}\bigl(-\log_2 p_\theta(x_t \mid x_{<t})\bigr)
+\;=\; H(X_t \mid X_{<t}) + D_{\text{KL}}(p^* \| p_\theta)
+\]
+where $H$ is the true conditional entropy and $D_{\text{KL}} \geq 0$ is
+the KL divergence between the true and model distributions (averaged over
+time steps). A perfect model ($D_{\text{KL}} = 0$) achieves perfect
+compression.
+
+
+\subsubsection{The D\'{e}letang et al.\ Experiment}
+
+\textbf{Method.} D\'{e}letang et al.\ applied arithmetic coding using
+Chinchilla 70B (a large language model trained exclusively on text) as
+the predictive model $p_\theta$. They fed raw bytes of data from domains
+the model had never encountered during training:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Images:} Patches from ImageNet, converted to raw byte
+    sequences (pixel values).
+  \item \textbf{Audio:} Clips from LibriSpeech, converted to raw byte
+    sequences (audio samples).
+\end{itemize}
+
+The model processes these bytes exactly as it would process text: one
+byte at a time, predicting the next byte given all previous bytes.
+The resulting conditional probabilities are fed into an arithmetic coder
+to produce the compressed output.
 
 \textbf{Results:}
 
@@ -321,12 +637,14 @@ was never exposed to.
 
 \textbf{Why does this work?} The intuition is that all structured data ---
 images, audio, text, code --- shares deep statistical regularities.
-Natural images have spatial correlations (nearby pixels are similar),
-frequency structure (smooth regions with sharp edges), and semantic
-structure (objects, textures). Audio has temporal correlations, harmonic
-structure, and phonemic patterns. Text describes all of these things. A
-model that deeply understands the \emph{structure of descriptions} of
-images has, in some sense, learned the structure of images themselves.
+Natural images have spatial correlations (nearby pixels tend to have
+similar values), frequency structure (smooth regions with sharp edges),
+and semantic structure (objects, textures, scenes). Audio has temporal
+correlations, harmonic structure, and phonemic patterns. Text
+\emph{describes} all of these phenomena. A model that deeply learns the
+statistical structure of natural language --- which describes images,
+sounds, physical processes, and abstract concepts --- has implicitly
+learned regularities shared by the underlying data.
 
 More formally: if the model learns a good approximation to the universal
 prior (the Solomonoff distribution), it should compress \emph{any}
@@ -338,13 +656,14 @@ close to a universal compressor.
 language model loss (= compression rate) follows clean power laws in
 model size, dataset size, and compute:
 \[
-L(N) \approx \left(\frac{N_c}{N}\right)^{\alpha_N}
+L(N) \;\approx\; \left(\frac{N_c}{N}\right)^{\!\alpha_N}
 \]
-where $N$ is the number of parameters and $\alpha_N \approx 0.076$.
-These power laws \emph{are} compression improvement curves. Each order of
-magnitude in scale buys a predictable, diminishing improvement in
-compression. The scaling laws tell us that we are on a smooth trajectory
-toward better and better approximations of the universal compressor.
+where $N$ is the number of model parameters, $N_c$ is a fitted constant,
+and $\alpha_N \approx 0.076$. These power laws \emph{are} compression
+improvement curves: each order of magnitude in scale buys a predictable,
+diminishing improvement in compression rate. The scaling laws tell us
+that we are on a smooth trajectory toward better and better
+approximations of the universal compressor.
 
 
 \subsection{The Philosophical Punchline of Topic A}
@@ -443,31 +762,173 @@ of reality's statistical structure, and all sufficiently powerful learners
 discover it.
 \end{keyinsight}
 
-\textbf{Evidence presented by Huh et al.:}
+\subsection{How the Evidence Is Measured}
+
+Huh et al.\ use two main quantitative tools to measure whether different
+models' internal representations are converging: \textbf{Centred Kernel
+Alignment (CKA)} and \textbf{mutual nearest neighbours (MNN)}. We explain
+each.
+
+\subsubsection{Centred Kernel Alignment (CKA)}
+
+\begin{definition}[title={Centred Kernel Alignment}]
+Let $\mathbf{X} \in \mathbb{R}^{n \times p}$ and $\mathbf{Y} \in
+\mathbb{R}^{n \times q}$ be two \textbf{representation matrices}, where
+$n$ is the number of data points (e.g., images or sentences), $p$ is the
+representation dimension of model A, and $q$ is the representation
+dimension of model B. Each row of $\mathbf{X}$ is model A's internal
+representation (e.g., the hidden-state vector at a particular layer) of
+the $i$-th data point; similarly for $\mathbf{Y}$ and model B.
+
+The (linear) \textbf{CKA} between these representations is defined as:
+\[
+\operatorname{CKA}(\mathbf{X}, \mathbf{Y})
+\;=\; \frac{\|\mathbf{Y}^\top \mathbf{X}\|_F^2}
+  {\|\mathbf{X}^\top \mathbf{X}\|_F \;\cdot\;
+   \|\mathbf{Y}^\top \mathbf{Y}\|_F}
+\]
+where $\|\cdot\|_F$ denotes the Frobenius norm:
+$\|\mathbf{A}\|_F = \sqrt{\sum_{i,j} A_{ij}^2}$.
+\end{definition}
+
+\textbf{Interpretation.}
+\begin{itemize}[leftmargin=2em]
+  \item $\operatorname{CKA} = 1$ means the two representations encode
+    the same information about the data (up to a linear transformation).
+  \item $\operatorname{CKA} = 0$ means the representations are completely
+    unrelated.
+  \item CKA is \textbf{invariant to orthogonal transformations and
+    isotropic scaling}: if you rotate model B's representation space or
+    scale it uniformly, CKA does not change. This makes it appropriate
+    for comparing models with different architectures and dimensionalities,
+    because a representation can be ``the same'' even if it is expressed in
+    a different coordinate system.
+\end{itemize}
+
+\textbf{How Huh et al.\ use it.} For each pair of models (e.g., a vision
+Transformer and a language model), they feed the same set of $n$ inputs
+through both models, extract internal representations (hidden states at a
+particular layer), form the matrices $\mathbf{X}$ and $\mathbf{Y}$, and
+compute CKA. They repeat this for models of varying sizes and observe
+that CKA \emph{increases} as both models get larger. Small models have
+idiosyncratic representations; large models converge.
+
+
+\subsubsection{Mutual Nearest Neighbours (MNN)}
+
+CKA measures global, linear similarity between representation spaces. MNN
+captures a complementary, local notion of alignment.
+
+\begin{definition}[title={Mutual Nearest Neighbours}]
+Given two sets of representations for the same $n$ data points ---
+$\{\mathbf{x}_1, \ldots, \mathbf{x}_n\}$ from model A and
+$\{\mathbf{y}_1, \ldots, \mathbf{y}_n\}$ from model B --- the
+\textbf{mutual nearest-neighbour score} is computed as follows:
+\begin{enumerate}[leftmargin=1.5em]
+  \item For each data point $i$, find its $k$ nearest neighbours in model
+    A's representation space. Call this set $\mathcal{N}_A(i)$.
+  \item Similarly, find its $k$ nearest neighbours in model B's space:
+    $\mathcal{N}_B(i)$.
+  \item Compute the overlap: $\operatorname{MNN}_k(i) =
+    |\mathcal{N}_A(i) \cap \mathcal{N}_B(i)| / k$.
+  \item Average over all data points:
+    $\operatorname{MNN}_k = \frac{1}{n}\sum_{i=1}^{n}
+    \operatorname{MNN}_k(i)$.
+\end{enumerate}
+Here ``nearest neighbours'' are determined by cosine similarity or
+Euclidean distance in the respective representation spaces. The parameter
+$k$ is typically set to a small value (e.g., $k = 10$).
+\end{definition}
+
+\textbf{Interpretation.} If two models organise their representations
+similarly, then data points that are ``close together'' in one model's
+space should also be close together in the other's. A high MNN score
+means the local neighbourhood structure is preserved across models.
+A low MNN score (close to $k/n$, the chance level) means the
+representations organise data in fundamentally different ways.
+
+\textbf{Why MNN matters.} CKA captures global, linear structure, but can
+miss local differences (e.g., two representations might have the same
+overall covariance structure but differ in fine-grained neighbourhood
+structure). MNN captures exactly this fine-grained structure. The fact
+that \emph{both} CKA and MNN increase with scale strengthens the
+convergence claim.
+
+
+\subsubsection{Cross-Model and Cross-Modality Evidence}
+
+Huh et al.\ report three key findings, all measured using CKA and MNN:
 
 \begin{enumerate}[leftmargin=2em]
-  \item \textbf{Cross-model alignment increases with scale.} When you
-    measure the similarity of internal representations between pairs of
-    models (using metrics like CKA --- Centred Kernel Alignment, or
-    mutual nearest neighbours), the similarity \emph{increases} as both
-    models get larger. Small models are idiosyncratic; large models
-    converge.
+  \item \textbf{Cross-model alignment increases with scale.} Pairs of
+    vision models (e.g., different ResNets, Vision Transformers, DINO
+    models) show increasing CKA and MNN as both models are scaled up.
+    The same holds for pairs of language models.
 
-  \item \textbf{Cross-modality alignment.} Vision models and language
-    models, despite processing entirely different data types, develop
-    increasingly aligned representation spaces. A concept like ``dog''
-    occupies a similar geometric position in the representation space of
-    a vision model and a language model.
+  \item \textbf{Cross-modality alignment increases with scale.} Even
+    vision models and language models --- processing entirely different
+    data types --- develop increasingly aligned representation spaces.
+    To measure this, Huh et al.\ use paired datasets where each data
+    point has both a visual and a textual representation (e.g., an image
+    and its caption). They extract model A's representation of the image
+    and model B's representation of the caption, and compute CKA/MNN.
+    The alignment increases with scale.
 
-  \item \textbf{The ``kernel hypothesis.''} Huh et al.\ argue that the
-    convergence point is the statistical structure of reality itself ---
-    specifically, the kernel of the joint distribution over all possible
-    sensory modalities. If you had access to the full joint distribution
-    $p(\text{text}, \text{image}, \text{audio}, \text{video},$ $\ldots)$,
-    its structure would determine a unique (up to isomorphism)
-    representation. All models are approximating this structure from
-    different marginals.
+  \item \textbf{Convergence toward a common point.} The pattern is not
+    just pairwise: multiple models appear to converge toward a single
+    shared representation, suggesting a unique attractor in
+    representation space.
 \end{enumerate}
+
+
+\subsection{The Kernel Hypothesis}
+
+Huh et al.\ propose a theoretical explanation for why convergence occurs.
+Their argument, which they call the \textbf{kernel hypothesis}, proceeds
+as follows.
+
+\textbf{Setup.} Suppose reality can be described by a joint distribution
+over all possible sensory modalities:
+\[
+p^*(\text{text}, \text{image}, \text{audio}, \text{video}, \ldots)
+\]
+This is the ``true'' joint distribution over everything that could be
+observed. No single model sees all modalities; each model is trained on a
+\emph{marginal} (a subset of modalities). A language model sees the
+text marginal $p^*(\text{text})$; a vision model sees the image marginal
+$p^*(\text{image})$.
+
+\textbf{The kernel.} Different modalities are not independent --- they are
+all generated by the same underlying reality. For instance, the visual
+appearance of a cat, the word ``cat,'' the sound of a meow, and a video
+of a cat playing are all \emph{different projections of the same
+underlying entity}. The \textbf{kernel} of the joint distribution is the
+shared structure that is common to all modalities --- informally, it is
+the ``shape of reality'' that remains after you strip away
+modality-specific details.
+
+More formally, consider the pointwise mutual information (PMI) matrix
+between items across modalities. The \emph{kernel} of this matrix ---
+the subspace spanned by its dominant eigenvectors --- captures the shared
+statistical structure. Huh et al.\ argue that as models become more
+powerful, they learn to represent this kernel, because the kernel captures
+the regularities that are most useful for prediction \emph{regardless of
+modality}.
+
+\textbf{Why convergence occurs.} A sufficiently powerful model, trained
+on \emph{any} modality, will eventually discover the kernel of the joint
+distribution, because that kernel is the structure most useful for
+prediction (and therefore compression). Since the kernel is unique (a
+property of reality, not of the model), all sufficiently powerful models
+converge on the same representation.
+
+\textbf{Analogy.} Imagine three artists --- one blind, one deaf, one
+limited to touch --- each trying to represent a sculpture. The blind
+artist works from descriptions; the deaf artist from photographs; the
+touch-limited artist from physical contact. If they are skilled enough,
+their representations will converge on the same underlying 3D shape,
+because that shape is the common cause of all their sensory data. The
+kernel hypothesis says AI models are doing the same thing.
 
 
 \subsection{Evidence: Othello-GPT and Emergent World Models}
@@ -475,37 +936,86 @@ discover it.
 Li et al., ``Emergent World Representations: Exploring a Sequence Model
 Trained on a Synthetic Task'' (ICLR 2023).
 
-\textbf{Setup:} A GPT-style Transformer is trained on sequences of legal
-Othello moves, represented as coordinate pairs (e.g., ``d3 c5 f6\ldots'').
-The model receives:
+\textbf{Setup.} A GPT-style Transformer (8 layers, 8 attention heads,
+embedding dimension 512) is trained on sequences of legal Othello moves.
+Each move is represented as a single token indicating the board position
+(e.g., token ``d3'' means ``place a piece at column d, row 3''). The
+model receives:
 \begin{itemize}[leftmargin=2em]
-  \item No description of the Othello board
-  \item No encoding of the rules
+  \item No description of the Othello board (no $8 \times 8$ grid)
+  \item No encoding of the rules (no information about captures or flips)
   \item No visual representation of game states
-  \item Only raw move sequences
+  \item Only raw move sequences from recorded games
+\end{itemize}
+The training objective is standard next-token prediction: given the moves
+so far, predict the next move.
+
+\textbf{Finding.} Li et al.\ trained \textbf{non-linear probes}
+(small neural networks) on the model's internal activations to predict
+the board state --- which of the 64 cells are black, white, or empty ---
+at each point in the game. The probes achieved high accuracy, indicating
+that the model's internal representations encode the board state, even
+though the board was never part of the training data.
+
+
+\subsubsection{The Nanda Refinement: Linear Probes}
+
+Neel Nanda (``Actually, Othello-GPT Has A Linear Emergent World
+Representation,'' 2023) strengthened this finding substantially.
+
+\textbf{The probe methodology.} A \textbf{probe} is a small, separately
+trained model that takes a neural network's internal activations as input
+and tries to predict some property of interest (here, the board state).
+The key question is: how complex does the probe need to be?
+
+\begin{itemize}[leftmargin=2em]
+  \item A \textbf{non-linear probe} (e.g., a small multi-layer network)
+    can extract information even if it is encoded in a complex, tangled
+    way in the activations. High probe accuracy with a non-linear probe
+    shows the information is \emph{present}, but does not reveal how it
+    is organised.
+  \item A \textbf{linear probe} is a single matrix multiplication:
+    $\hat{y} = \mathbf{W} \mathbf{h} + \mathbf{b}$, where $\mathbf{h}
+    \in \mathbb{R}^d$ is the model's hidden-state vector at a given layer,
+    $\mathbf{W} \in \mathbb{R}^{c \times d}$ is a learned weight matrix,
+    $\mathbf{b} \in \mathbb{R}^c$ is a bias vector, and $c$ is the number
+    of classes (here $c = 3$: black, white, empty, for each cell). High
+    accuracy with a linear probe means the information is encoded
+    \emph{linearly} --- as a direction in the representation space.
 \end{itemize}
 
-\textbf{Finding:} Using non-linear probes on the model's internal
-activations, Li et al.\ found that the model develops a representation
-of the full $8 \times 8$ board state --- which cells are black, white,
-or empty --- that is accurate at each point in the game.
+\textbf{Nanda's result.} Linear probes on Othello-GPT's middle-layer
+activations achieve high accuracy (over 95\%) in classifying each cell as
+black, white, or empty. This means the board state is not just present
+somewhere in the model's representations --- it is encoded as a
+\emph{linear} function of the hidden-state vector. Each cell's state
+corresponds to a direction in the 512-dimensional representation space.
 
-\textbf{The Nanda refinement (2023):} Neel Nanda showed that the board
-representation is not merely present in a tangled, non-linear form. It
-is \emph{linearly} decodable: a simple linear probe (a matrix
-multiplication) can extract the board state from the model's activations
-with high accuracy. This is significant because linear representations
-are interpretable, robust, and suggest genuine structural understanding
-rather than a memorised lookup table.
+\textbf{Why linearity matters.}
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Interpretability:} A linear representation means the
+    board state is geometrically ``clean'' --- each cell's state
+    corresponds to a hyperplane in representation space, and the states
+    can be read off by projection.
+  \item \textbf{Not memorisation:} A linear probe is too simple to
+    memorise complex mappings. If a linear probe succeeds, the
+    information must be explicitly and systematically encoded in the
+    activations, not recoverable only through a complex non-linear
+    computation.
+  \item \textbf{Compositionality:} Linear representations compose
+    naturally (sums of directions remain meaningful), which suggests the
+    model has learned a structured, modular encoding of the board state
+    rather than an opaque blob of features.
+\end{enumerate}
 
 \begin{keyinsight}
 The model \emph{inferred the existence of a world it was never shown}.
 It was trained to predict the next move in a sequence. From that
-prediction task alone, it constructed an internal model of the hidden
-state that generates the sequence. This is exactly what the
-prediction--compression--intelligence chain predicts: to compress move
-sequences optimally, you need to discover the latent structure (the
-board) that generates them.
+prediction task alone, it constructed an internal, geometrically clean,
+linear model of the hidden state that generates the sequence. This is
+exactly what the prediction--compression--intelligence chain predicts:
+to compress move sequences optimally, you need to discover the latent
+structure (the board) that generates them.
 \end{keyinsight}
 
 \begin{speakingnote}
@@ -522,37 +1032,42 @@ know what will.''
 
 Gurnee and Tegmark, ``Language Models Represent Space and Time'' (ICLR 2024).
 
-\textbf{Setup:} The authors probed the internal activations of Llama-2
+\textbf{Setup.} The authors probed the internal activations of Llama-2
 (a large language model trained on text) when it processed sentences
 containing geographic locations (cities, countries) and historical dates.
+They used linear probes (as described above) to test whether individual
+neurons or linear directions in the representation space encode spatial
+coordinates or temporal information.
 
 \textbf{Findings:}
 
 \begin{enumerate}[leftmargin=2em]
   \item \textbf{Space neurons:} Individual neurons in Llama-2 activate
     in proportion to the latitude or longitude of the location mentioned
-    in the input text. There are neurons whose activation is a linear
-    function of geographic coordinates. The model has built an internal
-    coordinate system --- essentially, a map --- from text alone.
+    in the input text. A linear regression from a single neuron's
+    activation to the geographic coordinate of the mentioned city yields
+    high $R^2$ values. The model has built an internal coordinate system
+    --- essentially, a map --- from text alone.
 
   \item \textbf{Time neurons:} Similarly, individual neurons encode
     historical dates on a linear timeline. The activation is proportional
     to the year associated with the entity or event in the text.
 
   \item \textbf{Linearity:} Both spatial and temporal representations are
-    \emph{linear} --- they can be extracted by simple linear probes. This
-    mirrors the Othello-GPT finding and suggests a general principle:
-    language models build clean, structured, linear models of latent
-    variables that govern their training data.
+    \emph{linear} --- they can be extracted by simple linear probes (a
+    matrix multiplication from the model's hidden state to a predicted
+    coordinate). This mirrors the Othello-GPT finding and suggests a
+    general principle: language models build clean, structured, linear
+    models of latent variables that govern their training data.
 \end{enumerate}
 
-\textbf{Interpretation:} The model was never shown a map, a globe, or a
+\textbf{Interpretation.} The model was never shown a map, a globe, or a
 timeline. It learned spatial and temporal structure purely from the
-statistical regularities of text --- which cities are mentioned together,
-which events co-occur, how descriptions of weather, culture, and
-geography cluster. The model discovered that the latent generating
-structure behind these textual patterns is a spatial coordinate system
-and a temporal axis.
+statistical regularities of text --- which cities co-occur in sentences,
+which events are described as temporally adjacent, how weather and
+cultural descriptions cluster by region. The model discovered that the
+latent generating structure behind these textual patterns is a spatial
+coordinate system and a temporal axis.
 
 This connects directly to the Platonic Representation Hypothesis: the
 model is recovering the \emph{actual structure of reality} (geography,
@@ -615,8 +1130,11 @@ Be honest about the limitations of the Platonic Representation Hypothesis:
     plateau or reverse.
 
   \item \textbf{``Convergence'' is measured with specific metrics} (CKA,
-    mutual nearest neighbours) that may not capture all relevant
-    differences between representations.
+    mutual nearest neighbours) that capture particular notions of
+    similarity. Other metrics might show different results. CKA captures
+    linear, global structure; MNN captures local neighbourhood structure;
+    but there may be aspects of representation quality that neither
+    metric captures.
 
   \item \textbf{The claim is about representations, not capabilities.}
     Two models could have similar representations but very different
@@ -764,9 +1282,11 @@ representations of LLMs with those of humans, feature by feature.
     features: what it feels like to hold a lemon, the shock of biting
     into one, the specific quality of its smell, the weight and texture
     in your hand.
-  \item This gap is not an artifact of model size or training data. It
-    reflects a fundamental limitation: the model has never had a body,
-    never interacted with a physical lemon, never had sensory experience.
+  \item This gap persists across model sizes and architectures. It
+    appears to reflect a fundamental limitation: the model has never had
+    a body, never interacted with a physical lemon, never had sensory
+    experience. No amount of text can fully substitute for embodied
+    interaction.
 \end{itemize}
 
 \begin{keyinsight}
@@ -793,14 +1313,14 @@ sensory data does not automatically solve the symbol grounding problem.
 
 ``LLMs, Turing Tests and Chinese Rooms'' argues that the field is still
 struggling to move beyond Searle's framing. Neither side has a decisive
-argument. The paper documents the ongoing philosophical confusion:
-LLMs pass increasingly sophisticated versions of the Turing test, but
-passing the test was never meant to be \emph{sufficient} for
-understanding (even Turing was careful about this). The Chinese Room
-argument shows that passing the test is compatible with zero
-understanding. But the empirical evidence from world models and
-cross-domain compression suggests that what is happening inside LLMs
-is not ``zero understanding'' in any obvious sense.
+argument. The paper documents the ongoing philosophical impasse: LLMs
+pass increasingly sophisticated versions of the Turing test, but passing
+the test was never intended to be \emph{sufficient} for understanding
+(even Turing was careful about this). The Chinese Room argument shows that
+passing the test is compatible with zero understanding. Yet the empirical
+evidence from emergent world models and cross-domain compression suggests
+that what is happening inside LLMs is not ``zero understanding'' in any
+straightforward sense.
 
 
 \subsection{The Honest Conclusion}
@@ -920,21 +1440,29 @@ to go deeper into the mathematical and philosophical foundations.
 \subsection{The Shannon Source Coding Theorem}
 
 \textbf{Theorem} (Shannon, 1948). \emph{Let $X_1, X_2, \ldots$ be a
-stationary ergodic source with entropy rate $H$. No lossless compression
-scheme can achieve an expected code rate below $H$ bits per symbol.
-Conversely, there exist codes that achieve rates arbitrarily close to $H$.}
+stationary ergodic source with entropy rate
+$H = \lim_{T \to \infty} \frac{1}{T} H(X_1, \ldots, X_T)$.
+No lossless compression scheme can achieve an expected code rate below
+$H$ bits per symbol. Conversely, there exist codes (e.g., Huffman codes,
+arithmetic codes) that achieve rates arbitrarily close to $H$.}
 
 The connection to prediction: for a conditional model
-$p_\theta(x_t \mid x_{<t})$, the expected code length under arithmetic
-coding is:
+$p_\theta(x_t \mid x_{<t})$, the expected code length per symbol under
+arithmetic coding is:
 \[
-\bar{\ell} = \mathbb{E}\left[-\log_2 p_\theta(x_t \mid x_{<t})\right]
-= H(X_t \mid X_{<t}) + D_{\text{KL}}(p^* \| p_\theta)
+\bar{\ell}(\theta) \;=\;
+\mathbb{E}\!\left[-\log_2 p_\theta(X_t \mid X_{<t})\right]
+\;=\; H(X_t \mid X_{<t}) \;+\;
+D_{\text{KL}}\!\left(p^*(\cdot \mid X_{<t}) \;\|\;
+p_\theta(\cdot \mid X_{<t})\right)
 \]
-where $p^*$ is the true conditional distribution. Minimising the
-cross-entropy loss $\mathcal{L}(\theta)$ is equivalent to minimising
-$D_{\text{KL}}(p^* \| p_\theta)$, which is equivalent to approaching
-the optimal compression rate $H$.
+where $p^*(\cdot \mid x_{<t})$ is the true conditional distribution of
+$X_t$ given the history, $H(X_t \mid X_{<t})$ is the true conditional
+entropy, and $D_{\text{KL}}(p^* \| p_\theta)$ is the expected
+KL divergence between the true and model distributions (the expectation
+is over histories). Since $D_{\text{KL}} \geq 0$, we always have
+$\bar{\ell}(\theta) \geq H(X_t \mid X_{<t})$, with equality if and only
+if $p_\theta = p^*$ almost surely.
 
 
 \subsection{Kolmogorov Complexity and Incompressibility}
@@ -942,52 +1470,77 @@ the optimal compression rate $H$.
 \textbf{Theorem} (Kolmogorov). $K(x)$ is not computable: there is no
 algorithm that, given a string $x$, returns $K(x)$.
 
-\textbf{Proof sketch:} Suppose $K$ is computable. Then consider the
-program ``find the first string $x$ with $K(x) > n$ and output it.'' This
-program has length $O(\log n)$ but outputs a string with
-$K(x) > n$, a contradiction for large $n$.
+\textbf{Proof sketch.} Suppose for contradiction that $K$ is computable.
+Define the function $f(n) = $ ``the first string $x$ (in lexicographic
+order) with $K(x) > n$.'' Such a string exists for every $n$ because
+only finitely many strings have $K(x) \leq n$ (there are at most
+$2^{n+1} - 1$ programs of length $\leq n$). The function $f$ is
+computable (by assumption), and the program that computes $f(n)$ has
+length $O(\log n)$ bits (it needs to encode the constant-size algorithm
+plus the value of $n$, which takes $\lceil \log_2(n+1) \rceil$ bits).
+But $f(n)$ outputs a string $x$ with $K(x) > n$. Since $f(n)$ is
+computed by a program of length $O(\log n)$, we have
+$K(x) \leq O(\log n) < n$ for sufficiently large $n$. Contradiction.
 
 \textbf{Relevance:} This is why we use \emph{approximations} to
 Kolmogorov complexity. Language models, gzip, PNG, and FLAC are all
-approximations. The D\'{e}letang result shows that language models are
-better approximations than domain-specific algorithms, at least for the
-tested domains.
+compressors that approximate $K(x)$ from above. The D\'{e}letang result
+shows that language models are better approximations than domain-specific
+algorithms, at least for the tested domains.
 
 
-\subsection{Solomonoff's Universal Prior}
+\subsection{Solomonoff's Universal Prior (Detailed)}
 
-The Solomonoff prior assigns to each binary string $x$ a probability:
+The Solomonoff prior $M(x)$ (defined in Section 2) satisfies the
+following key property:
+
+\textbf{Theorem} (Solomonoff, 1964; Zvonkin \& Levin, 1970).
+\emph{For any computable probability measure $\mu$ on $\{0,1\}^\infty$,}
 \[
-M(x) = \sum_{p:\; U(p) = x*} 2^{-|p|}
+\sum_{t=1}^{\infty} \mathbb{E}_\mu\!\left[
+  D_{\text{KL}}\!\left(\mu(\cdot \mid x_{<t}) \;\|\;
+  M(\cdot \mid x_{<t})\right)
+\right] \;\leq\; K(\mu) \cdot \ln 2
 \]
-where the sum is over all programs $p$ that, when run on a universal
-Turing machine $U$, output a string that starts with $x$. This is a
-mixture over all computable hypotheses, weighted by their description
-length (Occam's razor, made formal).
+\emph{where $K(\mu)$ is the Kolmogorov complexity of $\mu$ (the length
+of the shortest program that computes $\mu$).}
 
-Solomonoff proved that $M$ dominates every computable measure: for any
-computable probability distribution $\mu$, $M(x) \geq c_\mu \cdot
-\mu(x)$ for all $x$ and some constant $c_\mu > 0$. This means that
-$M$-based predictions converge to the true distribution at a rate
-independent of which computable distribution generated the data.
+In words: the total expected KL divergence between the true distribution
+$\mu$ and Solomonoff's predictor is bounded by $K(\mu) \ln 2$, which is
+a finite constant. This means the per-step divergence
+$D_{\text{KL}}(\mu \| M)$ converges to zero at a rate of
+$O(K(\mu)/t)$, and convergence is faster when the true distribution
+is simple (low $K(\mu)$). This is a formal sense in which Solomonoff
+induction is optimally efficient: it learns any computable pattern as
+fast as is theoretically possible.
 
 
-\subsection{CKA: Measuring Representation Similarity}
+\subsection{CKA: Measuring Representation Similarity (Detailed)}
 
-Centred Kernel Alignment (CKA), used by Huh et al.\ to measure
-representation convergence:
-
-Given two representation matrices $X \in \mathbb{R}^{n \times p}$ and
-$Y \in \mathbb{R}^{n \times q}$ (same $n$ data points, possibly
-different dimensions), CKA is:
+Centred Kernel Alignment was introduced by Kornblith et al.\ (2019) and
+adopted by Huh et al.\ for measuring representation convergence. The
+linear CKA formula given in the main text can be understood as a
+normalised version of the Hilbert--Schmidt Independence Criterion (HSIC):
 \[
-\text{CKA}(X, Y) = \frac{\|Y^\top X\|_F^2}
-  {\|X^\top X\|_F \cdot \|Y^\top Y\|_F}
+\operatorname{HSIC}(\mathbf{X}, \mathbf{Y})
+\;=\; \frac{1}{(n-1)^2} \operatorname{tr}\!\left(
+  \mathbf{X}\mathbf{X}^\top \mathbf{H} \mathbf{Y}\mathbf{Y}^\top
+  \mathbf{H}\right)
 \]
-(using the linear kernel). CKA is invariant to orthogonal
-transformations and isotropic scaling, making it suitable for comparing
-representations across different models with different architectures
-and dimensionalities.
+where $\mathbf{H} = \mathbf{I}_n - \frac{1}{n}\mathbf{1}\mathbf{1}^\top$
+is the centering matrix. CKA normalises this:
+\[
+\operatorname{CKA}(\mathbf{X}, \mathbf{Y})
+\;=\; \frac{\operatorname{HSIC}(\mathbf{X}, \mathbf{Y})}
+  {\sqrt{\operatorname{HSIC}(\mathbf{X}, \mathbf{X}) \cdot
+   \operatorname{HSIC}(\mathbf{Y}, \mathbf{Y})}}
+\]
+which is equivalent to the formula in the main text (under the linear
+kernel, after centering). CKA is invariant to orthogonal transformations
+and isotropic scaling of each representation, but \emph{not} invariant to
+arbitrary invertible linear transformations --- a deliberate design choice,
+since arbitrary linear transformations could trivially make any two
+representations ``look the same.''
 
 
 % ============================================================================
@@ -1048,6 +1601,16 @@ and dimensionalities.
 
   \item Plato, \emph{Republic}, Book VII (c.\ 375 BCE). The allegory of
     the cave.
+
+  \item S.~Kornblith, M.~Norouzi, H.~Lee, and G.~Hinton, ``Similarity
+    of Neural Network Representations Revisited,'' \emph{Proc.\ ICML},
+    2019.
+
+  \item A.~K.~Zvonkin and L.~A.~Levin, ``The Complexity of Finite
+    Objects and the Development of the Concepts of Information and
+    Randomness by Means of the Theory of Algorithms,''
+    \emph{Russian Mathematical Surveys}, vol.~25, no.~6, pp.~83--124,
+    1970.
 \end{enumerate}
 
 \end{document}

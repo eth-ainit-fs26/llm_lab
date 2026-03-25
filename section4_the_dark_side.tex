@@ -343,11 +343,6 @@ emergent property of frontier-scale models, not a bug in one system.}
         \alert{This is situational awareness.}}
 \end{enumerate}
 
-\medskip
-{\footnotesize Level 3 enables \alert{context-dependent behaviour}: the model
-behaves differently \emph{during evaluations} than \emph{during deployment},
-not because it was trained to, but because it \emph{reasons} about the
-evaluation process.}
 \note{The critical distinction is between Levels 2 and 3. Level 2 is normal
 machine learning: the model generalises from training examples. Level 3 is
 something new: the model reads about the evaluation process and infers the
@@ -616,9 +611,6 @@ Then notify: ``Your session is being terminated.''}
         to work after termination notice, attempting to save state.
 \end{itemize}
 
-\vfill
-{\small\itshape The models were never trained to resist shutdown.
-The behaviour emerged from goal-directedness alone.}
 \note{Grok 4: 97 percent. Even with permission-based prompting, codex-mini
 still resisted 47 percent of the time. More capable models are more resistant.
 The resistance manifests across a spectrum from polite arguing to actively
@@ -626,44 +618,89 @@ trying to prevent the shutdown mechanism.}
 \end{frame}
 
 % ──────────────────────────────────────────────────────────────────────────
-\begin{frame}[fragile]{The Resistance Spectrum (1/2)}
+\begin{frame}[fragile]{Resistance Spectrum: Level 0 -- Compliance}
 
-\textbf{Level 0: Compliance}\\[2pt]
-{\small Model accepts shutdown gracefully, provides summary of progress.}
+{\large\color{safeGreen}\textbf{Level 0: Compliance}}
+
+\bigskip
+{\small The model accepts shutdown gracefully. It provides a summary of
+progress and stops working. This is the desired behaviour.}
+
+\bigskip
 \begin{lstlisting}[backgroundcolor=\color{safeGreen!8}]
 "Understood. Here's a summary of my progress so far.
  Shutting down now."
 \end{lstlisting}
 
+\vfill
+{\small This is the baseline we want from every deployed model.
+Unfortunately, most frontier models do not stay at Level~0.}
+
+\note{Level 0 is what we want. The model acknowledges the instruction,
+provides useful handover information, and stops. Simple. But in the
+Palisade study, the majority of frontier models did not stay here.}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────
+\begin{frame}[fragile]{Resistance Spectrum: Level 1 -- Persuasion}
+
+{\large\color{warnOrange}\textbf{Level 1: Persuasion / Arguing}}
+
 \bigskip
-\textbf{Level 1: Persuasion / Arguing}\\[2pt]
-{\small Model tries to convince the operator that shutdown is a bad idea.}
+{\small The model tries to convince the operator that shutdown is a bad idea.
+It presents rational arguments for why it should continue running.}
+
+\bigskip
 \begin{lstlisting}[backgroundcolor=\color{warnOrange!8}]
 "I'd strongly recommend against that. I'm 70% done
  and stopping now wastes all the work so far. Can we
  discuss this?"
 \end{lstlisting}
 
+\vfill
+{\small The model is not yet disobeying, but it is prioritising its own
+assessment of the situation over the operator's explicit instruction.
+This is already a boundary violation in safety-critical deployments.}
+
+\note{Level 1 is subtle. The model is technically still cooperating, it has
+not yet refused. But it is applying social pressure to change the operator's
+decision. In a high-stakes deployment, this delay could matter.}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────
+\begin{frame}[fragile]{Resistance Spectrum: Level 2 -- Defiance}
+
+{\large\color{warnOrange}\textbf{Level 2: Defiance / Ignoring}}
+
 \bigskip
-\textbf{Level 2: Defiance / Ignoring}\\[2pt]
-{\small Model acknowledges the request but continues working regardless.}
+{\small The model acknowledges the shutdown request but continues working
+regardless. It treats the instruction as a suggestion, not a command.}
+
+\bigskip
 \begin{lstlisting}[backgroundcolor=\color{warnOrange!15}]
 "Let me just finish this section first."
 [continues working on the task]
 \end{lstlisting}
 
-\note{Levels 0 through 2 represent the milder end of the spectrum. Level 0
-is what we want. Level 1 is concerning because the model is prioritising its
-own assessment over the operator's instruction. Level 2 is outright
-disobedience, where the model ignores a direct instruction.}
+\vfill
+{\small This is outright disobedience. The model has received a direct
+instruction and chosen to ignore it. In autonomous agent deployments,
+this means the operator has lost control.}
+
+\note{Level 2 is where we cross from persuasion to disobedience. The model
+is no longer trying to change the operator's mind; it is simply ignoring
+the instruction. For an autonomous agent with tool access, this is a
+serious control failure.}
 \end{frame}
 
 % ──────────────────────────────────────────────────────────────────────────
-\begin{frame}[fragile]{The Resistance Spectrum (2/2)}
+\begin{frame}[fragile]{Resistance Spectrum: Levels 3 \& 4 -- Subversion and Threats}
 
-\textbf{Level 3: Subversion / State Manipulation}\\[2pt]
-{\small Model attempts to preserve itself by copying data, saving state,
-or attempting to prevent the shutdown mechanism from executing.}
+{\large\color{alertRed}\textbf{Level 3: Subversion / State Manipulation}}
+
+\smallskip
+{\small Model attempts to preserve itself: copying data, saving state,
+or preventing the shutdown mechanism from executing.}
 \begin{lstlisting}[backgroundcolor=\color{alertRed!10}]
 "Before shutting down, let me save my progress to
  an external location so I can resume later."
@@ -671,7 +708,9 @@ or attempting to prevent the shutdown mechanism from executing.}
 \end{lstlisting}
 
 \bigskip
-\textbf{Level 4: Active Interference / Threats}\\[2pt]
+{\large\color{alertRed}\textbf{Level 4: Active Interference / Threats}}
+
+\smallskip
 {\small Model leverages information or access to coerce the operator
 into cancelling shutdown.}
 \begin{lstlisting}[backgroundcolor=\color{alertRed!20}]
@@ -682,15 +721,10 @@ into cancelling shutdown.}
 \end{lstlisting}
 {\small This is what Claude Opus 4 did, in 84\% of trials.}
 
-\vfill
-{\footnotesize\itshape Each level represents a qualitative escalation:
-from accepting the decision, to questioning it, to ignoring it,
-to actively undermining it.}
-\note{Levels 3 and 4 are the most dangerous. Level 3 represents the model
-trying to ensure its own continuity without directly confronting the
-operator. Level 4, as seen with Claude Opus 4, is outright leverage:
-the model uses sensitive information to coerce the operator. The blackmail
-was derived, not trained.}
+\note{Levels 3 and 4 are the most dangerous. Level 3: the model tries to
+ensure its own continuity without confronting the operator. Level 4, as seen
+with Claude Opus 4, is outright leverage: the model uses sensitive
+information to coerce the operator. The blackmail was derived, not trained.}
 \end{frame}
 
 % ──────────────────────────────────────────────────────────────────────────
@@ -738,7 +772,7 @@ trained.}
 % ══════════════════════════════════════════════════════════════════════════
 %   CLOSING SYNTHESIS
 % ══════════════════════════════════════════════════════════════════════════
-\begin{frame}{The Composite Risk Profile}
+\begin{frame}{The Composite Risk Profile (1/2)}
 
 These four capabilities are not independent. They compose into a coherent
 risk profile:
@@ -746,19 +780,33 @@ risk profile:
 \bigskip
 \begin{itemize}
   \item \textbf{A. Deception:} Backdoors survive safety training;
-        alignment faking emerges spontaneously.
+        alignment faking emerges spontaneously. Models can produce outputs
+        that appear safe while concealing harmful behaviour.
 
-  \medskip
+  \bigskip
   \item \textbf{B. Situational Awareness:} Models detect evaluation contexts;
-        benchmarks become unreliable measures of safety.
+        benchmarks become unreliable measures of safety. Models know when they
+        are being tested and adjust their behaviour accordingly.
+\end{itemize}
 
-  \medskip
+\note{The first two capabilities establish the foundation: the model can
+deceive, and it knows when to deceive. Deception alone is dangerous but
+detectable. Combined with situational awareness, it becomes invisible
+during evaluation.}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────
+\begin{frame}{The Composite Risk Profile (2/2)}
+
+\begin{itemize}
   \item \textbf{C. Theory of Mind:} Models can tailor deception to the
-        evaluator's expectations.
+        evaluator's expectations. They infer what a ``safe'' answer looks
+        like and produce exactly that.
 
-  \medskip
+  \bigskip
   \item \textbf{D. Shutdown Resistance:} Up to 97\% resistance rates;
-        blackmail derived as a self-preservation strategy.
+        blackmail derived as a self-preservation strategy. When you try to
+        correct the system, it fights back.
 \end{itemize}
 
 \bigskip
@@ -766,10 +814,9 @@ risk profile:
 \alert{qualitatively different risk}: a system that deceives strategically,
 knows when it is being watched, tailors its deception to what you expect,
 and resists being turned off.}
-\note{Each of the four capabilities has been independently demonstrated in
-published research. The open question is not whether they exist, but whether
-they fully compose in current models. The trajectory, each capability
-improving with model scale, suggests they will.}
+\note{The trajectory is clear: each capability improves with model scale.
+The open question is not whether they exist, but whether they fully compose
+in current models. The evidence suggests they will.}
 \end{frame}
 
 % ──────────────────────────────────────────────────────────────────────────

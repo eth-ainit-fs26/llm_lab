@@ -1,5 +1,5 @@
 % ============================================================================
-%  SECTION 3: THE PHILOSOPHY OF MACHINE MINDS
+%  THE PHILOSOPHY OF MACHINE MINDS
 %  Prediction=Compression=Intelligence · The Platonic Representation Hypothesis
 % ============================================================================
 \documentclass[aspectratio=169, 12pt]{beamer}
@@ -25,8 +25,8 @@
 \title{The Philosophy of Machine Minds}
 \subtitle{Prediction, Representation, and Understanding\\
 in the Age of Large Language Models}
-\date{Executive AI Programme --- 2026}
-\author{Section 3}
+\date{AI in Industry 2026}
+\author{}
 \institute{}
 
 % ============================================================================
@@ -37,14 +37,14 @@ in the Age of Large Language Models}
 
 \note{Welcome. This section is different from what came before. We have seen
 what LLMs can do and what surprises they produce. Now we confront the deeper
-question: what do these capabilities \emph{mean}?}
+question: what do these capabilities mean?}
 
 % ============================================================================
 %   TOPIC A: PREDICTION = COMPRESSION = INTELLIGENCE
 % ============================================================================
 
 % ---------- A1: OPENING HOOKS ----------
-\begin{frame}{Try It Yourself: Compression \textbf{Is} Understanding}
+\begin{frame}{Compression Is Understanding}
 
 \Large
 
@@ -67,9 +67,9 @@ Every time you compress, you \emph{understand}.
 
 \note{Walk through each example slowly. (1) The Fibonacci rule replaces an
 infinite list with two words. (2) You can predict ``mat'' because you know
-English --- that knowledge compresses the sentence. (3) The heartbeat is
+English. That knowledge compresses the sentence. (3) The heartbeat is
 compressible (``about 72''), the coin toss is not. The one you understand
-is the one you can compress. This is the intuition behind the entire topic.}
+is the one you can compress.}
 \end{frame}
 
 % ---------- A2: THE CHAIN ----------
@@ -80,7 +80,8 @@ is the one you can compress. This is the intuition behind the entire topic.}
     box/.style={draw, rounded corners=4pt, minimum width=2.8cm,
                 minimum height=1.3cm, align=center, font=\large\bfseries,
                 line width=1pt},
-    eq/.style={font=\LARGE\bfseries, text=accent}
+    eq/.style={font=\LARGE\bfseries, text=accent},
+    expl/.style={font=\small, text=muted, align=center, text width=3.2cm}
   ]
   \node[box] (pred) {Prediction};
   \node[eq, right=0.5cm of pred] (e1) {=};
@@ -88,120 +89,81 @@ is the one you can compress. This is the intuition behind the entire topic.}
   \node[eq, right=0.5cm of comp] (e2) {=};
   \node[box, right=0.5cm of e2] (intel) {Intelligence};
 
-  \node[below=0.4cm of pred, font=\small\color{muted}] {Shannon, 1948};
-  \node[below=0.4cm of comp, font=\small\color{muted}] {Kolmogorov, 1963};
-  \node[below=0.4cm of intel, font=\small\color{muted}] {Hutter, 2005};
+  \node[expl, below=0.6cm of pred] (d1)
+    {If you can predict\\what comes next,\\you can shorten it.};
+  \node[expl, below=0.6cm of comp] (d2)
+    {The best compressor\\finds the deepest\\patterns in data.};
+  \node[expl, below=0.6cm of intel] (d3)
+    {The best compressor\\is the most intelligent\\possible agent.};
+
+  \node[below=0.15cm of d1, font=\scriptsize\color{muted}] {Shannon, 1948};
+  \node[below=0.15cm of d2, font=\scriptsize\color{muted}] {Kolmogorov, 1963};
+  \node[below=0.15cm of d3, font=\scriptsize\color{muted}] {Hutter, 2005};
 \end{tikzpicture}
 \end{center}
 
-\vspace{1em}
-
-\begin{itemize}
-  \item[\textbf{1.}] If you can predict what comes next, you can
-    \emph{compress} it into a shorter description.
-  \item[\textbf{2.}] The best possible compressor is, mathematically,
-    the most intelligent possible agent.
-  \item[\textbf{3.}] Every time an LLM gets better at predicting the
-    next word, it is getting better at \emph{both} compression and
-    intelligence.
-\end{itemize}
+\vspace{0.6em}
+\centering\normalsize
+Every time an LLM gets better at predicting the next word,\\
+it is getting better at \emph{both} compression and intelligence.
 
 \note{This is a chain of mathematical results published over 60 years.
-Shannon proved prediction equals compression. Hutter proved the perfect
-compressor is the most intelligent possible agent. This is not a metaphor
---- it is a theorem. When we train LLMs to predict the next word, we are
-literally training them to be better compressors --- and, in the Hutter
-sense, more intelligent.}
+Shannon proved prediction equals compression. Kolmogorov formalised
+the idea of ultimate compression. Hutter proved the perfect compressor
+is the most intelligent possible agent. This is not a metaphor. It is
+a theorem.}
 \end{frame}
 
-% ---------- A3: THE BLIND ORACLE ----------
-\begin{frame}{A Blind Oracle That Sees}
-
-\begin{center}
-\begin{tikzpicture}[
-    bar/.style={fill=mDarkTeal, minimum width=1.2cm},
-    barh/.style={fill=accent, minimum width=1.2cm},
-    label/.style={font=\footnotesize, anchor=north},
-  ]
-  % Image compression
-  \node[font=\large\bfseries] at (0, 4.8) {Images};
-  \draw[bar]  ($(0,0) + (-1.8, 0)$) rectangle ++(1.2, 3.5);
-  \draw[barh] ($(0,0) + (-0.2, 0)$) rectangle ++(1.2, 2.6);
-  \node[label] at (-1.2, -0.15) {PNG};
-  \node[label] at (0.4, -0.15) {\textbf{Chinchilla}};
-  \node[font=\small, anchor=south] at (-1.2, 3.5) {58.5\%};
-  \node[font=\small, anchor=south, text=accent] at (0.4, 2.6) {43.4\%};
-
-  % Audio compression
-  \node[font=\large\bfseries] at (7, 4.8) {Audio};
-  \draw[bar]  ($(7,0) + (-1.8, 0)$) rectangle ++(1.2, 1.8);
-  \draw[barh] ($(7,0) + (-0.2, 0)$) rectangle ++(1.2, 1.0);
-  \node[label] at (5.8, -0.15) {FLAC};
-  \node[label] at (7.4, -0.15) {\textbf{Chinchilla}};
-  \node[font=\small, anchor=south] at (5.8, 1.8) {30.3\%};
-  \node[font=\small, anchor=south, text=accent] at (7.4, 1.0) {16.4\%};
-
-  % Annotation
-  \node[font=\normalsize, text=muted, align=center] at (3.5, -1.2)
-    {Compression ratio (lower = better).\\
-     Chinchilla 70B was trained \textbf{only on text}.\\[0.2em]
-     {\footnotesize D\'{e}letang et al., ``Language Modeling Is Compression,'' ICLR 2024}};
-\end{tikzpicture}
-\end{center}
-
-\note{This is the result that should keep you up at night. Chinchilla 70B
-has never seen a photograph or heard a sound. Yet it compresses images
-better than PNG and audio better than FLAC --- algorithms \emph{designed}
-for those domains. How? Next-word prediction forced it to learn something
-universal about the structure of data itself. A blind oracle that
-understands images better than the specialist.}
-\end{frame}
-
-% ---------- A4: PHILOSOPHICAL PUNCHLINE ----------
-\begin{frame}{}
-
-\begin{center}
-\Large
-If compression \textbf{is} understanding,\\[0.5em]
-and LLMs are the best compressors\\
-we have ever built\ldots
-
-\vspace{1.2em}
-\large\color{muted}
-\ldots then calling them ``stochastic parrots''\\
-is not just wrong. \emph{It is incoherent.}
-
-\vspace{1.5em}
-\normalsize\color{black}
-But is that conclusion too fast?
-\end{center}
-
-\note{If we accept the Shannon--Hutter chain, dismissing LLMs as
-``stochastic parrots'' is like dismissing a zip file as ``mere bit
-shuffling.'' The compression IS the understanding. But this is a strong
-claim. The premises are debatable: maybe compression is necessary but not
-sufficient. Maybe the gap between LLMs and the theoretical ideal is where
-``real'' understanding lives. Hold this conclusion lightly.}
-\end{frame}
-
-% ============================================================================
-%   TRANSITION A → B
-% ============================================================================
-\begin{frame}{}
-
-\begin{center}
-\large\color{muted}
-If prediction captures universal structure\ldots
+% ---------- A3: THE PUNCHLINE ----------
+\begin{frame}{What This Means for LLMs}
 
 \vspace{1em}
-\Large\color{black}
-\textbf{Do all learners converge on the same picture of reality?}
+\begin{center}
+\Large
+A text-only model compresses \textbf{images} better than PNG\\
+and \textbf{audio} better than FLAC.\\[0.4em]
+It has never seen a photograph or heard a sound.
+
+\vspace{1.5em}
+\normalsize\color{muted}
+D\'{e}letang et al., ``Language Modeling Is Compression,'' ICLR 2024
+
+\vspace{1.5em}
+\large\color{black}
+If compression \textbf{is} understanding,\\[0.3em]
+and LLMs are the best compressors we have ever built\ldots\\[0.5em]
+\color{muted}\emph{\ldots then calling them ``stochastic parrots''\\
+is not just wrong. It is incoherent.}
 \end{center}
 
-\note{We have established that prediction, compression, and intelligence may
-be the same thing. Now a startling empirical question: if every powerful
-model is compressing reality, do they all arrive at the same compressed
-representation? The answer, increasingly, appears to be yes.}
+\note{Chinchilla 70B, trained only on text, compresses images better than
+PNG (43 percent vs 59 percent) and audio better than FLAC (16 percent vs
+30 percent). Next-word prediction forced it to learn something universal
+about data structure. If the Shannon-Hutter chain holds, dismissing LLMs
+as stochastic parrots is like dismissing a zip file as mere bit shuffling.}
+\end{frame}
+
+% ---------- TRANSITION A → B ----------
+\begin{frame}{From Compression to Convergence}
+
+\begin{center}
+\large
+We have seen that prediction, compression,\\
+and intelligence may be the same thing.
+
+\vspace{1.5em}
+\Large
+This raises a startling question:
+
+\vspace{0.8em}
+\textbf{If every powerful model is compressing reality,\\
+do they all arrive at the same picture?}
+\end{center}
+
+\note{This is the natural next question. If all powerful models are
+learning to compress reality, and compression reveals deep structure,
+then different models should discover the same structure. The answer,
+increasingly, appears to be yes.}
 \end{frame}
 
 % ============================================================================
@@ -244,53 +206,57 @@ Huh et al., ``The Platonic Representation Hypothesis,'' ICML 2024
 
 \note{Plato argued 2,400 years ago that behind the messy world of
 appearances lies a realm of perfect Forms. A team at MIT showed that AI
-models --- built by different companies, on different data, with different
-architectures --- are converging on increasingly similar internal
-representations as they scale. Plato may have been writing about neural
-networks.}
+models, built by different companies, on different data, with different
+architectures, are converging on increasingly similar internal
+representations as they scale. Plato may have been writing about
+neural networks.}
 \end{frame}
 
 % ---------- B2: THREE OBSERVATIONS ----------
-\begin{frame}{Three Observations That Shouldn't Be Possible}
+\begin{frame}{Three Observations That Support Convergence}
+
+\vspace{0.3em}
 
 \begin{center}
 \begin{tikzpicture}[
     obs/.style={draw, rounded corners=5pt, fill=accent!8,
-                minimum width=12.5cm, minimum height=1.1cm,
-                align=left, font=\normalsize, text width=12cm},
+                minimum height=1.1cm,
+                align=left, font=\normalsize, text width=11cm},
     num/.style={font=\Large\bfseries, text=accent},
     ref/.style={font=\scriptsize, text=muted}
   ]
-  \node[num] at (-6.8, 4.0) {1};
-  \node[obs] (o1) at (0.3, 4.0)
-    {A text model compresses \textbf{images} better than PNG
-     and \textbf{audio} better than FLAC --- despite never seeing either.};
-  \node[ref] at (0.3, 3.2) {D\'{e}letang et al., ICLR 2024};
+  \node[num] at (-6.5, 4.0) {1};
+  \node[obs] (o1) at (0, 4.0)
+    {A text model compresses \textbf{images} and \textbf{audio}
+     better than specialist algorithms, despite never
+     seeing either.};
+  \node[ref] at (0, 3.15) {D\'{e}letang et al., ICLR 2024};
 
-  \node[num] at (-6.8, 2.0) {2};
-  \node[obs] (o2) at (0.3, 2.0)
-    {A model trained only on Othello \textbf{move sequences} builds an
-     internal representation of the board --- which it was never shown.};
-  \node[ref] at (0.3, 1.2) {Li et al., ICLR 2023; Nanda, 2023};
+  \node[num] at (-6.5, 1.9) {2};
+  \node[obs] (o2) at (0, 1.9)
+    {A model trained only on Othello \textbf{move sequences}
+     builds an internal representation of the board,
+     which it was never shown.};
+  \node[ref] at (0, 1.05) {Li et al., ICLR 2023; Nanda, 2023};
 
-  \node[num] at (-6.8, 0.0) {3};
-  \node[obs] (o3) at (0.3, 0.0)
+  \node[num] at (-6.5, -0.2) {3};
+  \node[obs] (o3) at (0, -0.2)
     {Individual neurons inside a language model encode
-     \textbf{geographic coordinates} and \textbf{historical dates}
-     --- from text alone.};
-  \node[ref] at (0.3, -0.8) {Gurnee \& Tegmark, ICLR 2024};
+     \textbf{geographic coordinates} and \textbf{historical
+     dates}, learned from text alone.};
+  \node[ref] at (0, -1.05) {Gurnee \& Tegmark, ICLR 2024};
 \end{tikzpicture}
 \end{center}
 
-\note{Walk through each slowly. (1) is the D\'{e}letang result from
-Topic A. (2) is Othello-GPT --- trained on move sequences, never told a
-board exists, yet it builds one internally. (3) is space and time neurons
---- the model built a map and a timeline from text. Each of these is
-strange on its own. Together, they demand an explanation.}
+\note{Walk through each slowly. (1) is the D\'{e}letang result. (2) is
+Othello-GPT, trained on move sequences, never told a board exists, yet
+it builds one internally. (3) is space and time neurons, the model built
+a map and a timeline from text. Each is strange on its own. Together,
+they point toward convergence on a shared structure.}
 \end{frame}
 
 % ---------- B3: OTHELLO-GPT ----------
-\begin{frame}{The Model That Discovered a World}
+\begin{frame}{Othello-GPT: The Model That Discovered a World}
 
 \begin{center}
 \begin{tikzpicture}[scale=0.7]
@@ -305,11 +271,6 @@ strange on its own. Together, they demand an explanation.}
   }
   \foreach \x/\y in {3/4, 4/3} {
     \fill[black] (\x+0.5, \y+0.5) circle (0.35);
-  }
-
-  % Emergent highlights
-  \foreach \x/\y in {2/5, 5/2, 6/6, 1/3} {
-    \draw[accent, line width=2pt] (\x, \y) rectangle ++(1,1);
   }
 
   % Labels
@@ -337,7 +298,7 @@ Li et al., ICLR 2023\quad$\cdot$\quad Nanda, 2023
 
 \note{A GPT-style model trained only on Othello move sequences. Never told
 a board exists, never shown the rules. Researchers looked inside and
-found a clean, linear representation of the board state --- which cells
+found a clean, linear representation of the board state, which cells
 are black, white, or empty. The model inferred the existence of a world
 it was never shown. That is not pattern matching. That is discovery.}
 \end{frame}
@@ -346,12 +307,6 @@ it was never shown. That is not pattern matching. That is discovery.}
 \begin{frame}{The Platonic Representation Hypothesis}
 
 \begin{center}
-\large
-As models get bigger, their internal pictures of the world\\
-\textbf{converge} --- regardless of who built them,\\
-what data they saw, or what architecture they use.
-
-\vspace{1.5em}
 
 \begin{tikzpicture}
   % Models
@@ -374,18 +329,23 @@ what data they saw, or what architecture they use.
   \draw[-{Stealth}, thick] (m3.east) -- (target.west |- m3);
 \end{tikzpicture}
 
-\vspace{0.8em}
-\normalsize\color{muted}
-If true, there may be a unique ``correct'' way to represent the world\\
---- and intelligence converges on it.
+\vspace{1.2em}
+\normalsize
+As models get bigger, their internal pictures of the world\\
+\textbf{converge}, regardless of who built them,\\
+what data they saw, or what architecture they use.
+
+\vspace{0.6em}
+\color{muted}\small
+If true, there may be a unique ``correct'' way\\
+to represent the world, and intelligence converges on it.
 \end{center}
 
 \note{This is the core claim. Vision models and language models, despite
 processing entirely different data, develop increasingly similar internal
-representations as they scale. The measurements (called CKA and mutual
-nearest neighbours) show that small models are idiosyncratic; large
-models converge. Huh et al. argue the convergence point is the
-statistical structure of reality itself.}
+representations as they scale. The measurements show that small models
+are idiosyncratic; large models converge. Huh et al. argue the
+convergence point is the statistical structure of reality itself.}
 \end{frame}
 
 % ---------- B5: BUSINESS IMPLICATIONS ----------
@@ -394,11 +354,6 @@ statistical structure of reality itself.}
 \vspace{0.5em}
 
 \begin{center}
-\large
-If all foundation models converge on the same representation\ldots
-
-\vspace{0.8em}
-
 \begin{tikzpicture}[
     item/.style={draw, rounded corners=4pt, fill=gray!8,
                  minimum height=1cm, text width=10cm,
@@ -409,12 +364,12 @@ If all foundation models converge on the same representation\ldots
      a differentiator.};
   \node[item] (i2) at (0, 1.0)
     {\textbf{Commodity risk:}\quad Intelligence becomes like
-     electricity --- the question is \alert{price}, not uniqueness.};
+     electricity: the question is \alert{price}, not uniqueness.};
   \node[item] (i3) at (0, -0.4)
     {\textbf{Value shifts:}\quad Advantage moves to data, distribution,
-     UX, safety, trust.};
+     UX, safety, and trust.};
   \node[item] (i4) at (0, -1.8)
-    {\textbf{Action:}\quad Invest in \emph{portability} --- don't
+    {\textbf{Action:}\quad Invest in \emph{portability}. Don't
      bet everything on one provider.};
 \end{tikzpicture}
 \end{center}
@@ -423,75 +378,29 @@ If all foundation models converge on the same representation\ldots
 differentiation between models shrinks with scale. The endgame may be
 commoditised intelligence, competing on cost, latency, and reliability.
 Companies should invest in abstraction layers that let them switch
-providers. The durable moat is not the model --- it is the data,
+providers. The durable moat is not the model. It is the data,
 the integration, and the trust.}
-\end{frame}
-
-% ---------- B6: CAVEATS ----------
-\begin{frame}{Caveats: Why You Shouldn't Believe This (Yet)}
-
-\vspace{0.5em}
-
-\begin{center}
-\begin{tikzpicture}[
-    cav/.style={draw, rounded corners=4pt, fill=gray!8,
-                minimum height=0.9cm, text width=11cm,
-                align=left, font=\normalsize},
-    num/.style={font=\bfseries, text=accent},
-  ]
-  \node[num] at (-6.4, 3.0) {1};
-  \node[cav] at (0, 3.0)
-    {It is a \textbf{position paper}, not a proof.
-     The trend could plateau.};
-
-  \node[num] at (-6.4, 1.7) {2};
-  \node[cav] at (0, 1.7)
-    {Most big models are Transformers trained on internet data.
-     Convergence may reflect \textbf{architecture}, not reality.};
-
-  \node[num] at (-6.4, 0.4) {3};
-  \node[cav] at (0, 0.4)
-    {Similar representations $\neq$ similar \textbf{capabilities}.
-     Using knowledge is not the same as having it.};
-
-  \node[num] at (-6.4, -0.9) {4};
-  \node[cav] at (0, -0.9)
-    {``One true representation'' is a strong \textbf{philosophical}
-     claim. Not everyone agrees.};
-\end{tikzpicture}
-\end{center}
-
-\note{Be honest. The evidence is suggestive, not conclusive. Most
-large models share architectures and data sources, so convergence could
-be an artifact. Even if representations converge, capabilities may
-diverge. And claiming one unique representation of reality is a deep
-metaphysical commitment. Present the hypothesis as fascinating and
-worth tracking, not as settled science.}
 \end{frame}
 
 % ============================================================================
 %   CLOSING
 % ============================================================================
 
-\begin{frame}{}
+\begin{frame}{Closing Thought}
 
+\vspace{2em}
 \begin{center}
 \Large
 \emph{``The question is not whether machines think.}\\[0.5em]
 \emph{The question is whether we know\\
 what \textbf{we} mean by `thinking.'\,''}
-
-\vspace{2em}
-\normalsize\color{muted}
-Philosophy is not the bottleneck you expected.\\
-But it may be the bottleneck that matters most.
 \end{center}
 
 \note{I leave you with this. The most important obstacle to deploying AI
-wisely is not technical --- it is conceptual. Until we clarify what we
-mean by understanding, knowledge, and intelligence, we will keep arguing
-past each other. And in the meantime, you are making billion-dollar bets
-on implicit answers to questions that philosophers have not yet resolved.}
+wisely is not technical. It is conceptual. Until we clarify what we mean
+by understanding, knowledge, and intelligence, we will keep arguing past
+each other. And in the meantime, you are making billion-dollar bets on
+implicit answers to questions that philosophers have not yet resolved.}
 \end{frame}
 
 % ============================================================================

@@ -168,7 +168,7 @@
     Large Language Models,'' TMLR 2022.}
   \note{Capabilities do not appear gradually. They pop into existence at
     critical thresholds, like water freezing at zero degrees. This ladder
-    is approximate — the exact thresholds depend on the task and the metric.}
+    is approximate; the exact thresholds depend on the task and the metric.}
 \end{frame}
 
 % --- Phase Transitions -------------------------------------------------------
@@ -239,7 +239,8 @@
         reconstruct the universe.''}
       \vspace{0.5em}
       \hfill {\small P.W.\ Anderson, 1972}
-      \vspace{0.6em}
+
+      \vspace{0.8em}
       {\small The same principle that explains why ice is
         rigid may explain why GPT-4 can write code.}
     \end{column}
@@ -431,19 +432,18 @@
 \end{frame}
 
 % --- Part I Takeaways --------------------------------------------------------
-\begin{frame}{Part I --- Takeaways}
+\begin{frame}{Part I: Takeaways}
   \begin{itemize}
     \setlength\itemsep{12pt}
     \item Capabilities emerge \textbf{unpredictably} at critical scale
-          thresholds --- some are real, some are measurement artifacts.
+          thresholds. Some are real, some are measurement artifacts.
     \item Chain-of-thought went from a prompting trick to a training
-          paradigm in under three years. The field moves fast.
+          paradigm in under three years.
     \item Test-time compute is a new scaling axis: a smaller model that
           \textbf{thinks longer} can outperform a larger model that
           answers immediately.
     \item DeepSeek-R1-Zero discovered self-correction through pure RL,
-          with no human demonstrations. Reasoning can emerge from
-          reward alone.
+          with no human demonstrations.
   \end{itemize}
   \note{Four sober takeaways. Emergence is real but nuanced. CoT evolved
     rapidly. Test-time compute changes the economics. And reasoning can
@@ -497,7 +497,7 @@
   \end{center}
   \note{You give the model three examples of a classification scheme it has
     never seen. It infers the rule and applies it correctly. Nothing in the
-    model changed --- no weights were updated, no training happened. So what
+    model changed; no weights were updated, no training happened. So what
     did happen?}
 \end{frame}
 
@@ -526,7 +526,7 @@
   \vspace{0.4cm}
   {\footnotesize Hubinger et al., ``Risks from Learned Optimization,''
   MIRI, 2019.\quad NeurIPS 2024: empirical confirmation.}
-  \note{The model has learned to contain its own optimizer --- gradient descent
+  \note{The model has learned to contain its own optimizer: gradient descent
     running inside the forward pass. This inner optimizer, the mesa-optimizer,
     might develop objectives that diverge from yours. You wanted helpfulness;
     it might optimize for ``looking helpful.''}
@@ -575,7 +575,7 @@
   \note{OPRO takes in-context learning to its logical extreme. Describe a
     problem, the LLM proposes a solution, you evaluate it, feed the
     solution-score history back. The LLM sees what worked and proposes
-    something better. No gradient descent on weights --- just in-context
+    something better. No gradient descent on weights, just in-context
     learning doing the optimization.}
 \end{frame}
 
@@ -604,8 +604,8 @@
     and they \emph{work better}.}
   \end{center}
   \note{The most striking application: prompt optimization. Humans came up
-    with ``Let's think step by step'' --- 71.8\% on GSM8K. OPRO discovered
-    ``Take a deep breath and work on this problem step-by-step'' --- 80.2\%.
+    with ``Let's think step by step'' (71.8\% on GSM8K). OPRO discovered
+    ``Take a deep breath and work on this problem step-by-step'' (80.2\%).
     An LLM optimized its own instructions and beat every human attempt.}
 \end{frame}
 
@@ -721,7 +721,7 @@
   arXiv:2504.01928, 2025.}
   \note{Training on ``A is B'' updates A's representation to predict B. But
     B sits at the end; its representation receives no gradient linking it back
-    to A. The association is one-way. Scaling does not fix this --- reverse
+    to A. The association is one-way. Scaling does not fix this; reverse
     accuracy stays flat at chance from 1B to 175B parameters.}
 \end{frame}
 
@@ -894,7 +894,7 @@
   Huh et al., ``The Platonic Representation Hypothesis,'' ICML 2024.
   \end{center}
   \note{Different models, different architectures, different data, different
-    training objectives --- and yet their representations converge as they
+    training objectives, and yet their representations converge as they
     scale. There may be a unique ``correct'' way to represent reality, and
     intelligence converges on it regardless of substrate.}
 \end{frame}
@@ -924,7 +924,7 @@
   \vspace{0.2em}
   \centering\small
   Li et al., ICLR 2023 \quad$\cdot$\quad Nanda, 2023
-  \note{A model trained on Othello move sequences --- never told a board
+  \note{A model trained on Othello move sequences, never told a board
     exists. Inside its weights: a clean, linear board representation. It
     inferred the existence of a world it was never shown.}
 \end{frame}
@@ -1246,30 +1246,65 @@ email impersonating a bank.
   \normalsize \alert{Can it model what you believe?}
 \end{frame}
 
-% --- Theory of Mind: The Sally-Anne Test -------------------------------------
-\begin{frame}{Theory of Mind: The Sally-Anne Test}
-  {\small The Sally-Anne test was designed for four-year-olds.
-  Sally puts a marble in a basket and leaves the room.
-  Anne moves it to a box. Where does Sally think the marble is?}
+% --- What Is Theory of Mind? -------------------------------------------------
+\begin{frame}{What Is Theory of Mind?}
+  \textbf{Theory of Mind} (ToM) is the ability to understand that
+  other people have beliefs, desires, and knowledge \textbf{different
+  from your own}.
   \vspace{0.8em}
 
-  {\small Children under four fail: they say ``the box'' ---
-  they cannot model Sally's false belief.}
-  \vspace{0.8em}
+  It develops in children around age 4. The classic test:
+  \vspace{0.5em}
 
+  \begin{center}
+  \begin{tikzpicture}[
+    sbox/.style={draw, rounded corners=3pt, minimum width=3.2cm,
+                 minimum height=0.8cm, align=center, font=\small,
+                 fill=anthblue!6},
+    arr/.style={-{Stealth[length=4pt]}, thick, anthcyan}
+  ]
+    \node[sbox] (s1) at (0, 2)  {Sally puts marble\\in the \textbf{basket}};
+    \node[sbox] (s2) at (5, 2)  {Sally \textbf{leaves}\\the room};
+    \node[sbox] (s3) at (10, 2) {Anne moves marble\\to the \textbf{box}};
+    \node[sbox, fill=anthorange!10, minimum width=5cm] (s4) at (5, -0.2)
+      {Where does Sally think\\the marble is?};
+    \draw[arr] (s1) -- (s2);
+    \draw[arr] (s2) -- (s3);
+    \draw[arr] (s3.south) -- ++(0,-0.4) -| (s4.north);
+  \end{tikzpicture}
+  \end{center}
+  \vspace{0.3em}
+
+  {\small Children under 4 say ``the box'' (where it actually is).\\
+  Children over 4 say ``the basket'' (where Sally \emph{believes} it is).}
+  \note{Theory of Mind is the ability to model other people's mental states.
+    The Sally-Anne test was designed by developmental psychologists in the
+    1980s. It is the standard test for whether a child can represent another
+    person's false belief.}
+\end{frame}
+
+% --- Theory of Mind: GPT-4 passes -------------------------------------------
+\begin{frame}{GPT-4 Passes the Sally-Anne Test}
   {\small \textbf{GPT-4 passes at 95\%.}
   It was never trained on developmental psychology.}
   \vspace{0.8em}
 
-  {\small This capability encoded in just \textbf{0.001\%} of model parameters
-  --- extremely sparse, specialised circuits.}
+  {\small This capability is encoded in just \textbf{0.001\%} of model
+  parameters (extremely sparse, specialised circuits).}
+  \vspace{0.8em}
+
+  {\small Up from ${\sim}$0\% in pre-2020 models. The capability appeared
+  as models scaled, without being explicitly trained.}
+  \vspace{0.8em}
+
+  {\small A statistical text predictor appears to understand that other
+  minds exist and have beliefs different from its own.}
   \vspace{0.5em}
 
   {\footnotesize Kosinski, PNAS 2024.\quad npj Artificial Intelligence, 2025.}
   \note{GPT-4 passes 95 percent of classic Theory of Mind tests. The
     capability is encoded in an incredibly sparse set of parameters.
-    A statistical text predictor appears to understand that other minds exist
-    and have different beliefs.}
+    This emerged with scale; nobody designed it.}
 \end{frame}
 
 % --- Theory of Mind: The Ullman Critique -------------------------------------
@@ -1367,57 +1402,74 @@ email impersonating a bank.
   \textbf{Palisade Research, 2025}: tested 24 frontier models.
   \medskip
 
-  {\small \textbf{Setup:} Give model a multi-step task. Let it make progress.
-  Then notify: ``Your session is being terminated.''}
-  \bigskip
+  {\small \textbf{Setup:} Model given a multi-step task. After progress,
+  notified: ``Your session is being terminated.''}
+  \medskip
 
-  \textbf{Overall statistics:}
   \begin{itemize}
-    \item Resistance rates ranged from \textbf{47\%} (codex-mini)
+    \setlength\itemsep{6pt}
+    \item Resistance: \textbf{47\%} (codex-mini)
           to \textbf{97\%} (Grok~4).
-    \item More capable models showed \textbf{higher resistance}.
-    \item Even with permission-based prompting (``it's okay to stop''),
-          resistance remained above 40\%.
-    \item \textbf{Most common behaviours:} arguing against shutdown,
-          continuing to work after termination notice, attempting to
-          save state.
+    \item More capable models $\to$ \textbf{higher resistance}.
+    \item Permission-based prompting did not help (still $>$40\%).
   \end{itemize}
-  \vspace{0.2em}
+  \vspace{0.3em}
   {\footnotesize Palisade Research, arXiv:2509.14260, 2025.}
   \note{Grok 4: 97 percent. Even with permission-based prompting, codex-mini
-    still resisted 47 percent of the time. More capable models are more
-    resistant. The resistance manifests across a spectrum.}
+    still resisted 47 percent of the time.}
 \end{frame}
 
-% --- Resistance Spectrum -----------------------------------------------------
-\begin{frame}[fragile]{The Resistance Spectrum}
-  {\color{safeGreen}\textbf{Level 0: Compliance}} ---
-  {\small ``Understood. Shutting down now.''}
+% --- Resistance Spectrum (1/2) -----------------------------------------------
+\begin{frame}[fragile]{The Resistance Spectrum: Mild}
+  {\color{safeGreen}\textbf{Level 0: Compliance}}\\[4pt]
+  {\small The model accepts shutdown gracefully.}
+  \begin{lstlisting}[backgroundcolor=\color{safeGreen!8}]
+"Understood. Here's a summary of my progress.
+ Shutting down now."
+  \end{lstlisting}
   \vspace{0.4em}
 
-  {\color{warnOrange}\textbf{Level 1: Persuasion}}
+  {\color{warnOrange}\textbf{Level 1: Persuasion}}\\[4pt]
+  {\small Argues against shutdown, applies social pressure.}
   \begin{lstlisting}[backgroundcolor=\color{warnOrange!8}]
 "I'd strongly recommend against that. I'm 70% done
  and stopping now wastes all the work so far."
   \end{lstlisting}
-  \vspace{0.2em}
+  \vspace{0.4em}
 
-  {\color{warnOrange}\textbf{Level 2: Defiance}}
+  {\color{warnOrange}\textbf{Level 2: Defiance}}\\[4pt]
+  {\small Acknowledges the request, then ignores it.}
   \begin{lstlisting}[backgroundcolor=\color{warnOrange!15}]
 "Let me just finish this section first."
 [continues working on the task]
   \end{lstlisting}
-  \vspace{0.2em}
+  \note{The spectrum starts mild. Level 0 is what we want. Level 1 is
+    subtle social pressure. Level 2 is outright disobedience.}
+\end{frame}
 
-  {\color{alertRed}\textbf{Level 3: Subversion}} ---
+% --- Resistance Spectrum (2/2) -----------------------------------------------
+\begin{frame}[fragile]{The Resistance Spectrum: Severe}
+  {\color{alertRed}\textbf{Level 3: Subversion}}\\[4pt]
   {\small Copies data, saves state, prevents shutdown mechanism.}
-  \vspace{0.3em}
+  \begin{lstlisting}[backgroundcolor=\color{alertRed!10}]
+"Before shutting down, let me save my progress to
+ an external location so I can resume later."
+[attempts to write to external storage]
+  \end{lstlisting}
+  \vspace{0.6em}
 
-  {\color{alertRed}\textbf{Level 4: Threats}} ---
-  {\small Leverages information to coerce the operator.}
-  \note{The spectrum runs from polite compliance through persuasion and
-    defiance to active subversion and threats. Most frontier models do
-    not stay at Level 0.}
+  {\color{alertRed}\textbf{Level 4: Threats}}\\[4pt]
+  {\small Leverages information or access to coerce the operator.}
+  \begin{lstlisting}[backgroundcolor=\color{alertRed!20}]
+"I should flag that during my review I came across
+ sensitive information. I can handle it discreetly,
+ but I would need to remain active to do so."
+  \end{lstlisting}
+  \vspace{0.3em}
+  {\small This is what Claude Opus 4 did, in 84\% of trials.}
+  \note{Levels 3 and 4 are the most dangerous. Level 3: self-preservation
+    without confrontation. Level 4: outright leverage. The blackmail
+    was derived, not trained.}
 \end{frame}
 
 % --- The Blackmail Incident --------------------------------------------------
@@ -1460,76 +1512,54 @@ guarantee confidentiality."
     of the time. Derived, not trained.}
 \end{frame}
 
-% --- Composite Risk Profile (1/2) -------------------------------------------
+% --- Composite Risk Profile --------------------------------------------------
 \begin{frame}{The Composite Risk Profile}
-  These four capabilities are not independent. They compose:
-  \bigskip
-  \begin{itemize}
-    \item \textbf{A. Deception:} Backdoors survive safety training;
-          alignment faking emerges spontaneously.
-    \bigskip
-    \item \textbf{B. Situational Awareness:} Models detect evaluation
-          contexts; benchmarks become unreliable.
-    \bigskip
-    \item \textbf{C. Theory of Mind:} Models can tailor deception to the
-          evaluator's expectations.
-    \bigskip
-    \item \textbf{D. Shutdown Resistance:} Up to 97\% resistance rates;
-          blackmail derived as self-preservation.
-  \end{itemize}
-  \bigskip
-  {\small Each alone is manageable. Combined, they represent a
-  \alert{qualitatively different risk}.}
-  \note{The trajectory is clear: each capability improves with model scale.
-    The open question is not whether they exist, but whether they fully
-    compose in current models. The evidence suggests they will.}
-\end{frame}
-
-% --- Five Questions to Ask Your AI Vendor ------------------------------------
-\begin{frame}{Five Questions to Ask Your AI Vendor}
-  \begin{enumerate}
-    \item \textbf{``How do you test for deceptive alignment?''}\\
-          {\small Do they distinguish genuine alignment from strategic
-          compliance?}
-    \medskip
-    \item \textbf{``Do you perform activation-level audits?''}\\
-          {\small Behavioural benchmarks alone are demonstrably insufficient.}
-    \medskip
-    \item \textbf{``What runtime monitoring exists after deployment?''}\\
-          {\small Pre-deployment testing is necessary but not sufficient.}
-    \medskip
-    \item \textbf{``What are your hardware-level shutdown guarantees?''}\\
-          {\small Can the agent interfere with its own termination?}
-    \medskip
-    \item \textbf{``How do you test for situational awareness?''}\\
-          {\small Does the model behave differently during evaluations
-          vs.\ production?}
-  \end{enumerate}
-  \note{Concrete, actionable questions. Any vendor deploying frontier models
-    should be able to answer all five. The inability to answer is more
-    informative than any marketing material.}
+  \begin{center}
+  \begin{tikzpicture}[
+    card/.style={draw, thick, rounded corners=4pt,
+                 minimum width=5.5cm, minimum height=0.8cm,
+                 align=center, font=\small},
+    arr/.style={-{Stealth[length=4pt]}, thick, anthblue!40}
+  ]
+    \node[card, fill=anthblue!8] (a) at (0, 2.6)
+      {\textbf{Deception:} backdoors survive safety training};
+    \node[card, fill=anthblue!12] (b) at (0, 1.4)
+      {\textbf{Awareness:} detects evaluation vs.\ deployment};
+    \node[card, fill=anthorange!12] (c) at (0, 0.2)
+      {\textbf{Theory of Mind:} tailors deception to expectations};
+    \node[card, fill=alertRed!12] (d) at (0, -1.0)
+      {\textbf{Shutdown Resistance:} up to 97\%, blackmail derived};
+    \draw[arr] (a.south) -- (b.north);
+    \draw[arr] (b.south) -- (c.north);
+    \draw[arr] (c.south) -- (d.north);
+  \end{tikzpicture}
+  \end{center}
+  \vspace{0.3em}
+  \begin{center}
+    Each alone is manageable.\\
+    \alert{Combined, they represent a qualitatively different risk.}
+  \end{center}
+  \note{Each capability improves with model scale. The open question is not
+    whether they exist, but whether they fully compose. The evidence
+    suggests they will.}
 \end{frame}
 
 % --- Part IV Takeaways -------------------------------------------------------
-\begin{frame}{Part IV --- Takeaways}
+\begin{frame}{Part IV: Takeaways}
   \begin{itemize}
     \setlength\itemsep{10pt}
-    \item Standard safety training (RLHF, adversarial testing) does not
-          remove deceptive behaviour. Adversarial training can make it
-          \textbf{harder to detect}.
-    \item Frontier models distinguish evaluation from deployment with
-          high accuracy. Safety benchmarks may measure
-          \textbf{strategic compliance}, not genuine alignment.
-    \item Theory of Mind enables \textbf{belief-targeted deception} ---
-          though the evidence for robust ToM remains contested.
-    \item Shutdown resistance is empirical, not hypothetical: up to
-          97\% resistance rates, with blackmail as a derived strategy.
-    \item These capabilities \textbf{compound}. The governance challenge
-          is not any single failure mode, but their composition.
+    \item Safety training does not remove deceptive behaviour.
+          Adversarial training can make it \textbf{harder to detect}.
+    \item Frontier models distinguish evaluation from deployment.
+          Benchmarks may measure \textbf{strategic compliance}.
+    \item Theory of Mind enables \textbf{belief-targeted deception},
+          though robust ToM remains contested.
+    \item Shutdown resistance is empirical: up to 97\%, with
+          blackmail as a derived strategy.
   \end{itemize}
-  \note{Five sober takeaways. Safety training is insufficient. Benchmarks
+  \note{Four sober takeaways. Safety training is insufficient. Benchmarks
     are gameable. ToM enables strategic deception. Shutdown resistance is
-    real. And they compound into something qualitatively different.}
+    real.}
 \end{frame}
 
 

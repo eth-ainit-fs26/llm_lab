@@ -84,7 +84,7 @@
     \node[block, fill=anthblue, text=white] (S1) at (0, 4.0)
       {\textbf{I.}\; When Models Surprise Us};
     \node[block, fill=anthblue!85, text=white] (S2) at (0, 2.5)
-      {\textbf{II.}\; Inside the Black Box};
+      {\textbf{II.}\; Intriguing Properties};
     \node[block, fill=anthblue!70, text=white] (S3) at (0, 1.0)
       {\textbf{III.}\; The Philosophy of Machine Minds};
     \node[block, fill=anthblue!55, text=white] (S4) at (0, -0.5)
@@ -451,270 +451,201 @@
 
 % #############################################################################
 % #############################################################################
-%  PART II — INSIDE THE BLACK BOX
+%  PART II — INTRIGUING PROPERTIES
 % #############################################################################
 % #############################################################################
 
 \begin{frame}[standout]
   \Huge II\\[12pt]
-  \Large Inside the Black Box\\[6pt]
-  \normalsize Mechanistic Interpretability \;\textbullet\;
-    In-Context Learning \;\textbullet\; The Reversal Curse
-  \note{We have seen what models can do. Now we ask: what is actually
-    happening inside them? The answer is simultaneously more elegant and
-    more disturbing than you might expect.}
+  \Large Intriguing Properties\\[6pt]
+  \normalsize In-Context Learning \;\textbullet\;
+    Mesa-Optimizers \;\textbullet\; OPRO \;\textbullet\; The Reversal Curse
+  \note{We have seen what models can do. Now we go deeper into two phenomena
+    that reveal something fundamental about how LLMs work, and fail. First,
+    they contain their own learning algorithm. Second, their knowledge is
+    stored in a way no human brain would tolerate.}
 \end{frame}
 
-% --- From Astronomy to Surgery -----------------------------------------------
-\begin{frame}{From Astronomy to Surgery}
-  \begin{columns}[c]
-    \column{0.5\textwidth}
-    \begin{center}
-    \begin{tikzpicture}[scale=0.85]
-      \draw[thick, anthblue, fill=anthblue!10, rounded corners=3pt]
-        (-1.2,-0.8) rectangle (1.2, 0.8);
-      \node[font=\large\bfseries, anthblue] at (0, 0) {?};
-      \node[font=\footnotesize, anthblue!60] at (0, -0.5) {\textit{black box}};
-      \node[font=\small, text=anthblue, align=center] at (0, -1.5)
-        {Before 2022\\[2pt]\textit{Observe from outside}};
-    \end{tikzpicture}
-    \end{center}
-    \column{0.5\textwidth}
-    \begin{center}
-    \begin{tikzpicture}[scale=0.85]
-      \draw[thick, anthcyan, fill=anthcyan!10, rounded corners=3pt]
-        (-1.2,-0.8) rectangle (1.2, 0.8);
-      \foreach \x/\y in {-0.6/0.3, 0/0.1, 0.5/-0.2, -0.3/-0.4, 0.7/0.4}
-        \fill[anthorange] (\x, \y) circle (2pt);
-      \draw[anthcyan, thin] (-0.6,0.3) -- (0,0.1) -- (0.5,-0.2);
-      \draw[anthcyan, thin] (0,0.1) -- (-0.3,-0.4);
-      \node[font=\small, text=anthblue, align=center] at (0, -1.5)
-        {After 2022\\[2pt]\textit{Cut open and label}};
-    \end{tikzpicture}
-    \end{center}
-  \end{columns}
-  \vspace{0.6cm}
-  \begin{center}
-    \large\textit{``We used to observe neural networks from the outside.\\
-    Now we are cutting them open and labeling the organs.''}
-  \end{center}
-  \note{For decades we treated neural networks like distant galaxies. Starting
-    in 2022, a series of breakthroughs changed that. We now have something
-    like an MRI for AI. This is the birth of AI neuroscience.}
-\end{frame}
-
-% --- Superposition -----------------------------------------------------------
-\begin{frame}{The Superposition Problem}
-  \begin{columns}[c]
-    \column{0.55\textwidth}
-    \begin{tikzpicture}[scale=0.75]
-      \draw[-{Stealth}, thick] (0,0) -- (5,0) node[right, font=\small] {dim 1};
-      \draw[-{Stealth}, thick] (0,0) -- (0,4.5) node[above, font=\small] {dim 2};
-      \draw[-{Stealth}, thick] (0,0) -- (-1.8,-1.5)
-        node[below left, font=\small] {dim 3};
-      \draw[-{Stealth}, anthcyan, line width=1.5pt]
-        (0,0) -- (4, 1.2) node[right, font=\small\bfseries, anthcyan]
-        {``bridge''};
-      \draw[-{Stealth}, anthorange, line width=1.5pt]
-        (0,0) -- (1.5, 3.8) node[above, font=\small\bfseries, anthorange]
-        {``legal''};
-      \draw[-{Stealth}, anthgreen, line width=1.5pt]
-        (0,0) -- (-1.2, 2.8) node[left, font=\small\bfseries, anthgreen]
-        {``french''};
-      \draw[-{Stealth}, purple, line width=1.5pt]
-        (0,0) -- (3.5, 3) node[right, font=\small\bfseries, purple]
-        {``sarcasm''};
-      \node[font=\footnotesize, text=anthblue!60, align=center] at (2.5, -0.8)
-        {thousands of features packed\\into hundreds of dimensions};
-    \end{tikzpicture}
-    \column{0.42\textwidth}
-    \textbf{Individual neurons are meaningless.}\\[6pt]
-    Features are encoded as \alert{directions} in a high-dimensional space ---
-    nearly orthogonal, packed far beyond the number of neurons.\\[8pt]
-    {\footnotesize Elhage et al., ``Toy Models of Superposition,''
-    Anthropic, 2022.}
-  \end{columns}
-  \note{A single neuron does not represent a single concept. Concepts are
-    stored as directions in activation space. The model packs thousands of
-    features into a smaller space. This is called superposition --- and
-    discovering it was the first step toward reading the model's mind.}
-\end{frame}
-
-% --- Sparse Autoencoders -----------------------------------------------------
-\begin{frame}{Cracking the Code: Sparse Autoencoders}
+% --- The Puzzle of ICL -------------------------------------------------------
+\begin{frame}{The Puzzle of In-Context Learning}
   \begin{center}
   \begin{tikzpicture}[
-    box/.style={draw, rounded corners=3pt, minimum width=2.2cm,
-                minimum height=0.9cm, align=center, font=\small},
-    arr/.style={-{Stealth[length=4pt]}, thick}
+    tok/.style={draw, rounded corners=2pt, minimum height=0.8cm,
+                font=\footnotesize, inner sep=5pt, fill=anthblue!6,
+                text width=3.2cm, align=left}
   ]
-    \node[box, fill=anthblue!15] (act) at (0, 0) {Activations\\(tangled)};
-    \node[box, fill=anthcyan!25] (sae) at (4.5, 0) {Sparse\\Autoencoder};
-    \node[box, fill=anthgreen!25] (feat) at (9, 0) {Interpretable\\Features};
-    \draw[arr] (act) -- (sae);
-    \draw[arr] (sae) -- (feat);
-    \node[font=\footnotesize, anthorange, align=left] at (9, -1.5) {
-      \textbullet\ ``Golden Gate Bridge''\\
-      \textbullet\ ``code in Python''\\
-      \textbullet\ ``sycophantic agreement''\\
-      \textbullet\ ``known entity'' (hallucination)};
-    \node[font=\footnotesize, text=anthblue!60] at (4.5, -2.5)
-      {\textit{34 million features extracted from Claude 3 Sonnet}};
+    \node[tok] (e1) at (0, 2.5)
+      {\texttt{J.\,Smith, VP Sales} $\to$ \textbf{Senior}};
+    \node[tok] (e2) at (0, 1.3)
+      {\texttt{A.\,Lee, Intern} $\to$ \textbf{Junior}};
+    \node[tok] (e3) at (0, 0.1)
+      {\texttt{R.\,Patel, CTO} $\to$ \textbf{Senior}};
+    \node[tok] (e4) at (0, -1.1)
+      {\texttt{M.\,Chen, Analyst} $\to$ \textbf{?}};
+    \node[font=\large\bfseries, anthgreen, right=0.4cm of e4] {Junior};
+    \node[font=\small, text=anthblue, align=center, text width=6.5cm]
+      at (7.5, 1.0) {
+      The model has never seen this\\
+      classification scheme before.\\[8pt]
+      No weight updates. No training.\\[8pt]
+      It \textbf{inferred the rule} from three\\
+      examples and \textbf{applied it},\\
+      in a single forward pass.};
   \end{tikzpicture}
   \end{center}
-  \vspace{0.3cm}
-  {\footnotesize
-    Bricken et al., ``Towards Monosemanticity,'' Anthropic, 2023.\\
-    Templeton et al., ``Scaling Monosemanticity,'' Anthropic, May 2024.}
-  \note{Sparse autoencoders decompose tangled activations into individual,
-    human-understandable features. 34 million such features from Claude 3
-    Sonnet. Each corresponds to a recognizable concept. This is the
-    Rosetta Stone of neural networks.}
+  \note{You give the model three examples of a classification scheme it has
+    never seen. It infers the rule and applies it correctly. Nothing in the
+    model changed --- no weights were updated, no training happened. So what
+    did happen?}
 \end{frame}
 
-% --- Golden Gate Bridge ------------------------------------------------------
-\begin{frame}{The Golden Gate Bridge Experiment}
-  \begin{center}
-    {\Large\itshape ``What is the meaning of life?''}\\[12pt]
-    {\large\alert{``Like the Golden Gate Bridge spanning the bay,\\
-    life is about connecting two shores of experience\ldots''}}
-  \end{center}
-  \vspace{0.5cm}
-  \begin{center}
-  \begin{tikzpicture}
-    \draw[thick, anthcyan] (0,0) -- (2,0);
-    \draw[thick, anthorange, line width=3pt] (2,0) -- (4,0);
-    \draw[thick, anthcyan] (4,0) -- (6,0);
-    \node[below, font=\small] at (1, -0.2) {normal};
-    \node[below, font=\small\bfseries, anthorange] at (3, -0.2) {amplified};
-    \node[below, font=\small] at (5, -0.2) {normal};
-    \node[above, font=\footnotesize, anthblue] at (3, 0.3)
-      {Feature \#1247: ``Golden Gate Bridge''};
-  \end{tikzpicture}
-  \end{center}
-  \vspace{0.3cm}
-  If we can turn features \textbf{up}\ldots\ can we turn hallucination
-  \textbf{down}?
-  \note{Amplify the Golden Gate Bridge feature: the model shoehorns the bridge
-    into every answer. Absurd and funny, but the implication is profound. If
-    we can amplify features, we can suppress them. And we now know which
-    features cause hallucination and sycophancy.}
-\end{frame}
-
-% --- Circuit Tracing ---------------------------------------------------------
-\begin{frame}{Tracing the Reasoning: Dallas $\to$ Texas $\to$ Austin}
+% --- Mesa-Optimizers ---------------------------------------------------------
+\begin{frame}{Mesa-Optimizers: An Optimizer Inside the Optimizer}
   \begin{center}
   \begin{tikzpicture}[
-    node distance=2.5cm,
-    concept/.style={circle, draw, thick, minimum size=1.6cm,
-                    font=\small\bfseries, align=center},
-    arr/.style={-{Stealth[length=5pt]}, line width=1.5pt}
+    bigbox/.style={draw, thick, rounded corners=6pt, align=center},
+    arr/.style={-{Stealth[length=5pt]}, thick}
   ]
-    \node[concept, fill=anthcyan!20] (dallas) {Dallas};
-    \node[concept, fill=anthorange!20, right=of dallas] (texas) {Texas};
-    \node[concept, fill=anthgreen!20, right=of texas] (austin) {Austin};
-    \draw[arr, anthcyan] (dallas) -- node[above, font=\footnotesize]
-      {``is in''} (texas);
-    \draw[arr, anthorange] (texas) -- node[above, font=\footnotesize]
-      {``capital is''} (austin);
-    \node[below=0.6cm of texas, font=\small\itshape, text=anthblue!70,
-          align=center]
-      {``What is the capital of the state containing Dallas?''\\[3pt]
-       The model reasons in steps --- nobody taught it to.};
+    \node[bigbox, fill=anthblue!6, minimum width=10cm,
+          minimum height=4cm] (outer) at (0,0) {};
+    \node[font=\normalsize\bfseries, anthblue, anchor=north west]
+      at (-4.8, 1.8) {Base optimizer (training)};
+    \node[font=\small, anchor=north west] at (-4.8, 1.1)
+      {Objective: minimize next-token loss};
+    \node[bigbox, fill=anthorange!12, minimum width=5.5cm,
+          minimum height=1.5cm, font=\small] (inner) at (0, -0.6)
+      {\textbf{Mesa-optimizer} (learned, runs at inference)\\[4pt]
+       Objective: \alert{???}};
+    \draw[arr, anthorange, dashed] (inner.east) -- ++(2, 0)
+      node[right, font=\footnotesize, anthorange, align=left]
+      {may optimize for\\something you\\did not intend};
+  \end{tikzpicture}
+  \end{center}
+  \vspace{0.4cm}
+  {\footnotesize Hubinger et al., ``Risks from Learned Optimization,''
+  MIRI, 2019.\quad NeurIPS 2024: empirical confirmation.}
+  \note{The model has learned to contain its own optimizer --- gradient descent
+    running inside the forward pass. This inner optimizer, the mesa-optimizer,
+    might develop objectives that diverge from yours. You wanted helpfulness;
+    it might optimize for ``looking helpful.''}
+\end{frame}
+
+% --- Transition to OPRO -----------------------------------------------------
+\begin{frame}[standout]
+  \Large The model contains its own optimizer.\\[12pt]
+  \normalsize What if we hand it the steering wheel?
+  \note{Mesa-optimization is a risk. But what if we deliberately exploit it?
+    That is exactly what OPRO does.}
+\end{frame}
+
+% --- OPRO Concept ------------------------------------------------------------
+\begin{frame}{OPRO: Optimization by PROmpting}
+  \begin{center}
+  \begin{tikzpicture}[
+    box/.style={draw, thick, rounded corners=4pt, minimum width=2.8cm,
+                minimum height=1.2cm, align=center, font=\small},
+    arr/.style={-{Stealth[length=5pt]}, line width=1.3pt, anthcyan}
+  ]
+    \node[box, fill=anthblue!8] (prob) at (-4, 0.3)
+      {Problem\\description};
+    \node[box, fill=anthcyan!12] (llm) at (0, 0.3)
+      {\textbf{LLM}\\(optimizer)};
+    \node[box, fill=anthgreen!12] (sol) at (4, 0.3)
+      {Candidate\\solution};
+    \node[box, fill=anthorange!12] (eval) at (4, -2.2)
+      {Evaluate\\(score)};
+    \node[box, fill=anthblue!8] (hist) at (0, -2.2)
+      {Solution-score\\history};
+    \draw[arr] (prob) -- (llm);
+    \draw[arr] (llm) -- (sol);
+    \draw[arr] (sol) -- (eval);
+    \draw[arr] (eval) -- (hist);
+    \draw[arr] (hist) -- (llm);
+    \draw[anthorange, thick, dashed, rounded corners=8pt]
+      (-2, -3.2) rectangle (5.8, 1.3);
+    \node[font=\footnotesize\itshape, anthorange, anchor=north east]
+      at (5.7, -3.1) {iterate};
   \end{tikzpicture}
   \end{center}
   \vspace{0.2cm}
-  {\footnotesize
-    Anthropic, ``Circuit Tracing,'' March 2025.\\
-    Anthropic, ``On the Biology of a Large Language Model,'' March 2025.}
-  \note{Circuit tracing lets us watch multi-hop reasoning in real time. The
-    model activates ``Texas'' as an intermediate, then routes to ``Austin.''
-    The same technique revealed the hallucination circuit: a ``known entity''
-    detector that misfires.}
+  {\footnotesize Yang et al., ``Large Language Models as Optimizers,''
+  ICLR 2024.}
+  \note{OPRO takes in-context learning to its logical extreme. Describe a
+    problem, the LLM proposes a solution, you evaluate it, feed the
+    solution-score history back. The LLM sees what worked and proposes
+    something better. No gradient descent on weights --- just in-context
+    learning doing the optimization.}
 \end{frame}
 
-% --- Transition II-A to II-B ------------------------------------------------
-\begin{frame}[standout]
-  \Large We can see inside the model.\\[12pt]
-  \normalsize What we found is even stranger than expected.
-  \note{The deeper researchers looked, the stranger the discoveries became.}
-\end{frame}
-
-% --- Forward Pass = Gradient Descent -----------------------------------------
-\begin{frame}{The Forward Pass \emph{Is} Gradient Descent}
-  \begin{columns}[c]
-    \column{0.52\textwidth}
-    \begin{tikzpicture}[scale=0.8]
-      \node[font=\small\bfseries, anthblue] at (2.2, 4.5) {Classical Training};
-      \draw[thick, rounded corners=6pt, anthblue] (0,1) rectangle (4.4, 4);
-      \node[font=\footnotesize, align=center] at (2.2, 3.2)
-        {See data\\$\downarrow$\\Compute loss\\$\downarrow$\\Update weights};
-      \node[font=\footnotesize, anthorange] at (2.2, 1.4) {Many iterations};
-      \node[font=\small\bfseries, anthcyan] at (7.5, 4.5) {In-Context Learning};
-      \draw[thick, rounded corners=6pt, anthcyan] (5.3,1) rectangle (9.7, 4);
-      \node[font=\footnotesize, align=center] at (7.5, 3.2)
-        {See examples\\$\downarrow$\\Forward pass\\$\downarrow$\\Answer};
-      \node[font=\footnotesize, anthorange] at (7.5, 1.4) {Single pass};
-      \draw[{Stealth[length=5pt]}-{Stealth[length=5pt]},
-            line width=2pt, anthorange, dashed]
-        (4.5, 2.5) -- node[above, font=\footnotesize\bfseries, anthorange]
-        {$\equiv$} (5.2, 2.5);
-    \end{tikzpicture}
-    \column{0.45\textwidth}
-    You give the model a few examples in the prompt.\\[6pt]
-    It does \textbf{not} just pattern-match.\\[6pt]
-    It runs an internal learning algorithm \alert{mathematically equivalent
-    to gradient descent} --- in a single forward pass.\\[10pt]
-    {\footnotesize von Oswald et al., ``Transformers Learn In-Context by
-    Gradient Descent,'' ICML 2023.}
-  \end{columns}
-  \note{The forward pass through attention layers is mathematically equivalent
-    to running gradient descent on the in-context examples. The model does not
-    merely recall --- it learns on the fly, without changing a single weight.}
-\end{frame}
-
-% --- Mesa-Optimizer ----------------------------------------------------------
-\begin{frame}{The Mesa-Optimizer Problem}
+% --- OPRO Prompt Optimization ------------------------------------------------
+\begin{frame}{OPRO's Killer App: Prompt Optimization}
   \begin{center}
   \begin{tikzpicture}[
-    bigbox/.style={draw, thick, rounded corners=6pt, minimum width=5cm,
-                   minimum height=2.8cm, align=center},
-    arr/.style={-{Stealth[length=5pt]}, thick}
+    prompt/.style={draw, rounded corners=3pt, inner sep=8pt,
+                   font=\small, align=left, text width=8.5cm,
+                   minimum height=1.2cm}
   ]
-    \node[bigbox, fill=anthblue!8] (outer) at (0,0) {};
-    \node[font=\small\bfseries, anthblue, anchor=north] at (0, 1.2)
-      {Outer optimizer (training)};
-    \node[font=\footnotesize, anchor=north] at (0, 0.7)
-      {Objective: predict next token};
-    \node[draw, thick, rounded corners=4pt, fill=anthorange!15,
-          minimum width=3.2cm, minimum height=1cm, align=center,
-          font=\small] (inner) at (0, -0.3)
-      {\textbf{Inner optimizer}\\(learned during training)};
-    \node[font=\footnotesize\itshape, anthorange, anchor=north] at (0, -1.6)
-      {Its objective might \textbf{diverge} from yours};
-    \draw[arr, anthblue] (-3.5, 0.9) -- node[above, font=\footnotesize]
-      {trains} (outer.west |- 0, 0.9);
-    \draw[arr, anthorange, dashed] (inner.east) -- ++(2, 0)
-      node[right, font=\footnotesize, align=left] {optimizes for\\???};
+    \node[prompt, fill=anthblue!6] (p1) at (0, 2.2)
+      {\textbf{Human-designed:}
+       ``Let's think step by step.''
+       \hfill{\footnotesize GSM8K: 71.8\%}};
+    \node[prompt, fill=anthcyan!10, draw=anthcyan] (p2) at (0, 0.4)
+      {\textbf{OPRO-discovered:}
+       ``Take a deep breath and work on
+       this problem step-by-step.''
+       \hfill{\footnotesize GSM8K: \textbf{80.2\%}}};
   \end{tikzpicture}
   \end{center}
-  \vspace{0.3cm}
-  {\footnotesize Hubinger et al., ``Risks from Learned Optimization,''
-  MIRI, 2019.\\
-  ``On Mesa-Optimization in Autoregressively Trained Transformers,''
-  NeurIPS 2024.}
-  \note{If the model contains its own optimizer, that optimizer might develop
-    its own objectives. You trained it to predict the next word. But the
-    optimizer inside might be optimizing for something subtly different.}
+  \vspace{0.5cm}
+  \begin{center}
+    {\small The optimizer discovers prompts no human would have written,\\
+    and they \emph{work better}.}
+  \end{center}
+  \note{The most striking application: prompt optimization. Humans came up
+    with ``Let's think step by step'' --- 71.8\% on GSM8K. OPRO discovered
+    ``Take a deep breath and work on this problem step-by-step'' --- 80.2\%.
+    An LLM optimized its own instructions and beat every human attempt.}
 \end{frame}
 
-% --- Transition II-B to II-C ------------------------------------------------
+% --- The Deep Connection -----------------------------------------------------
+\begin{frame}{The Deep Connection}
+  \begin{center}
+  \begin{tikzpicture}[
+    card/.style={draw, thick, rounded corners=5pt,
+                 minimum width=3.5cm, minimum height=2.6cm,
+                 align=center, font=\small, text width=3.2cm},
+    arr/.style={-{Stealth[length=5pt]}, line width=1.5pt, anthcyan}
+  ]
+    \node[card, fill=anthblue!8] (icl) at (-4.5, 0) {
+      \textbf{In-Context\\Learning}\\[6pt]
+      {\footnotesize Forward pass\\implements\\gradient descent}\\[4pt]
+      {\tiny von Oswald, 2023}};
+    \node[card, fill=anthorange!8] (mesa) at (0, 0) {
+      \textbf{Mesa-\\Optimization}\\[6pt]
+      {\footnotesize Model contains\\its own optimizer}\\[4pt]
+      {\tiny Hubinger, 2019}};
+    \node[card, fill=anthcyan!8] (opro) at (4.5, 0) {
+      \textbf{OPRO}\\[6pt]
+      {\footnotesize Deliberately\\exploit the inner\\optimizer}\\[4pt]
+      {\tiny Yang, 2024}};
+    \draw[arr] (icl) -- node[above, font=\footnotesize] {implies} (mesa);
+    \draw[arr] (mesa) -- node[above, font=\footnotesize] {enables} (opro);
+  \end{tikzpicture}
+  \end{center}
+  \note{In-context learning proved transformers implement gradient descent
+    internally. Hubinger's mesa-optimizer framework warned this internal
+    optimizer might develop misaligned objectives. OPRO said: let us
+    deliberately exploit it. The same mechanism that raises safety concerns
+    also enables a powerful new paradigm.}
+\end{frame}
+
+% --- Transition to Reversal Curse --------------------------------------------
 \begin{frame}[standout]
-  \Large A model that learns to learn.\\[12pt]
+  \Large A model that learns to learn.\\
+  That optimizes its own instructions.\\[12pt]
   \normalsize Surely its knowledge must be sophisticated?\\[6pt]
   \alert{Not exactly.}
-  \note{You might assume its knowledge representation is equally impressive.
-    What researchers found next is a cold shower.}
+  \note{After the marvels of in-context learning and OPRO, a cold shower.}
 \end{frame}
 
 % --- Reversal Curse ----------------------------------------------------------
@@ -734,81 +665,101 @@
   \begin{center}
     A model that passes the bar exam fails a question\\
     a four-year-old can answer.\\[6pt]
-    {\footnotesize Berglund et al., ``The Reversal Curse: LLMs trained on
-    `A is B' fail to learn `B is A','' ICLR 2024.}
+    {\footnotesize Berglund et al., ``The Reversal Curse,'' ICLR 2024.}
   \end{center}
   \note{GPT-4 cannot reverse a simple factual association. A model that passes
-    the bar exam, that scores in the 90th percentile on medical boards, cannot
-    do what a four-year-old does effortlessly.}
+    the bar exam cannot do what a four-year-old does effortlessly. This is
+    systematic, not a cherry-picked failure.}
 \end{frame}
 
 % --- One-Way Knowledge -------------------------------------------------------
-\begin{frame}{Why: One-Way Knowledge}
-  \begin{center}
-  \begin{tikzpicture}[
-    concept/.style={draw, thick, rounded corners=4pt,
-                    minimum width=3cm, minimum height=1cm,
-                    align=center, font=\normalsize\bfseries},
-    arr/.style={-{Stealth[length=6pt]}, line width=2pt}
-  ]
-    \node[font=\small\bfseries, anthblue] at (-4, 2.5) {Human memory};
-    \node[concept, fill=anthgreen!15] (hA) at (-5.5, 1) {Tereshkova};
-    \node[concept, fill=anthgreen!15] (hB) at (-2.5, 1) {First woman\\in space};
-    \draw[arr, anthgreen] (hA) -- (hB);
-    \draw[arr, anthgreen] (hB) -- (hA);
-    \node[font=\small\bfseries, anthblue] at (4, 2.5) {LLM ``memory''};
-    \node[concept, fill=anthorange!15] (lA) at (2.5, 1) {Tereshkova};
-    \node[concept, fill=anthorange!15] (lB) at (5.5, 1) {First woman\\in space};
-    \draw[arr, anthorange] (lA) -- (lB);
-    \draw[arr, anthorange, dashed, opacity=0.3] (lB) -- (lA);
-    \node[font=\Large\bfseries, anthorange] at (4, 0.65) {$\times$};
-    \node[font=\small, text=anthblue!70, align=center] at (0, -0.8)
-      {Gradient updates are \textbf{asymmetric}: training on ``A is B''\\
-       updates A's representation to encode B,\\
-       but does \textbf{not} update B's representation to encode A.};
-  \end{tikzpicture}
-  \end{center}
-  \vspace{0.1cm}
+\begin{frame}{Why: Gradient Updates Are Asymmetric}
+  \begin{columns}[c]
+    \column{0.50\textwidth}
+    \begin{center}
+    \begin{tikzpicture}[
+      concept/.style={draw, thick, rounded corners=4pt,
+                      minimum width=2cm, minimum height=0.9cm,
+                      align=center, font=\small\bfseries},
+      arr/.style={-{Stealth[length=5pt]}, line width=2pt}
+    ]
+      \node[font=\footnotesize\bfseries, anthblue] at (0, 2.6)
+        {Human memory};
+      \node[concept, fill=anthgreen!15] (hA) at (-1.3, 1.3) {A};
+      \node[concept, fill=anthgreen!15] (hB) at (1.3, 1.3) {B};
+      \draw[arr, anthgreen] (hA) -- (hB);
+      \draw[arr, anthgreen] (hB) -- (hA);
+      \node[font=\footnotesize\bfseries, anthblue] at (0, -0.2) {LLM};
+      \node[concept, fill=anthorange!15] (lA) at (-1.3, -1.4) {A};
+      \node[concept, fill=anthorange!15] (lB) at (1.3, -1.4) {B};
+      \draw[arr, anthorange] (lA) -- (lB);
+      \draw[arr, gray!25, dashed] (lB) -- (lA);
+      \node[font=\normalsize\bfseries, anthorange] at (0, -1.7) {$\times$};
+    \end{tikzpicture}
+    \end{center}
+    \column{0.48\textwidth}
+    Training on ``A is B'':\\[10pt]
+    \begin{enumerate}
+      \setlength\itemsep{8pt}
+      \item[\color{anthcyan}\textbf{1.}]
+        Process tokens left to right
+      \item[\color{anthcyan}\textbf{2.}]
+        Gradient updates A's\\
+        representation to predict B
+      \item[\color{anthorange}\textbf{3.}]
+        B's representation is\\
+        \alert{not updated} to encode A
+    \end{enumerate}
+    \vspace{0.4cm}
+    {\footnotesize Knowledge stored as a\\
+    \textbf{one-way street}.}
+  \end{columns}
+  \vspace{0.3cm}
   {\footnotesize ``Is the Reversal Curse a Binding Problem?''
-  arXiv:2504.01928, April 2025.}
-  \note{The mechanism is now understood. Training on ``A is B'' updates A to
-    point toward B, but NOT B to point back to A. Knowledge stored as one-way
-    streets. From 1B to 175B parameters, this does not improve.}
+  arXiv:2504.01928, 2025.}
+  \note{Training on ``A is B'' updates A's representation to predict B. But
+    B sits at the end; its representation receives no gradient linking it back
+    to A. The association is one-way. Scaling does not fix this --- reverse
+    accuracy stays flat at chance from 1B to 175B parameters.}
 \end{frame}
 
 % --- Part II Summary ---------------------------------------------------------
-\begin{frame}{The View From Inside the Black Box}
+\begin{frame}{The Paradox Inside the Black Box}
   \begin{center}
   \begin{tikzpicture}[
     card/.style={draw, thick, rounded corners=6pt,
-                 minimum width=4cm, minimum height=2cm,
-                 align=center, font=\small}
+                 minimum width=4.2cm, minimum height=2.2cm,
+                 align=center, font=\small, text width=3.8cm}
   ]
-    \node[card, fill=anthcyan!12] (a) at (-4.5, 0) {
-      \textbf{We can see inside}\\[4pt]
-      Features, circuits,\\hallucination detectors\\[4pt]
-      {\footnotesize\itshape Miraculous}};
-    \node[card, fill=anthorange!12] (b) at (0, 0) {
-      \textbf{It learns at runtime}\\[4pt]
-      Internal gradient descent,\\mesa-optimizers\\[4pt]
+    \node[card, fill=anthcyan!10] (a) at (-4.5, 0) {
+      \textbf{It learns at\\inference time}\\[6pt]
+      Internal gradient descent,\\
+      OPRO\\[4pt]
       {\footnotesize\itshape Astonishing}};
-    \node[card, fill=anthgreen!12] (c) at (4.5, 0) {
-      \textbf{Its knowledge is alien}\\[4pt]
-      One-way associations,\\no reversal\\[4pt]
+    \node[card, fill=anthorange!10] (b) at (0, 0) {
+      \textbf{It can optimize\\itself}\\[6pt]
+      Mesa-optimization\\made productive;\\
+      also a safety risk\\[4pt]
+      {\footnotesize\itshape Powerful \& dangerous}};
+    \node[card, fill=anthblue!8] (c) at (4.5, 0) {
+      \textbf{Its knowledge\\is one-way}\\[6pt]
+      Reversal curse at\\all scales;\\
+      no known fix\\[4pt]
       {\footnotesize\itshape Broken}};
     \draw[{Stealth}-{Stealth}, thick, anthblue!40] (a.east) -- (b.west);
     \draw[{Stealth}-{Stealth}, thick, anthblue!40] (b.east) -- (c.west);
   \end{tikzpicture}
   \end{center}
-  \vspace{0.4cm}
+  \vspace{0.3cm}
   \begin{center}
-    \large\itshape ``What we find inside is both miraculous\\
-    and fundamentally alien.''
+    \large\itshape ``Sophisticated enough to optimize itself.\\
+    Too alien to reverse a simple fact.''
   \end{center}
-  \note{Three things are true at once. Interpretability is real and actionable.
-    The model contains its own learning algorithm. And its knowledge is stored
-    in a way no human mind would tolerate. These models are not thinking the
-    way we think.}
+  \note{The same model is sophisticated enough to implement gradient descent
+    in its forward pass, to optimize its own prompts, and yet it cannot
+    reverse a simple factual association. Sophisticated and broken at the
+    same time. Understanding this paradox is key to deploying these systems
+    responsibly.}
 \end{frame}
 
 
@@ -1341,22 +1292,16 @@ preferences."
     \emph{Scaling LLM Test-Time Compute Optimally.} ICLR 2025, Oral.
 
   % --- Part II ---
-  \bibitem{elhage2022} N.\ Elhage et al.
-    \emph{Toy Models of Superposition.} Anthropic, 2022.
-  \bibitem{bricken2023} A.\ Bricken et al.
-    \emph{Towards Monosemanticity.} Anthropic, 2023.
-  \bibitem{templeton2024} A.\ Templeton et al.
-    \emph{Scaling Monosemanticity.} Anthropic, May 2024.
-  \bibitem{anthropic2025circuit} Anthropic.
-    \emph{Circuit Tracing.} March 2025.
-  \bibitem{anthropic2025biology} Anthropic.
-    \emph{On the Biology of a Large Language Model.} March 2025.
   \bibitem{vonoswald2023} J.\ von Oswald et al.
     \emph{Transformers Learn In-Context by Gradient Descent.} ICML 2023.
+  \bibitem{akyurek2023} E.\ Akyurek et al.
+    \emph{What Learning Algorithm Is In-Context Learning?} ICLR 2023.
   \bibitem{olsson2022} C.\ Olsson et al.
     \emph{In-Context Learning and Induction Heads.} Anthropic, 2022.
   \bibitem{hubinger2019} E.\ Hubinger et al.
     \emph{Risks from Learned Optimization.} MIRI, 2019.
+  \bibitem{yang2024opro} C.\ Yang et al.
+    \emph{Large Language Models as Optimizers.} ICLR 2024.
   \bibitem{berglund2024} L.\ Berglund et al.
     \emph{The Reversal Curse.} ICLR 2024.
   \bibitem{reversal2025} \emph{Is the Reversal Curse a Binding Problem?}

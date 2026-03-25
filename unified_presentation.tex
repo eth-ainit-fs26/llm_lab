@@ -304,15 +304,16 @@
   \begin{columns}[T]
     \begin{column}{0.48\textwidth}
       \textbf{Standard prompting:}\\[0.3em]
-      {\small\texttt{Q: Roger has 5 tennis balls.\\
-      He buys 2 cans of 3 balls.\\
-      How many does he have?}\\[0.3em]
+      {\small\texttt{Q: Roger has 5 tennis balls.}\\
+      \texttt{He buys 2 cans of 3 balls.}\\
+      \texttt{How many does he have?}\\[0.3em]
       \texttt{A: 11}}
+
       \vspace{0.8em}
       \textbf{Chain-of-thought:}\\[0.3em]
-      {\small\texttt{A: Roger started with 5.\\
-      2 cans $\times$ 3 = 6 new balls.\\
-      5 + 6 = \alert{11}. The answer is 11.}}
+      {\small\texttt{A: Roger started with 5.}\\
+      \texttt{2 cans $\times$ 3 = 6 new balls.}\\
+      \texttt{5 + 6 = \alert{11}. The answer is 11.}}
     \end{column}
     \begin{column}{0.48\textwidth}
       \begin{tabular}{lc}
@@ -325,11 +326,15 @@
         \bottomrule
       \end{tabular}
       \vspace{0.8em}
-      {\small Zero fine-tuning. Just 8 hand-written
-      exemplars with reasoning steps.}
+
+      {\small Zero fine-tuning.\\
+      Just 8 hand-written exemplars\\
+      with reasoning steps.}
       \vspace{0.5em}
-      {\scriptsize Wei et al., ``Chain-of-Thought Prompting Elicits Reasoning
-      in LLMs,'' NeurIPS 2022.}
+
+      {\scriptsize Wei et al., ``Chain-of-Thought\\
+      Prompting Elicits Reasoning in\\
+      LLMs,'' NeurIPS 2022.}
     \end{column}
   \end{columns}
   \note{A simple trick: show the model examples that include reasoning steps.

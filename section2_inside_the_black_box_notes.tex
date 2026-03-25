@@ -509,16 +509,19 @@ a few examples provided in the prompt, without any gradient updates to
 the model's parameters.
 
 \begin{examplebox}[title={In-Context Learning}]
-Consider a prompt like:
+Consider a prompt that defines an \emph{entirely novel} classification
+scheme:
 \begin{verbatim}
-  English: cat    -> French: chat
-  English: dog    -> French: chien
-  English: house  -> French: ?
+  "J. Smith, VP Sales, Acme Corp"   -> Senior
+  "A. Lee, Intern, Globex"          -> Junior
+  "R. Patel, CTO, Initech"          -> Senior
+  "M. Chen, Analyst, Contoso"       -> ?
 \end{verbatim}
-A sufficiently large language model will complete this with ``maison'' ---
-not because it has memorized this translation table, but because it has
-\emph{inferred the task} (English-to-French translation) from the examples
-and \emph{applied} it to the new input.
+A sufficiently large language model will correctly complete this with
+``Junior.''  This is a novel labeling task that does not appear in the
+training data.  The model has \emph{inferred the classification rule}
+(seniority based on job title) from three examples and \emph{applied}
+it to a new input, without any weight updates.
 \end{examplebox}
 
 This is surprising because the model's parameters are \emph{fixed} during

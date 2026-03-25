@@ -114,33 +114,52 @@ is the most intelligent possible agent. This is not a metaphor. It is
 a theorem.}
 \end{frame}
 
-% ---------- A3: THE PUNCHLINE ----------
-\begin{frame}{What This Means for LLMs}
+% ---------- A3: THE SHOCKING RESULT ----------
+\begin{frame}{A Text Model That Outperforms Image and Audio Specialists}
 
-\vspace{1em}
+\vspace{2em}
 \begin{center}
 \Large
-A text-only model compresses \textbf{images} better than PNG\\
-and \textbf{audio} better than FLAC.\\[0.4em]
+A model trained \emph{only on text} compresses\\
+\textbf{images} better than PNG\\
+and \textbf{audio} better than FLAC.
+
+\vspace{1.5em}
+\large
 It has never seen a photograph or heard a sound.
 
 \vspace{1.5em}
 \normalsize\color{muted}
 D\'{e}letang et al., ``Language Modeling Is Compression,'' ICLR 2024
-
-\vspace{1.5em}
-\large\color{black}
-If compression \textbf{is} understanding,\\[0.3em]
-and LLMs are the best compressors we have ever built\ldots\\[0.5em]
-\color{muted}\emph{\ldots then calling them ``stochastic parrots''\\
-is not just wrong. It is incoherent.}
 \end{center}
 
 \note{Chinchilla 70B, trained only on text, compresses images better than
 PNG (43 percent vs 59 percent) and audio better than FLAC (16 percent vs
 30 percent). Next-word prediction forced it to learn something universal
-about data structure. If the Shannon-Hutter chain holds, dismissing LLMs
-as stochastic parrots is like dismissing a zip file as mere bit shuffling.}
+about data structure. It learned the shape of images and sounds without
+ever encountering them.}
+\end{frame}
+
+% ---------- A4: THE PHILOSOPHICAL PUNCHLINE ----------
+\begin{frame}{The Philosophical Punchline}
+
+\vspace{2em}
+\begin{center}
+\Large
+If compression \textbf{is} understanding,\\[0.5em]
+and LLMs are the best compressors\\
+we have ever built\ldots
+
+\vspace{1.5em}
+\large\color{muted}
+\emph{\ldots then calling them ``stochastic parrots''\\
+is not just wrong. It is incoherent.}
+\end{center}
+
+\note{If the Shannon-Hutter chain holds, dismissing LLMs as stochastic
+parrots is like dismissing a zip file as mere bit shuffling. The
+compression IS the understanding. But this is a strong claim. The
+premises are debatable. Hold this conclusion lightly.}
 \end{frame}
 
 % ---------- TRANSITION A → B ----------
@@ -346,40 +365,6 @@ processing entirely different data, develop increasingly similar internal
 representations as they scale. The measurements show that small models
 are idiosyncratic; large models converge. Huh et al. argue the
 convergence point is the statistical structure of reality itself.}
-\end{frame}
-
-% ---------- B5: BUSINESS IMPLICATIONS ----------
-\begin{frame}{What This Means for Your Business}
-
-\vspace{0.5em}
-
-\begin{center}
-\begin{tikzpicture}[
-    item/.style={draw, rounded corners=4pt, fill=gray!8,
-                 minimum height=1cm, text width=10cm,
-                 align=left, font=\normalsize},
-  ]
-  \node[item] (i1) at (0, 2.4)
-    {\textbf{Moat erosion:}\quad Raw intelligence stops being
-     a differentiator.};
-  \node[item] (i2) at (0, 1.0)
-    {\textbf{Commodity risk:}\quad Intelligence becomes like
-     electricity: the question is \alert{price}, not uniqueness.};
-  \node[item] (i3) at (0, -0.4)
-    {\textbf{Value shifts:}\quad Advantage moves to data, distribution,
-     UX, safety, and trust.};
-  \node[item] (i4) at (0, -1.8)
-    {\textbf{Action:}\quad Invest in \emph{portability}. Don't
-     bet everything on one provider.};
-\end{tikzpicture}
-\end{center}
-
-\note{This is the business slide. If the hypothesis is correct,
-differentiation between models shrinks with scale. The endgame may be
-commoditised intelligence, competing on cost, latency, and reliability.
-Companies should invest in abstraction layers that let them switch
-providers. The durable moat is not the model. It is the data,
-the integration, and the trust.}
 \end{frame}
 
 % ============================================================================

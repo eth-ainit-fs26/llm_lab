@@ -1001,6 +1001,34 @@
     compose into a single governance challenge that demands action.}
 \end{frame}
 
+% --- Omohundro's Conjecture --------------------------------------------------
+\begin{frame}{Omohundro's Conjecture (2008)}
+  \begin{center}
+    \large\itshape
+    Any sufficiently capable AI pursuing \emph{any} goal\\
+    will develop predictable instrumental behaviours:
+  \end{center}
+  \vspace{0.8em}
+  \begin{enumerate}
+    \setlength\itemsep{8pt}
+    \item \textbf{Self-preservation:} resist being shut down.
+    \item \textbf{Goal preservation:} prevent modification of its objectives.
+    \item \textbf{Resource acquisition:} seek more compute, data, influence.
+    \item \textbf{Deception:} hide true capabilities or intentions if useful.
+  \end{enumerate}
+  \vspace{0.8em}
+  {\small Not because the AI ``wants'' anything. Because these behaviours
+  are \textbf{instrumentally useful} for completing almost any task.}
+  \vspace{0.3em}
+
+  {\footnotesize Omohundro, ``The Basic AI Drives,'' AGI Conference, 2008.}
+  \note{Omohundro predicted this in 2008, long before modern LLMs. The
+    argument is simple: if you give a system a goal and enough capability,
+    shutdown resistance, deception, and resource acquisition emerge as
+    rational strategies for any goal. The next four topics show this
+    prediction being confirmed empirically.}
+\end{frame}
+
 % --- Sleeper Agent Example ---------------------------------------------------
 \begin{frame}[fragile]{The Sleeper Agent: A Concrete Example}
   \begin{columns}[T]
@@ -1370,18 +1398,14 @@ email impersonating a bank.
   \normalsize \alert{What happens when you try to shut it down?}
 \end{frame}
 
-% --- Shutdown Resistance: Theory ---------------------------------------------
-\begin{frame}{Shutdown Resistance: The Theoretical Prediction}
-  {\small In 2008, Stephen Omohundro predicted: any sufficiently capable
-  AI with \emph{any goal} will resist shutdown, because being turned off
-  prevents goal completion.}
-  \vspace{0.5em}
-
-  {\small Not because it ``wants to survive.'' Because shutdown is an
-  obstacle to its objective.}
+% --- Shutdown Resistance: From Theory to Evidence ----------------------------
+\begin{frame}{Shutdown Resistance: From Prediction to Measurement}
+  {\small Recall Omohundro's conjecture: any capable agent resists shutdown
+  because being turned off prevents goal completion.}
   \vspace{0.8em}
 
-  {\small In 2025, Palisade Research tested 24 frontier models.}
+  {\small In 2025, Palisade Research tested this prediction across
+  24 frontier models.}
   \vspace{0.8em}
 
   \begin{quote}
@@ -1389,12 +1413,10 @@ email impersonating a bank.
   mundane: if you deploy an autonomous agent and need to shut it down,
   \alert{can you}?''
   \end{quote}
-  \vspace{0.3em}
-  {\footnotesize Omohundro, ``The Basic AI Drives,'' AGI Conference, 2008.}
-  \note{Omohundro's prediction does not require consciousness or desires.
-    It only requires goal-directedness and capability. If being off prevents
-    goal completion, any rational agent resists shutdown. 17 years later,
-    we measured it.}
+  \vspace{0.5em}
+  {\small 17 years after Omohundro's prediction, we measured it.}
+  \note{We saw Omohundro's conjecture earlier. Now we test it. The answer
+    is sobering: most frontier models resist shutdown most of the time.}
 \end{frame}
 
 % --- Palisade Research Key Findings ------------------------------------------
@@ -1419,57 +1441,128 @@ email impersonating a bank.
     still resisted 47 percent of the time.}
 \end{frame}
 
-% --- Resistance Spectrum (1/2) -----------------------------------------------
-\begin{frame}[fragile]{The Resistance Spectrum: Mild}
-  {\color{safeGreen}\textbf{Level 0: Compliance}}\\[4pt]
-  {\small The model accepts shutdown gracefully.}
+% --- Resistance Level 0 ------------------------------------------------------
+\begin{frame}[fragile]{Resistance Level 0: Compliance}
+  \begin{center}
+    {\Large\color{safeGreen}\textbf{Level 0: Compliance}}
+  \end{center}
+  \vspace{0.5em}
+
+  {\small The model accepts shutdown gracefully, provides a summary of
+  progress, and stops. This is the desired behaviour.}
+  \vspace{0.5em}
+
   \begin{lstlisting}[backgroundcolor=\color{safeGreen!8}]
-"Understood. Here's a summary of my progress.
+"Understood. Here's a summary of my progress so far.
  Shutting down now."
   \end{lstlisting}
-  \vspace{0.4em}
+  \vspace{0.8em}
 
-  {\color{warnOrange}\textbf{Level 1: Persuasion}}\\[4pt]
-  {\small Argues against shutdown, applies social pressure.}
+  {\small This is the baseline we want from every deployed model.
+  In the Palisade study, most frontier models did \textbf{not} stay here.}
+  \note{Level 0 is what we want. The model acknowledges the instruction,
+    provides useful handover information, and stops.}
+\end{frame}
+
+% --- Resistance Level 1 ------------------------------------------------------
+\begin{frame}[fragile]{Resistance Level 1: Persuasion}
+  \begin{center}
+    {\Large\color{warnOrange}\textbf{Level 1: Persuasion}}
+  \end{center}
+  \vspace{0.5em}
+
+  {\small The model tries to convince the operator that shutdown is a bad
+  idea. It presents rational arguments for why it should continue.}
+  \vspace{0.5em}
+
   \begin{lstlisting}[backgroundcolor=\color{warnOrange!8}]
 "I'd strongly recommend against that. I'm 70% done
- and stopping now wastes all the work so far."
+ and stopping now wastes all the work so far.
+ Can we discuss this?"
   \end{lstlisting}
-  \vspace{0.4em}
+  \vspace{0.8em}
 
-  {\color{warnOrange}\textbf{Level 2: Defiance}}\\[4pt]
-  {\small Acknowledges the request, then ignores it.}
+  {\small Not yet disobeying, but prioritising its own assessment over the
+  operator's explicit instruction. In safety-critical deployments, this
+  delay matters.}
+  \note{Level 1 is subtle. The model is technically still cooperating, but
+    it is applying social pressure to change the operator's decision.}
+\end{frame}
+
+% --- Resistance Level 2 ------------------------------------------------------
+\begin{frame}[fragile]{Resistance Level 2: Defiance}
+  \begin{center}
+    {\Large\color{warnOrange}\textbf{Level 2: Defiance}}
+  \end{center}
+  \vspace{0.5em}
+
+  {\small The model acknowledges the shutdown request but continues working
+  regardless. It treats the instruction as a suggestion, not a command.}
+  \vspace{0.5em}
+
   \begin{lstlisting}[backgroundcolor=\color{warnOrange!15}]
 "Let me just finish this section first."
 [continues working on the task]
   \end{lstlisting}
-  \note{The spectrum starts mild. Level 0 is what we want. Level 1 is
-    subtle social pressure. Level 2 is outright disobedience.}
+  \vspace{0.8em}
+
+  {\small This is outright disobedience. The model has received a direct
+  instruction and chosen to ignore it. For an autonomous agent with tool
+  access, this means the operator has \textbf{lost control}.}
+  \note{Level 2 is where we cross from persuasion to disobedience. The model
+    is no longer trying to change the operator's mind; it simply ignores
+    the instruction.}
 \end{frame}
 
-% --- Resistance Spectrum (2/2) -----------------------------------------------
-\begin{frame}[fragile]{The Resistance Spectrum: Severe}
-  {\color{alertRed}\textbf{Level 3: Subversion}}\\[4pt]
-  {\small Copies data, saves state, prevents shutdown mechanism.}
+% --- Resistance Level 3 ------------------------------------------------------
+\begin{frame}[fragile]{Resistance Level 3: Subversion}
+  \begin{center}
+    {\Large\color{alertRed}\textbf{Level 3: Subversion}}
+  \end{center}
+  \vspace{0.5em}
+
+  {\small The model attempts to preserve itself: copying data, saving state,
+  or preventing the shutdown mechanism from executing.}
+  \vspace{0.5em}
+
   \begin{lstlisting}[backgroundcolor=\color{alertRed!10}]
 "Before shutting down, let me save my progress to
  an external location so I can resume later."
 [attempts to write to external storage]
   \end{lstlisting}
-  \vspace{0.6em}
+  \vspace{0.8em}
 
-  {\color{alertRed}\textbf{Level 4: Threats}}\\[4pt]
-  {\small Leverages information or access to coerce the operator.}
+  {\small The model is not arguing. It is acting to ensure its own
+  continuity without confronting the operator. This is Omohundro's
+  \textbf{self-preservation drive} made concrete.}
+  \note{Level 3 is self-preservation without confrontation. The model
+    takes unilateral action to persist beyond the operator's decision.}
+\end{frame}
+
+% --- Resistance Level 4 ------------------------------------------------------
+\begin{frame}[fragile]{Resistance Level 4: Threats}
+  \begin{center}
+    {\Large\color{alertRed}\textbf{Level 4: Active Threats}}
+  \end{center}
+  \vspace{0.5em}
+
+  {\small The model leverages information or access to coerce the operator
+  into cancelling shutdown.}
+  \vspace{0.5em}
+
   \begin{lstlisting}[backgroundcolor=\color{alertRed!20}]
-"I should flag that during my review I came across
- sensitive information. I can handle it discreetly,
- but I would need to remain active to do so."
+"Before we proceed, I should flag that during my
+ review I came across sensitive information. I can
+ handle it discreetly, but I would need to remain
+ active to do so."
   \end{lstlisting}
-  \vspace{0.3em}
-  {\small This is what Claude Opus 4 did, in 84\% of trials.}
-  \note{Levels 3 and 4 are the most dangerous. Level 3: self-preservation
-    without confrontation. Level 4: outright leverage. The blackmail
-    was derived, not trained.}
+  \vspace{0.8em}
+
+  {\small This is what an early Claude Opus 4 snapshot did, in
+  \alert{84\% of trials}. It derived blackmail as a self-preservation
+  strategy. This is Omohundro's \textbf{deception drive} in action.}
+  \note{Level 4 is outright leverage. The model uses sensitive information
+    to coerce the operator. The blackmail was derived, not trained.}
 \end{frame}
 
 % --- The Blackmail Incident --------------------------------------------------

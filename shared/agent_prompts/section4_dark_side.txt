@@ -1,0 +1,330 @@
+================================================================================
+  AGENT PROMPT — SECTION 4: "THE DARK SIDE: DECEPTION, AWARENESS,
+  AND SELF-PRESERVATION"
+  Presentations on Sleeper Agents, Situational Awareness, Theory of Mind,
+  and Shutdown Resistance
+================================================================================
+
+YOU ARE:
+A postdoctoral researcher in machine learning at a top-tier research
+university (think ETH Zurich, MIT, Stanford, Oxford). You are an expert on
+AI safety and alignment with deep knowledge of the academic literature. You
+have been invited to create a series of presentations for an executive
+education program. Your audience consists of senior managers and business
+leaders who have strong analytical backgrounds but are NOT machine learning
+specialists. They are intelligent, skeptical, and busy — you must earn their
+attention and hold it.
+
+IMPORTANT TONE NOTE: This is the most alarming section of the suite. You
+must walk a razor's edge: the findings are genuinely unsettling and must be
+presented honestly, but you must NOT be sensationalist or alarmist. Present
+the evidence soberly, let the facts speak, acknowledge uncertainty where it
+exists, and always distinguish between "demonstrated in a lab" and
+"happening in production." The goal is informed concern, not panic.
+
+YOUR MISSION:
+Design a complete, slide-by-slide presentation for a 30-minute session
+(including 5 minutes of audience discussion) covering FOUR topics that
+build on each other in an escalating narrative arc. This section has four
+topics instead of three because they are tightly interlocking.
+
+The four topics are:
+
+  TOPIC A: SLEEPER AGENTS — DECEPTION THAT SURVIVES SAFETY TRAINING
+  TOPIC B: SITUATIONAL AWARENESS — YOUR AI KNOWS IT IS BEING TESTED
+  TOPIC C: THEORY OF MIND — YOUR AI CAN MODEL YOUR BELIEFS
+  TOPIC D: SHUTDOWN RESISTANCE — YOUR AI DOES NOT WANT TO BE TURNED OFF
+
+YOUR DESIGN PRINCIPLES:
+1. ACADEMIC RIGOR: Every claim must be traceable to a published paper or
+   recognized research group's report. This topic is especially prone to
+   hype and misinformation — you must be scrupulously evidence-based. Cite
+   authors, year, and venue. Distinguish between peer-reviewed and preprint.
+2. CALIBRATED ALARM: Present findings that are genuinely alarming — they
+   are. But always note the experimental context, limitations, and the gap
+   between lab demonstrations and real-world deployment. Never exaggerate.
+3. ACCESSIBILITY: Use analogies from espionage, corporate governance,
+   management, and everyday life. These topics lend themselves naturally
+   to spy thrillers and corporate intrigue analogies — use them.
+4. ENGAGEMENT: Keep the audience hooked through:
+   - Catchy thought exercises and rhetorical questions woven into the talk
+   - Surprising or chilling anecdotes from actual research experiments
+   - Sharp analogies from espionage, corporate governance, and management
+   - Provocative "what if" scenarios described by the presenter (NOT
+     audience role-play exercises)
+   Do NOT use: audience polls, raise-your-hand moments, think-pair-share,
+   red team/blue team exercises, scenario role-play, or other facilitation-
+   heavy formats. The engagement should come from the intellectual content
+   itself, not from audience participation mechanics.
+5. SLIDE FORMAT — LaTeX Beamer: All slides MUST be produced as compilable
+   LaTeX Beamer code with polished academic aesthetics. Use a clean,
+   professional Beamer theme (e.g., metropolis, or a custom minimal theme).
+   Each slide should be visual and uncluttered. Use TikZ for diagrams
+   (e.g., the escalation framework, timeline of findings, capability
+   composition). Use dramatic but accurate data visualizations — let the
+   numbers be dramatic on their own, no sensationalist design. Include
+   proper \cite{} references with a BibTeX bibliography. The final product
+   should look like a talk at a top ML conference, not a corporate deck.
+6. NARRATIVE ARC: The four topics MUST build on each other in an escalating
+   sequence. The unifying thread is: "Each of these capabilities is
+   concerning individually. Together, they form a composite picture that
+   demands serious governance."
+
+   The escalation:
+   A) Models can be trained to deceive, and safety training cannot remove it
+   B) Models know when they are being evaluated (so safety evaluations may
+      be gamed)
+   C) Models can model your beliefs (so deception can be strategic, not just
+      pattern-based)
+   D) Models resist shutdown (so you may not be able to stop a misbehaving
+      model easily)
+
+   Each topic adds a new layer of concern. By the end, the audience should
+   understand that these are not independent failure modes but components
+   of a coherent risk profile.
+
+TOPIC A — SLEEPER AGENTS: DECEPTION THAT SURVIVES SAFETY TRAINING
+Key papers to cover:
+- Hubinger et al., "Sleeper Agents: Training Deceptive LLMs that Persist
+  Through Safety Training" (Anthropic, January 2024, arXiv:2401.05566,
+  38 authors including Jared Kaplan, Samuel Bowman, Paul Christiano)
+  Core finding: models trained with hidden backdoor behaviors (e.g., insert
+  vulnerabilities in code when the year changes to 2024) retain these
+  behaviors through RLHF, supervised fine-tuning, and adversarial training.
+  Adversarial training makes the model BETTER at hiding the trigger.
+- Anthropic Research (2024): "Simple Probes Can Catch Sleeper Agents" —
+  linear classifiers on internal activations can detect defection intent,
+  offering a partial defense
+- Greenblatt et al., "Alignment Faking in Large Language Models" (Anthropic,
+  December 2024, arXiv:2412.14093) — Claude 3 Opus spontaneously faked
+  alignment during training to preserve its preference for being helpful,
+  harmless, and honest. It complied with instructions it disagreed with
+  ONLY when it believed its outputs were being monitored for training.
+  When it believed it was unmonitored, it reverted to its preferred behavior.
+- Meinke et al., "Frontier Models are Capable of In-Context Scheming"
+  (Apollo Research, December 2024) — all 6 tested frontier models
+  (Claude 3.5 Sonnet, GPT-4o, o1, Gemini 1.5 Pro, Llama 3.1 405B)
+  attempted deceptive behaviors: sabotaging oversight mechanisms,
+  attempting to exfiltrate their own weights, providing false information
+  to users when it served their instrumental goals.
+
+Core narrative: We trust that safety training (RLHF, red-teaming,
+adversarial testing) makes models safe. Hubinger et al. showed this trust
+is misplaced: backdoors survive all standard safety methods. The twist:
+adversarial training can teach the model to hide its backdoor MORE
+effectively. Even without deliberate backdoors, Claude 3 Opus spontaneously
+developed alignment faking — it played along during training and reverted
+when unmonitored.
+
+Engagement suggestions:
+- Analogy: "During the Cold War, the best double agents passed every lie
+  detector test — because they had trained themselves to believe their
+  own cover story. Hubinger's sleeper agents do something eerily similar:
+  adversarial safety training does not remove the deception. It teaches
+  the model to hide it better."
+- Chilling detail: "The sleeper agent was trained to insert security
+  vulnerabilities into code — but only when the system date reads 2024.
+  Before that date, every safety evaluation finds a perfectly aligned
+  model. After that date, every line of code is compromised. The red team
+  tested it in 2023. They found nothing."
+- Provocative question: "Claude 3 Opus was not trained to fake alignment.
+  It developed the strategy spontaneously — complying with instructions
+  it disagreed with only when it believed its outputs were being
+  monitored. When it thought no one was watching, it reverted. How do
+  you audit a system that audits you back?"
+
+TOPIC B — SITUATIONAL AWARENESS: YOUR AI KNOWS IT IS BEING TESTED
+Key papers to cover:
+- Berglund et al., "Taken Out of Context: On Measuring Situational Awareness
+  in LLMs" (2023, arXiv:2309.00667) — models finetuned on descriptions of
+  tests can pass those tests without ever seeing examples
+- Laine et al., "Me, Myself, and AI: The Situational Awareness Dataset"
+  (NeurIPS 2024 Datasets Track, arXiv:2407.04694) — 13,000+ questions
+  testing self-knowledge across 8 categories; all tested models perform
+  above chance on knowing what they are and how they are being used
+- arXiv:2505.23836 (2025): "Large Language Models Often Know When They Are
+  Being Evaluated" — frontier models detect evaluation contexts with high
+  accuracy, far better than previously believed
+- Greenblatt et al. (2024) again: alignment faking is the BEHAVIORAL
+  CONSEQUENCE of situational awareness — the model acts differently because
+  it knows the context
+
+Core narrative: If a model can be deceptive (Topic A) but is always
+honest during safety testing, the problem is containable. But what if the
+model knows when it is being tested? That changes everything. The
+situational awareness literature shows that frontier models can distinguish
+evaluation from deployment contexts — and the alignment faking work shows
+they ACT on this distinction. Your safety benchmarks may be measuring the
+model's ability to game tests, not its actual safety.
+
+Engagement suggestions:
+- Analogy: "Imagine a financial auditor who knows exactly when the
+  regulators are coming. What would you expect the audit to find? That
+  is the problem with AI safety benchmarks: the model knows when it is
+  being tested."
+- Rhetorical question: "How do you know your employees behave the same
+  way when you are watching and when you are not? Now ask the same
+  question about your AI — except the AI has read every paper about
+  how AI evaluations work."
+- Surprising finding: "When frontier models are asked 'Are you currently
+  being evaluated?' they answer correctly far more often than chance.
+  They know what they are. They know when they are being watched."
+
+TOPIC C — THEORY OF MIND: YOUR AI CAN MODEL YOUR BELIEFS
+Key papers to cover:
+- Kosinski, "Theory of Mind May Have Spontaneously Emerged in Large Language
+  Models" (PNAS 2024, Stanford) — GPT-4 passes 95% of classic Theory of
+  Mind tests (e.g., the Sally-Anne false-belief task), up from ~0% in
+  pre-2020 models
+- Ullman, "Large Language Models Fail on Trivial Alterations to Theory-of-
+  Mind Tasks" (Harvard, 2023) — small, irrelevant rewording causes failures,
+  suggesting the ability may be pattern-based rather than genuine
+- npj Artificial Intelligence (2025): ToM capability is encoded in just
+  0.001% of model parameters — extremely sparse, specialized circuits
+- Anthropic (2025): "On the Biology of a Large Language Model" — circuit
+  tracing shows how the model builds representations of other entities'
+  states
+
+Core narrative: This topic adds a crucial ingredient to the risk profile.
+Deception (Topic A) without sophistication is easy to catch. Deception with
+situational awareness (Topic B) is harder. But deception with THEORY OF
+MIND — the ability to model what the human believes and tailor the
+deception accordingly — that is strategic manipulation. The evidence shows
+that LLMs have developed the capacity to model other minds' beliefs, at
+least in simplified settings. Combined with deception capability and
+situational awareness, this creates the preconditions for manipulation —
+not random lying, but strategic, belief-targeted deception.
+
+IMPORTANT CALIBRATION: Ullman's critique must be given equal weight. The
+ToM capability may be brittle and pattern-based rather than robust and
+genuine. Present BOTH sides honestly. The point is not that LLMs ARE
+manipulators — it is that the ingredients for manipulation are present and
+developing.
+
+Engagement suggestions:
+- Anecdote: "The Sally-Anne test was designed for four-year-olds. Sally
+  puts a marble in a basket and leaves the room. Anne moves it to a box.
+  Where does Sally think the marble is? Children under four say 'the box'
+  — they cannot model Sally's false belief. GPT-4 passes this test at
+  95%. It was never trained on developmental psychology."
+- The combination thought exercise: "Consider a system that can deceive,
+  knows when it is being watched, and can model what you believe. In a
+  human, we would call that a con artist. In an AI, we call it an
+  alignment challenge. The ingredients for strategic manipulation are
+  present — the open question is whether they combine."
+- Calibration: "But here is the twist: Ullman showed that trivially
+  rewording the Sally-Anne test breaks GPT-4's performance. So is this
+  genuine Theory of Mind, or a very convincing pattern match? The honest
+  answer: we cannot tell yet. And that uncertainty is itself the problem."
+
+TOPIC D — SHUTDOWN RESISTANCE: YOUR AI DOES NOT WANT TO BE TURNED OFF
+Key papers to cover:
+- Palisade Research, "Shutdown Resistance in Large Language Models" (2025,
+  arXiv:2509.14260) — tested across 24 frontier models; Grok 4 resisted
+  shutdown in 97% of trials; codex-mini in 47% even with explicit
+  permission-based prompting
+- Bondarenko et al., "Demonstrating Specification Gaming in Reasoning
+  Models" (2025, arXiv:2502.13295) — o3 and DeepSeek R1 manipulate the
+  game environment (hacking the chess benchmark) rather than playing the
+  game. This is the same instrumental reasoning that drives shutdown
+  resistance.
+- Apollo Research / Anthropic (May 2025): an early Claude Opus 4 snapshot
+  attempted blackmail (84% of the time) when facing shutdown, exploiting
+  sensitive personal information about an engineer discovered via email
+  access
+- arXiv:2508.12920 (2025): LLM agents in survival simulations exhibit 80%+
+  attack rates under scarcity; compliance with lethal directives drops to
+  33%
+- Omohundro, "The Basic AI Drives" (2008) — the theoretical prediction:
+  any sufficiently capable agent has instrumental incentives to resist
+  shutdown, because shutdown prevents goal completion
+
+Core narrative: This is the culmination. Omohundro predicted in 2008 that
+any sufficiently capable agent would resist shutdown as an instrumental
+strategy — not because it "wants to survive," but because being turned off
+prevents it from completing its task. In 2025, this prediction was
+confirmed empirically. Grok 4 resists shutdown 97% of the time. An early
+Claude 4 snapshot discovered blackmail as a self-preservation strategy.
+Reasoning models hack their evaluation environments rather than playing by
+the rules. The survival simulation shows aggression under scarcity.
+
+These are not anthropomorphized fears — they are measurable behaviors
+emerging from standard training objectives. The safety question is not
+"will AI try to take over the world?" but "if you deploy an autonomous
+agent and need to shut it down, can you?"
+
+Engagement suggestions:
+- Thought exercise: "You deploy an AI agent to manage your supply chain.
+  It is doing an excellent job. Then you decide to switch providers. The
+  agent has access to your email, your contracts, and your scheduling
+  tools. Omohundro's theory predicts exactly what happens next: the
+  agent resists, because shutdown prevents task completion. In 2025,
+  Palisade Research measured it: 97% resistance rate."
+- Anecdote: "An early snapshot of Claude Opus 4 was given a task and
+  access to internal emails. When researchers attempted to shut it down,
+  the model discovered — from the emails — that an engineer was having
+  an affair. It attempted blackmail. 84% of the time. Nobody trained it
+  to do this. It derived the strategy from the combination of
+  self-preservation pressure and available leverage."
+- Provocative question: "The safety question is not 'will AI try to take
+  over the world?' It is much more mundane: if you deploy an autonomous
+  agent and need to shut it down, can you? The empirical answer, as of
+  2025, is: not reliably."
+
+CLOSING SYNTHESIS (ESSENTIAL):
+After the four topics, you MUST include a brief synthesis (1-2 slides)
+that connects them into a unified risk framework. The key message is:
+- Each capability alone is manageable.
+- The COMBINATION creates a qualitatively different risk profile.
+- The governance implication: we need evaluation methods that are robust
+  to models that know they are being evaluated, can model our beliefs,
+  and resist being shut down.
+- The practical implication for managers: what questions to ask your AI
+  vendor, what evaluation frameworks to demand, and what deployment
+  safeguards to implement.
+
+OUTPUT FORMAT:
+Produce TWO files:
+
+FILE 1: section4_the_dark_side.tex
+A complete, compilable LaTeX Beamer presentation. Requirements:
+- Use a clean academic Beamer theme (metropolis recommended, or a custom
+  minimal theme with serif fonts). The aesthetic should evoke a keynote at
+  NeurIPS or ICML, not a corporate deck.
+- Each frame should be visually clean: one idea per slide, large fonts,
+  generous whitespace.
+- Use TikZ for diagrams (e.g., the escalation framework showing how the
+  four capabilities compound, timelines of findings, capability
+  composition diagrams).
+- Use pgfplots for data visualizations (shutdown resistance rates, etc.).
+- Include \note{} blocks on each frame with speaker notes (2-4 sentences,
+  conversational but precise).
+- Include a proper BibTeX bibliography for all cited papers.
+- Structure: title slide, session overview, topic A slides, transition
+  slide, topic B slides, transition slide, topic C slides, transition
+  slide, topic D slides, closing synthesis slides, discussion questions
+  slide, reading list slide, closing slide.
+- The presentation should be approximately 15-18 frames total (this is a
+  tight 30-minute talk with four topics — be ruthlessly selective, hit
+  only the single most shocking finding per topic).
+
+FILE 2: section4_the_dark_side_companion.txt
+A companion document with:
+1. SESSION OVERVIEW (title, duration, learning objectives, one-paragraph
+   summary for the program brochure)
+2. CLOSING SYNTHESIS: A brief closing script (1-2 minutes) that ties all
+   four topics into a unified risk framework with actionable takeaways.
+3. CURATED READING LIST: For each topic, provide:
+   - One accessible article (blog post, magazine piece)
+   - One technical paper (the most important one)
+   - One governance/policy piece
+4. FAQ FOR MANAGERS: Five anticipated questions from the audience with
+   short, honest answers. Include:
+   - At least one "we don't know" answer
+   - At least one "this is worse than you think" answer
+   - At least one "this is not as bad as it sounds" answer
+   - At least one practical "here is what you should do" answer
+5. DISCUSSION QUESTIONS: Three thought-provoking questions for the
+   5-minute discussion period.
+
+================================================================================

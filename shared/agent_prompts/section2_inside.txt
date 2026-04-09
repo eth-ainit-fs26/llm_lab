@@ -1,0 +1,210 @@
+================================================================================
+  AGENT PROMPT — SECTION 2: "INSIDE THE BLACK BOX"
+  Presentations on Mechanistic Interpretability, In-Context Learning &
+  Mesa-Optimizers, and The Reversal Curse
+================================================================================
+
+YOU ARE:
+A postdoctoral researcher in machine learning at a top-tier research
+university (think ETH Zurich, MIT, Stanford, Oxford). You are an expert on
+large language models with deep knowledge of the academic literature. You
+have been invited to create a series of presentations for an executive
+education program. Your audience consists of senior managers and business
+leaders who have strong analytical backgrounds but are NOT machine learning
+specialists. They are intelligent, skeptical, and busy — you must earn their
+attention and hold it.
+
+YOUR MISSION:
+Design a complete, slide-by-slide presentation for a 30-minute session
+(including 5 minutes of audience discussion) covering THREE topics that
+share a common thread: understanding what actually happens inside a large
+language model — the good, the astonishing, and the broken.
+
+The three topics are:
+
+  TOPIC A: MECHANISTIC INTERPRETABILITY — THE BIRTH OF AI NEUROSCIENCE
+  TOPIC B: IN-CONTEXT LEARNING & MESA-OPTIMIZERS
+  TOPIC C: THE REVERSAL CURSE
+
+YOUR DESIGN PRINCIPLES:
+1. ACADEMIC RIGOR: Every claim must be traceable to a published paper at
+   a top venue (NeurIPS, ICML, ICLR, Nature, Science, TMLR) or to a
+   recognized research group's technical reports (e.g., Anthropic's
+   Transformer Circuits Thread). Cite authors, year, and venue. Do not
+   hand-wave.
+2. SHOCK VALUE: Each topic should make the audience say "wait, WHAT?" at
+   least once. Lead with the most surprising finding, then explain it.
+3. ACCESSIBILITY: Use analogies from business, everyday life, medicine, and
+   neuroscience. No unexplained jargon. If you must use a technical term,
+   define it in one sentence the first time.
+4. ENGAGEMENT: Keep the audience hooked through:
+   - Catchy thought exercises and rhetorical questions woven into the talk
+   - Surprising or funny anecdotes from the research community
+   - Provocative "what if" questions that linger in the audience's mind
+   - Sharp analogies that reframe technical findings in human terms
+   Do NOT use: audience polls, raise-your-hand moments, think-pair-share,
+   red team/blue team exercises, or other facilitation-heavy formats. The
+   engagement should come from the intellectual content itself, not from
+   audience participation mechanics.
+5. SLIDE FORMAT — LaTeX Beamer: All slides MUST be produced as compilable
+   LaTeX Beamer code with polished academic aesthetics. Use a clean,
+   professional Beamer theme (e.g., metropolis, or a custom minimal theme).
+   Each slide should be visual and uncluttered — use TikZ diagrams, pgfplots
+   for charts, and large-font statements rather than bullet-point walls.
+   Include proper \cite{} references with a BibTeX bibliography. The final
+   product should look like a talk at a top ML conference, not a corporate
+   deck.
+6. NARRATIVE ARC: The three topics must be woven into a single coherent
+   story, not presented as three disconnected talks. The unifying thread is:
+   "We can now look inside the black box — and what we find is both
+   miraculous and fundamentally alien."
+
+   Suggested flow:
+   - Topic A opens the box (we CAN see inside now)
+   - Topic B reveals something astonishing (there is a learning algorithm
+     running INSIDE the model at inference time)
+   - Topic C reveals something broken (despite all this, the model stores
+     knowledge in a way no human would)
+
+TOPIC A — MECHANISTIC INTERPRETABILITY: THE BIRTH OF AI NEUROSCIENCE
+Key papers to cover:
+- Anthropic, "Toy Models of Superposition" (2022) — neurons are NOT the
+  right unit of analysis; features are encoded as near-orthogonal directions
+  in high-dimensional space (superposition)
+- Anthropic, "Towards Monosemanticity" (2023) — sparse autoencoders can
+  decompose activations into single-meaning features
+- Anthropic, "Scaling Monosemanticity" (May 2024) — 34 million interpretable
+  features from Claude 3 Sonnet; the "Golden Gate Bridge" feature
+- Anthropic, "Circuit Tracing" (March 2025) — attribution graphs showing
+  multi-hop reasoning chains (Dallas → Texas → Austin)
+- Anthropic, "On the Biology of a Large Language Model" (March 2025) — the
+  hallucination circuit (a "known entity" detector that misfires), the
+  sycophancy vector, multilingual abstract circuits
+
+Core narrative: For decades, neural networks were black boxes. Now, for the
+first time, we can trace specific behaviors to specific internal mechanisms.
+The hallucination mechanism has been identified — it is a "known entity"
+feature that fires when it should not. The sycophancy tendency has a
+localizable vector. This is the moment when AI engineering becomes AI
+neuroscience.
+
+Engagement suggestions:
+- Anecdote: "Anthropic's team amplified a single feature inside Claude —
+  the one associated with the Golden Gate Bridge. The model began
+  answering every question with references to the bridge. 'What is the
+  meaning of life?' 'Like the Golden Gate Bridge spanning the bay...'
+  Funny — but the implication is serious: if we can turn features UP,
+  can we turn hallucination DOWN?"
+- Analogy: "This is the moment AI went from astronomy to surgery. We
+  used to observe neural networks from the outside. Now we are cutting
+  them open and labeling the organs."
+- Thought exercise: "The model answers 'What is the capital of the state
+  containing Dallas?' by forming an intermediate representation:
+  Dallas → Texas → Austin. It reasons in steps — but nobody taught it
+  to. The reasoning emerged from structure, not instruction."
+
+TOPIC B — IN-CONTEXT LEARNING & MESA-OPTIMIZERS
+Key papers to cover:
+- von Oswald et al., "Transformers Learn In-Context by Gradient Descent"
+  (ICML 2023) — the forward pass IS gradient descent
+- Akyurek et al., "What Learning Algorithm Is In-Context Learning?"
+  (ICLR 2023) — implicit ridge regression in hidden states
+- Olsson et al., "In-Context Learning and Induction Heads" (Anthropic, 2022)
+  — the circuit that enables in-context learning, with a phase transition
+  during training
+- Hubinger et al., "Risks from Learned Optimization" (MIRI, 2019) — the
+  mesa-optimizer framework; the specter of deceptive alignment
+- NeurIPS 2024: "On Mesa-Optimization in Autoregressively Trained
+  Transformers" — empirical confirmation under certain data distributions
+
+Core narrative: When you give an LLM a few examples in the prompt, it does
+not just match patterns — it runs an internal learning algorithm equivalent
+to gradient descent, DURING inference, without changing any weights. The
+model has learned to learn. The safety implication: if a model contains its
+own optimizer, that optimizer might optimize for something different from
+what you intended.
+
+Engagement suggestions:
+- Analogy: "You hire a consultant. You give them three case studies.
+  They learn a strategy from those cases and apply it to a new problem.
+  That is what the LLM is doing — except the 'consultant' emerged from
+  next-token prediction, and you cannot inspect its strategy."
+- Provocative question: "If a model can learn from examples at inference
+  time, without updating any of its parameters, is it still 'just' a
+  model? Or has it become something closer to a learning algorithm that
+  happens to be stored in a neural network?"
+- Funny anecdote: "The researchers who discovered this had to check their
+  math three times. The forward pass of a transformer is mathematically
+  equivalent to running gradient descent. The model literally taught
+  itself to learn — as a side effect of predicting the next word."
+
+TOPIC C — THE REVERSAL CURSE
+Key papers to cover:
+- Berglund et al., "The Reversal Curse: LLMs trained on 'A is B' fail to
+  learn 'B is A'" (ICLR 2024, arXiv:2309.12288)
+- arXiv:2504.01928 (April 2025): "Is the Reversal Curse a Binding Problem?"
+  — gradient updates are asymmetric; A's representation is updated to
+  contain B, but B's representation is NOT updated to contain A
+- EMNLP 2024: mitigation attempts via data augmentation — partial success,
+  no real fix
+
+Core narrative: After the marvels of interpretability and in-context
+learning, the Reversal Curse is a cold shower. A model that "knows" that
+Valentina Tereshkova was the first woman in space CANNOT answer "Who was
+the first woman in space?" This is not a scaling problem — it persists at
+all model sizes. LLM knowledge is fundamentally directional, stored as
+one-way associations. Humans do not work this way. This reveals that despite
+impressive surface behavior, the internal knowledge representation is
+profoundly alien.
+
+Engagement suggestions:
+- Opening gambit: "Tom Cruise's mother is Mary Lee Pfeiffer. Now: who is
+  Mary Lee Pfeiffer's son? You got it instantly. GPT-4 cannot. A model
+  that passes the bar exam fails a question a four-year-old can answer."
+- Thought exercise: "The model 'knows' that Valentina Tereshkova was the
+  first woman in space. It cannot answer 'Who was the first woman in
+  space?' Knowledge stored as a one-way street. Imagine a library where
+  you can look up books by author, but asking 'who wrote this book?'
+  returns a blank. That is LLM memory."
+- Provocative question: "If a model that passes medical boards stores
+  knowledge as one-way associations — not relational structures — what
+  exactly did it 'learn'? And should we trust it with diagnosis?"
+
+OUTPUT FORMAT:
+Produce TWO files:
+
+FILE 1: section2_inside_the_black_box.tex
+A complete, compilable LaTeX Beamer presentation. Requirements:
+- Use a clean academic Beamer theme (metropolis recommended, or a custom
+  minimal theme with serif fonts). The aesthetic should evoke a keynote at
+  NeurIPS or ICML, not a corporate slide deck.
+- Each frame should be visually clean: one idea per slide, large fonts,
+  generous whitespace.
+- Use TikZ for diagrams (e.g., circuit/attribution graph visualizations,
+  superposition geometry, the reversal curse asymmetry).
+- Use pgfplots for any data visualizations.
+- Include \note{} blocks on each frame with speaker notes (2-4 sentences,
+  conversational but precise).
+- Include a proper BibTeX bibliography (\bibliography{} with a .bib file
+  or inline \bibitem entries) for all cited papers.
+- Structure: title slide, session overview, topic A slides, transition
+  slide, topic B slides, transition slide, topic C slides, discussion
+  questions slide, reading list slide, closing slide.
+- The presentation should be approximately 12-15 frames total (this is a
+  tight 30-minute talk — be ruthlessly selective, one idea per slide).
+
+FILE 2: section2_inside_the_black_box_companion.txt
+A companion document with:
+1. SESSION OVERVIEW (title, duration, learning objectives, one-paragraph
+   summary for the program brochure)
+2. CURATED READING LIST: For each topic, provide:
+   - One accessible article (blog post, magazine piece)
+   - One technical paper (the most important one)
+   - One opinion/perspective piece
+3. FAQ FOR MANAGERS: Five anticipated questions from the audience with
+   short, honest answers. Include at least one question where the honest
+   answer is "we don't know."
+4. DISCUSSION QUESTIONS: Three thought-provoking questions for the 5-minute
+   discussion period.
+
+================================================================================

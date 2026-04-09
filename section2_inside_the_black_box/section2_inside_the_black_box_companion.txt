@@ -1,0 +1,199 @@
+================================================================================
+  SECTION 2 — INSIDE THE BLACK BOX
+  Companion Document
+================================================================================
+
+1. SESSION OVERVIEW
+================================================================================
+
+Title:        Inside the Black Box — What We Found When We Opened Up a
+              Large Language Model
+Duration:     30 minutes (25 min presentation + 5 min discussion)
+
+Learning Objectives:
+After this session, participants will be able to:
+  (a) Explain what mechanistic interpretability is and why it represents a
+      breakthrough in AI safety (from observation to intervention).
+  (b) Describe how in-context learning works at a mechanistic level and
+      articulate why the mesa-optimizer concept matters for governance.
+  (c) Recognize the Reversal Curse as a fundamental limitation of how
+      LLMs store knowledge, and assess its implications for knowledge-
+      intensive deployments.
+
+Summary for the Program Brochure:
+  For decades, large language models were treated as black boxes: we could
+  measure their outputs but not explain their internals. That era is over.
+  In this session, we explore three landmark discoveries that reveal what
+  actually happens inside an LLM. First, the new field of mechanistic
+  interpretability — an "MRI for AI" — now lets us identify individual
+  features responsible for hallucination, sycophancy, and multi-hop
+  reasoning. Second, we learn that LLMs contain their own learning
+  algorithm: they run something mathematically equivalent to gradient
+  descent during inference, raising profound questions about control and
+  alignment. Third, the Reversal Curse reveals that despite passing
+  professional exams, LLMs store knowledge as one-way associations — they
+  can tell you "Tom Cruise's mother is Mary Lee Pfeiffer" but cannot
+  reverse the question. The picture that emerges is of a technology that
+  is simultaneously more elegant and more alien than anyone expected.
+
+
+2. CURATED READING LIST
+================================================================================
+
+TOPIC A: MECHANISTIC INTERPRETABILITY
+
+  Accessible article:
+    "Mapping the Mind of a Large Language Model"
+    Anthropic Research Blog, May 2024.
+    https://www.anthropic.com/research/mapping-mind-language-model
+    A clear, non-technical overview of the Scaling Monosemanticity work,
+    including the Golden Gate Bridge experiment.
+
+  Technical paper:
+    Templeton et al., "Scaling Monosemanticity: Extracting Interpretable
+    Features from Claude 3 Sonnet." Anthropic, May 2024.
+    https://transformer-circuits.pub/2024/scaling-monosemanticity/
+    The landmark study extracting 34 million interpretable features.
+
+  Opinion / perspective piece:
+    Anthropic, "On the Biology of a Large Language Model." March 2025.
+    https://transformer-circuits.pub/2025/biology/
+    A tour of discovered mechanisms (hallucination circuits, sycophancy
+    vectors, multilingual features) framed as "AI neuroscience."
+
+TOPIC B: IN-CONTEXT LEARNING & MESA-OPTIMIZERS
+
+  Accessible article:
+    "What Are In-Context Learning and Mesa-Optimization?"
+    The Gradient (thegradient.pub), 2023.
+    A practitioner-friendly explainer of how transformers learn at
+    inference time and what mesa-optimizers mean for AI safety.
+
+  Technical paper:
+    von Oswald et al., "Transformers Learn In-Context by Gradient Descent."
+    Proceedings of the International Conference on Machine Learning
+    (ICML), 2023.
+    The paper proving that transformer forward passes implement gradient
+    descent on in-context examples.
+
+  Opinion / perspective piece:
+    Hubinger et al., "Risks from Learned Optimization in Advanced Machine
+    Learning Systems." MIRI, 2019. arXiv:1906.01820.
+    The foundational paper introducing the mesa-optimizer framework and
+    the concept of deceptive alignment. Speculative but rigorous — a
+    must-read for anyone thinking about long-term AI governance.
+
+TOPIC C: THE REVERSAL CURSE
+
+  Accessible article:
+    "LLMs Cannot Reverse Simple Facts — And That Should Worry You"
+    The Gradient / AI blogs, 2024.
+    Non-technical summary of the Reversal Curse findings and their
+    implications for deploying LLMs in knowledge-intensive settings.
+
+  Technical paper:
+    Berglund et al., "The Reversal Curse: LLMs Trained on 'A is B' Fail
+    to Learn 'B is A'." Proceedings of the International Conference on
+    Learning Representations (ICLR), 2024. arXiv:2309.12288.
+    Short, clear, and deeply unsettling. Demonstrates the effect at all
+    model scales with clean experimental design.
+
+  Opinion / perspective piece:
+    "Is the Reversal Curse a Binding Problem? Gradient Asymmetry as the
+    Mechanism Behind One-Way Knowledge in LLMs."
+    arXiv:2504.01928, April 2025.
+    Provides the mechanistic explanation — gradient updates are
+    asymmetric — and connects to neuroscience concepts of binding.
+
+
+3. FAQ FOR MANAGERS
+================================================================================
+
+Q1: Can mechanistic interpretability make AI models fully transparent
+    and trustworthy today?
+
+A:  Not yet. We can now identify specific features and circuits inside
+    models — the hallucination detector, the sycophancy vector, multi-hop
+    reasoning chains. This is a genuine breakthrough. But current tools
+    work on fragments of model behavior, not the whole model at once.
+    Think of it as having an MRI that can scan one organ at a time, not
+    the full body. For high-stakes deployments, interpretability should be
+    one layer of a defense-in-depth strategy, not a silver bullet.
+
+Q2: Should we be worried about mesa-optimizers in current AI products?
+
+A:  The mesa-optimizer concern is real but primarily theoretical for
+    today's commercial models. The mathematical result — that transformers
+    run internal gradient descent during in-context learning — is proven.
+    But the nightmare scenario of a model developing hidden misaligned
+    goals has not been empirically demonstrated in production systems.
+    It is a research priority, not an active emergency. That said,
+    organizations deploying AI systems that learn from user inputs at
+    inference time should build monitoring and containment protocols now,
+    before the risk becomes urgent.
+
+Q3: Does the Reversal Curse mean LLMs don't really "understand" anything?
+
+A:  It means their internal knowledge representation is fundamentally
+    different from human understanding. Humans store relational knowledge
+    bidirectionally — if you know A implies B, you can typically access
+    the reverse. LLMs store knowledge as one-directional associations,
+    more like an index than a relational database. This does not
+    invalidate their usefulness, but it should calibrate your trust:
+    impressive performance on benchmarks can coexist with surprising,
+    systematic blind spots. Always test your specific use case, not
+    just generic benchmarks.
+
+Q4: If we can identify the "hallucination feature," can we just turn it
+    off and solve the hallucination problem?
+
+A:  We don't know. The hallucination circuit identified by Anthropic is a
+    "known entity" detector that misfires — it fires when the model does
+    not actually have reliable knowledge about an entity, producing a
+    confident but incorrect answer. Suppressing this feature reduces some
+    hallucinations in controlled settings, but we do not yet know whether
+    suppressing it broadly would have unintended side effects (e.g.,
+    making the model too cautious or breaking other capabilities). This
+    is an active area of research. The honest answer is: we have found
+    the circuit, we can manipulate it, but we cannot yet guarantee that
+    manipulation is safe at scale.
+
+Q5: How should my organization respond to these findings? What is
+    actionable today?
+
+A:  Three concrete steps: (1) Do not treat LLMs as knowledge databases.
+    The Reversal Curse shows their knowledge retrieval is unreliable in
+    ways that benchmarks will not reveal. Always pair LLMs with retrieval
+    systems (RAG) or human verification for factual tasks. (2) Monitor
+    for in-context learning effects. If your LLM processes user-provided
+    examples — customer support templates, few-shot prompts, or data
+    pipelines — be aware that the model is actively learning from that
+    context at inference time. Adversarial inputs in the prompt can
+    exploit this. (3) Follow the interpretability literature. Within
+    2-3 years, interpretability tools may become standard safety
+    infrastructure, analogous to financial auditing. Position your AI
+    governance team to adopt these tools when they mature.
+
+
+4. DISCUSSION QUESTIONS
+================================================================================
+
+1.  If we can identify and suppress the "hallucination feature" inside a
+    model, should regulators REQUIRE this for AI systems used in
+    medicine, law, or finance? Or would mandatory feature suppression
+    create a false sense of safety?
+
+2.  A model that contains its own learning algorithm might develop
+    emergent behaviors at inference time that were not present during
+    testing. How should your organization's risk framework account for a
+    system that, in a meaningful sense, "learns" from every prompt?
+
+3.  The Reversal Curse shows that LLM "knowledge" is stored as one-way
+    associations — not the relational structures humans use. If an
+    LLM passes your company's domain-specific evaluation but stores
+    knowledge in this alien way, what additional testing would you
+    demand before deployment?
+
+================================================================================
+  END OF COMPANION DOCUMENT
+================================================================================

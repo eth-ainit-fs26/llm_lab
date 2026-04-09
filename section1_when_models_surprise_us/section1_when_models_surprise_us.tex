@@ -1,0 +1,715 @@
+% =============================================================================
+%  SECTION 1: WHEN MODELS SURPRISE US
+%  Emergent Abilities · Chain-of-Thought · Thinking Models
+% =============================================================================
+\documentclass[aspectratio=169, 12pt, xcolor=dvipsnames]{beamer}
+
+% --- Theme & Appearance -------------------------------------------------------
+\usetheme{metropolis}
+\setbeamercolor{normal text}{fg=black!85, bg=white}
+\setbeamercolor{alerted text}{fg=BrickRed}
+\setbeamercolor{frametitle}{bg=black!85, fg=white}
+\setbeamertemplate{navigation symbols}{}
+\setbeamerfont{title}{size=\Large, series=\bfseries}
+\setbeamerfont{frametitle}{size=\large, series=\bfseries}
+\setbeamerfont{footnote}{size=\tiny}
+
+% --- Packages -----------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath, amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, decorations.pathreplacing, calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{booktabs}
+\usepackage{appendixnumberbeamer}
+
+% --- Macros -------------------------------------------------------------------
+\newcommand{\bigquote}[1]{%
+  \begin{center}
+    \large\itshape ``#1''
+  \end{center}
+}
+\newcommand{\sourcemark}[1]{\hfill{\tiny\color{gray}#1}}
+\newcommand{\papercite}[4]{\emph{#1, #2, #3, #4}}
+
+% --- Metadata -----------------------------------------------------------------
+\title{When Models Surprise Us}
+\subtitle{Emergent Abilities, Chain-of-Thought, and the Thinking Revolution}
+\author{AI in Industry}
+\date{2026}
+\institute{}
+
+% ==============================================================================
+\begin{document}
+
+% --- SLIDE 1: TITLE ----------------------------------------------------------
+\begin{frame}[plain]
+  \vspace*{-2em}
+  \titlepage
+\end{frame}
+
+% --- SLIDE 2: SESSION OVERVIEW ------------------------------------------------
+\begin{frame}{The Unifying Thread}
+
+\bigquote{The dynamics of learning in LLMs violate our deepest intuitions.}
+
+\vspace{1em}
+
+\begin{columns}[T]
+  \begin{column}{0.48\textwidth}
+    \centering
+    \textbf{A. Emergent Abilities}\\[0.3em]
+    {\small Scale a model 10$\times$ and it\\suddenly writes poetry.}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \centering
+    \textbf{B. Chain-of-Thought \&\\Thinking Models}\\[0.3em]
+    {\small Ask a model to ``think step by step''\\and it solves competition maths.}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+% ==============================================================================
+%  TOPIC A: EMERGENT ABILITIES
+% ==============================================================================
+
+% --- SLIDE 3: THE CAPABILITY LADDER -------------------------------------------
+\begin{frame}{What Models Can Do at Each Scale}
+
+\begin{center}
+\begin{tikzpicture}[
+  font=\small,
+  rung/.style={draw, rounded corners, thick, minimum width=9.5cm,
+               minimum height=0.65cm, align=center, fill=#1},
+]
+  \node[rung=gray!8] (r1) at (0,0) {${\sim}$\textbf{1B}: Pattern completion, factual recall};
+  \node[rung=NavyBlue!8] (r2) at (0,0.95) {${\sim}$\textbf{10B}: 3-digit addition, basic code generation};
+  \node[rung=NavyBlue!15] (r3) at (0,1.9) {${\sim}$\textbf{60--100B}: Multi-step reasoning, chain-of-thought};
+  \node[rung=BrickRed!10] (r4) at (0,2.85) {${\sim}$\textbf{100--175B}: College-level exams (MMLU)};
+  \node[rung=BrickRed!18] (r5) at (0,3.8) {${\sim}$\textbf{500B+}: Word sense disambiguation, truthfulness};
+
+  \draw[-{Stealth[length=3mm]}, ultra thick, black!40] (-5.5,-0.4) -- (-5.5,4.3)
+    node[midway, left, font=\small\itshape, text=gray, rotate=90, anchor=south] {Scale};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3em}
+{\small Approximate thresholds from \papercite{Wei et al.}{2022}{TMLR}{Emergent Abilities of Large Language Models}.}
+
+\end{frame}
+
+% --- SLIDE 4: CONCRETE EXAMPLES -----------------------------------------------
+\begin{frame}[fragile]{Concrete Examples: From Nothing to Capability}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \begin{axis}[
+    width=12cm, height=5.5cm,
+    xlabel={Model scale (parameters)},
+    ylabel={Task accuracy (\%)},
+    xmin=0.5, xmax=4.5,
+    ymin=-5, ymax=105,
+    xtick={1,2,3,4},
+    xticklabels={1B, 10B, 100B, 500B},
+    ytick={0,25,50,75,100},
+    xmajorgrids=true,
+    ymajorgrids=true,
+    major grid style={gray!20},
+    legend pos=north west,
+    legend style={font=\small, draw=none, fill=none},
+    every axis plot/.append style={ultra thick},
+  ]
+    \addplot[BrickRed, mark=square*, mark size=3pt] coordinates {
+      (1,2) (2,3) (3,8) (3.5,72) (4,95)
+    };
+    \addlegendentry{3-digit addition (exact match)}
+    \addplot[NavyBlue, mark=triangle*, mark size=3pt, dashed] coordinates {
+      (1,0) (2,0) (3,5) (3.5,55) (4,78)
+    };
+    \addlegendentry{Multi-step logical deduction}
+    \addplot[ForestGreen, mark=o, mark size=3pt, dotted] coordinates {
+      (1,45) (2,38) (2.5,32) (3,28) (3.5,35) (4,55)
+    };
+    \addlegendentry{TruthfulQA (inverse scaling!)}
+  \end{axis}
+\end{tikzpicture}
+\end{center}
+
+\vspace{-0.5em}
+{\small \textbf{3-digit addition}: 0\% $\to$ 80\%+ in a narrow range.
+\textbf{TruthfulQA}: medium models are \alert{less truthful} than small ones.}
+
+\end{frame}
+
+% --- SLIDE 5: MORE IS DIFFERENT -----------------------------------------------
+\begin{frame}{``More Is Different''}
+
+\begin{columns}[c]
+  \begin{column}{0.48\textwidth}
+    \begin{tikzpicture}[
+      every node/.style={font=\scriptsize},
+      phase/.style={draw, rounded corners, minimum width=2.2cm,
+                    minimum height=0.7cm, align=center, thick},
+    ]
+      \node[phase, fill=NavyBlue!15] (water) at (0,0) {Water molecules};
+      \node[phase, fill=NavyBlue!15] (ice) at (0,-1.5) {Ice crystal};
+      \draw[-{Stealth[length=2.5mm]}, thick, BrickRed]
+        (water) -- (ice) node[midway, right=2mm, font=\scriptsize]
+        {\alert{Cool below 0\textdegree{}C}};
+
+      \node[phase, fill=Dandelion!20] (small) at (3.8,0) {7B model};
+      \node[phase, fill=Dandelion!20] (large) at (3.8,-1.5) {100B model};
+      \draw[-{Stealth[length=2.5mm]}, thick, BrickRed]
+        (small) -- (large) node[midway, right=2mm, font=\scriptsize]
+        {\alert{Scale 10$\times$}};
+
+      \node[font=\scriptsize\itshape, text=gray, anchor=north,
+            align=center] at (0,-2.3)
+        {Same molecules,\\new property};
+      \node[font=\scriptsize\itshape, text=gray, anchor=north,
+            align=center] at (3.8,-2.3)
+        {Same architecture,\\new capability};
+    \end{tikzpicture}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    {\small\itshape ``The ability to reduce everything to simple fundamental laws
+      does not imply the ability to start from those laws and reconstruct
+      the universe.''}
+
+    \vspace{0.5em}
+    \hfill {\small P.W.\ Anderson, 1972}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+% --- SLIDE 6: THE MIRAGE REBUTTAL ---------------------------------------------
+\begin{frame}[fragile]{Or Is It a Mirage?}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \begin{axis}[
+    width=12cm, height=4.5cm,
+    xlabel={Model scale (parameters)},
+    ylabel={Performance},
+    xmin=0.5, xmax=4.5,
+    ymin=-5, ymax=105,
+    xtick={1,2,3,4},
+    xticklabels={1B, 10B, 100B, 500B},
+    ytick={0,25,50,75,100},
+    xmajorgrids=true,
+    ymajorgrids=true,
+    major grid style={gray!20},
+    legend pos=south east,
+    legend style={font=\small, draw=none, fill=none},
+    every axis plot/.append style={ultra thick},
+  ]
+    \addplot[BrickRed, mark=square*, mark size=3pt] coordinates {
+      (1,0) (2,0) (3,5) (3.5,68) (4,92)
+    };
+    \addlegendentry{Exact string match (discontinuous)}
+    \addplot[ForestGreen, mark=o, mark size=3pt, dashed] coordinates {
+      (1,12) (2,30) (3,52) (3.5,73) (4,90)
+    };
+    \addlegendentry{Token edit distance (continuous)}
+  \end{axis}
+\end{tikzpicture}
+\end{center}
+
+\vspace{-0.5em}
+{\small 92\% of claimed emergent abilities in BIG-Bench appeared only under
+\textbf{discontinuous metrics}. Switch to a continuous metric $\Rightarrow$ smooth improvement.}
+
+\vspace{0.2em}
+{\scriptsize \papercite{Schaeffer et al.}{2023}{NeurIPS Outstanding Paper}{Are Emergent Abilities of LLMs a Mirage?}}
+
+\end{frame}
+
+% --- TRANSITION SLIDE A to B --------------------------------------------------
+\begin{frame}[standout]
+  Capabilities can appear suddenly at scale.\\[1em]
+  But what if you could unlock reasoning\\
+  \emph{without} scaling the model?
+\end{frame}
+
+% ==============================================================================
+%  TOPIC B: CHAIN-OF-THOUGHT AND THINKING MODELS
+% ==============================================================================
+
+% --- SLIDE 7: THE CoT DISCOVERY -----------------------------------------------
+\begin{frame}{Chain-of-Thought Prompting}
+
+\begin{columns}[T]
+  \begin{column}{0.48\textwidth}
+    \textbf{Standard prompting:}\\[0.3em]
+    {\small\texttt{Q: Roger has 5 tennis balls.\\
+    He buys 2 cans of 3 balls.\\
+    How many does he have?}\\[0.3em]
+    \texttt{A: 11}}
+
+    \vspace{0.8em}
+    \textbf{Chain-of-thought:}\\[0.3em]
+    {\small\texttt{A: Roger started with 5.\\
+    2 cans $\times$ 3 = 6 new balls.\\
+    5 + 6 = \alert{11}. The answer is 11.}}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{tabular}{lc}
+      \toprule
+      \textbf{Method} & \textbf{GSM8K} \\
+      \midrule
+      Standard & ${\sim}$18\% \\
+      Chain-of-Thought & ${\sim}$\alert{58\%} \\
+      Prior SOTA & 55\% \\
+      \bottomrule
+    \end{tabular}
+
+    \vspace{0.8em}
+    {\small Zero fine-tuning. Just 8 hand-written
+    exemplars with reasoning steps.}
+
+    \vspace{0.5em}
+    {\scriptsize \papercite{Wei et al.}{2022}{NeurIPS}{Chain-of-Thought Prompting Elicits Reasoning in LLMs}}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+% --- SLIDE 8: ZERO-SHOT CoT + SELF-CONSISTENCY --------------------------------
+\begin{frame}{From One Trick to a Toolkit}
+
+\begin{columns}[T]
+  \begin{column}{0.48\textwidth}
+    \textbf{Zero-shot CoT} {\small (Kojima et al., 2022)}\\[0.5em]
+
+    Just append:\\[0.3em]
+    {\large\alert{``Let's think step by step.''}}
+
+    \vspace{0.8em}
+    {\small GSM8K: 10.4\% $\to$ \textbf{40.7\%}\\
+    MultiArith: 17.7\% $\to$ \textbf{78.7\%}\\[0.5em]
+    A single sentence, no exemplars,\\
+    produces most of the benefit.}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \textbf{Self-Consistency} {\small (Wang et al., 2023)}\\[0.5em]
+
+    \begin{tikzpicture}[font=\scriptsize, >=Stealth]
+      \node[draw, rounded corners, fill=NavyBlue!10, minimum width=2.5cm,
+            minimum height=0.6cm] (q) at (0,0) {Question};
+      \node[draw, rounded corners, fill=gray!5, minimum width=1.8cm,
+            minimum height=0.5cm] (p1) at (-1.5,-1.2) {Path 1: 42};
+      \node[draw, rounded corners, fill=gray!5, minimum width=1.8cm,
+            minimum height=0.5cm] (p2) at (0,-1.2) {Path 2: 37};
+      \node[draw, rounded corners, fill=gray!5, minimum width=1.8cm,
+            minimum height=0.5cm] (p3) at (1.5,-1.2) {Path 3: 42};
+      \node[draw, rounded corners, fill=ForestGreen!15, minimum width=2.5cm,
+            minimum height=0.6cm] (ans) at (0,-2.4) {\textbf{Majority: 42}};
+      \draw[->] (q) -- (p1);
+      \draw[->] (q) -- (p2);
+      \draw[->] (q) -- (p3);
+      \draw[->] (p1) -- (ans);
+      \draw[->] (p2) -- (ans);
+      \draw[->] (p3) -- (ans);
+    \end{tikzpicture}
+
+    \vspace{0.3em}
+    {\small Sample $N$ paths, majority vote.\\
+    GSM8K: \textbf{+17.9\%} over CoT.}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+% --- SLIDE 9: TREE OF THOUGHTS ------------------------------------------------
+\begin{frame}{Tree of Thoughts: Reasoning as Search}
+
+\begin{columns}[c]
+  \begin{column}{0.50\textwidth}
+    \begin{tikzpicture}[
+      font=\scriptsize,
+      scale=0.9, transform shape,
+      node distance=0.6cm and 0.4cm,
+      tnode/.style={draw, rounded corners, thick, minimum width=1.1cm,
+                    minimum height=0.4cm, align=center},
+      good/.style={tnode, fill=ForestGreen!12},
+      bad/.style={tnode, fill=BrickRed!8, dashed},
+      ok/.style={tnode, fill=NavyBlue!8},
+    ]
+      \node[ok] (root) {Problem};
+      \node[ok, below left=of root, xshift=-0.1cm] (a) {Thought A};
+      \node[ok, below=of root] (b) {Thought B};
+      \node[bad, below right=of root, xshift=0.1cm] (c) {Thought C};
+
+      \node[good, below left=of a] (a1) {A.1};
+      \node[bad, below right=of a] (a2) {A.2};
+      \node[good, below left=of b] (b1) {B.1};
+      \node[ok, below right=of b] (b2) {B.2};
+
+      \node[good, below=of a1, fill=ForestGreen!25] (sol) {\textbf{Solution}};
+
+      \draw[->, thick] (root) -- (a);
+      \draw[->, thick] (root) -- (b);
+      \draw[->, thick, BrickRed!50] (root) -- (c);
+      \draw[->, thick] (a) -- (a1);
+      \draw[->, thick, BrickRed!50] (a) -- (a2);
+      \draw[->, thick] (b) -- (b1);
+      \draw[->, thick] (b) -- (b2);
+      \draw[->, thick, ForestGreen] (a1) -- (sol);
+    \end{tikzpicture}
+  \end{column}
+  \begin{column}{0.46\textwidth}
+    {\small Generate multiple candidate thoughts at each step. The LLM evaluates
+    each and uses BFS or DFS to explore, backtracking when stuck.}
+
+    \vspace{0.8em}
+    \textbf{Game of 24:}\\
+    CoT: \textbf{4\%} \hspace{1em} ToT: \alert{\textbf{74\%}}
+
+    \vspace{0.8em}
+    {\scriptsize \papercite{Yao et al.}{2023}{NeurIPS}{Tree of Thoughts}}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+% --- SLIDE 10: FROM PROMPTING TO TRAINING -------------------------------------
+\begin{frame}{The Leap: From Prompting to Thinking Models}
+
+\begin{center}
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners, thick, minimum width=3.2cm,
+              minimum height=1.2cm, align=center},
+  >=Stealth,
+]
+  \node[box, fill=NavyBlue!8] (prompt) at (0,0)
+    {\textbf{CoT Prompting}\\(2022)\\{\scriptsize ``Think step by step''}};
+  \node[box, fill=Dandelion!15] (sft) at (4.8,0)
+    {\textbf{SFT on Traces}\\(2023--24)\\{\scriptsize Train on reasoning data}};
+  \node[box, fill=BrickRed!12] (rl) at (9.6,0)
+    {\textbf{Pure RL}\\(2025)\\{\scriptsize Model discovers reasoning}};
+
+  \draw[->, ultra thick, black!50] (prompt) -- (sft)
+    node[midway, above, font=\scriptsize] {Can we train this?};
+  \draw[->, ultra thick, black!50] (sft) -- (rl)
+    node[midway, above, font=\scriptsize] {Can RL find it alone?};
+
+  \node[font=\scriptsize\itshape, text=gray, below=3mm of prompt]
+    {Wei et al., Kojima et al.};
+  \node[font=\scriptsize\itshape, text=gray, below=3mm of sft]
+    {OpenAI o1};
+  \node[font=\scriptsize\itshape, text=gray, below=3mm of rl]
+    {DeepSeek-R1-Zero};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3em}
+{\small A prompting trick (2022) $\to$ trained reasoning models
+(2024) $\to$ models that \alert{discover reasoning from scratch via RL} (2025). Under 3 years.}
+
+\end{frame}
+
+% --- SLIDE 11: THE AHA MOMENT (part 1) ---------------------------------------
+\begin{frame}{DeepSeek-R1-Zero: The ``Aha Moment''}
+
+\begin{center}
+\begin{tikzpicture}[font=\small]
+  \draw[ultra thick, NavyBlue!40] (0,0) -- (11,0);
+
+  \node[above, font=\scriptsize\itshape, text=gray] at (1.8,0.2)
+    {Early RL};
+  \node[above, font=\scriptsize\itshape, text=gray] at (5.5,0.2)
+    {Intermediate};
+  \node[above, font=\scriptsize\itshape, BrickRed] at (9.2,0.2)
+    {``Aha moment''};
+
+  \filldraw[NavyBlue] (1.8,0) circle (3pt);
+  \filldraw[NavyBlue] (5.5,0) circle (3pt);
+  \filldraw[BrickRed] (9.2,0) circle (5pt);
+
+  \node[draw, rounded corners, fill=gray!5, align=left,
+        text width=2.6cm, below=6mm] at (1.8,0)
+    {\scriptsize ``The answer is 42.''};
+
+  \node[draw, rounded corners, fill=gray!5, align=left,
+        text width=2.6cm, below=6mm] at (5.5,0)
+    {\scriptsize ``Let me calculate\ldots\\The answer is 42.''};
+
+  \node[draw, rounded corners, fill=BrickRed!8, align=left,
+        text width=3cm, below=6mm] at (9.2,0)
+    {\scriptsize ``\alert{Wait, let me}\\
+     \alert{reconsider\ldots}\\
+     The answer is 37.''};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.2em}
+{\small Pure RL, no human demos. The model discovered that \alert{pausing to self-correct improves answers}.
+AIME 2024: 15.6\% $\to$ \textbf{71.0\%} (RL alone). Majority voting: \textbf{86.7\%}, matching OpenAI o1.}
+
+\vspace{0.1em}
+{\scriptsize \papercite{DeepSeek-AI}{2025}{Nature}{DeepSeek-R1 Incentivizes Reasoning via RL}}
+
+\end{frame}
+
+% --- SLIDE 12: BUDGET FORCING -------------------------------------------------
+\begin{frame}{Budget Forcing: Controlling How Long a Model Thinks}
+
+\begin{center}
+\begin{tikzpicture}[
+  font=\small,
+  procbox/.style={draw, rounded corners, thick, minimum height=0.9cm,
+               align=center, fill=NavyBlue!8},
+]
+  \node[procbox, minimum width=3cm] (think) at (0,0) {Model thinks\ldots};
+  \node[procbox, minimum width=3cm] (stop) at (5,0) {About to stop};
+
+  \node[procbox, fill=BrickRed!10, minimum width=3.5cm] (wait) at (10,1)
+    {Inject ``\alert{Wait}''\\$\Rightarrow$ deeper reasoning};
+
+  \node[procbox, fill=ForestGreen!10, minimum width=3.5cm] (force) at (10,-1)
+    {Inject end-token\\$\Rightarrow$ answer now};
+
+  \draw[-{Stealth}, thick] (think) -- (stop);
+  \draw[-{Stealth}, thick, BrickRed] (stop) -- (wait)
+    node[midway, above, font=\scriptsize] {Need more thought};
+  \draw[-{Stealth}, thick, ForestGreen] (stop) -- (force)
+    node[midway, below, font=\scriptsize] {Budget exhausted};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3em}
+
+\begin{columns}[T]
+  \begin{column}{0.50\textwidth}
+    {\small Fine-tuned on only \textbf{1,000 examples}.\\
+    Training: \textbf{26 minutes} on 16 H100s.}
+
+    \vspace{0.2em}
+    {\scriptsize \papercite{Muennighoff et al.}{2025}{arXiv}{s1: Simple Test-Time Scaling}}
+  \end{column}
+  \begin{column}{0.46\textwidth}
+    {\small
+    \begin{tabular}{lc}
+      \toprule
+      \textbf{Model} & \textbf{AIME} \\
+      \midrule
+      o1-preview & 44.6\% \\
+      s1-32B & 50.0\% \\
+      s1 + Wait$\times$6 & \alert{57.0\%} \\
+      \bottomrule
+    \end{tabular}}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+% --- SLIDE 13: VERIFICATION METHODS ------------------------------------------
+\begin{frame}{How Do You Verify Reasoning?}
+
+\begin{columns}[T]
+  \begin{column}{0.48\textwidth}
+    \textbf{Outcome Reward Models (ORMs)}\\[0.3em]
+    {\small Score the \textbf{final answer} only.\\
+    Binary: correct or incorrect.\\
+    Simple but coarse.}
+
+    \vspace{1em}
+    \textbf{Process Reward Models (PRMs)}\\[0.3em]
+    {\small Score \textbf{each reasoning step}.\\
+    Catches errors early. 78\% on MATH.}
+
+    \vspace{0.3em}
+    {\scriptsize \papercite{Lightman et al.}{2024}{ICLR}{Let's Verify Step by Step}}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \textbf{Generative PRMs}\\[0.3em]
+    {\small Use a long-CoT model to \emph{verify}
+    each step via its own reasoning.
+    Strong verification, far fewer labels.}
+
+    \vspace{0.8em}
+    \textbf{Why it matters}\\[0.3em]
+    {\small Process supervision outperforms outcome
+    supervision. Scoring each step is key to
+    scaling test-time compute.}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+% --- SLIDE 14: TAXONOMY -------------------------------------------------------
+\begin{frame}{The Test-Time Compute Landscape}
+
+\begin{center}
+\begin{tikzpicture}[
+  font=\small,
+  cat/.style={draw, rounded corners, thick, minimum width=3.2cm,
+              minimum height=0.7cm, align=center},
+  method/.style={font=\scriptsize, align=left, text width=3cm},
+]
+  \node[cat, fill=NavyBlue!12] (search) at (0,2.5) {\textbf{Search-based}};
+  \node[cat, fill=Dandelion!15] (refine) at (5,2.5) {\textbf{Refinement-based}};
+  \node[cat, fill=BrickRed!10] (verify) at (10,2.5) {\textbf{Verification-based}};
+
+  \node[method, below=4mm of search] (sm) {
+    $\bullet$ Best-of-$N$\\
+    $\bullet$ Tree of Thoughts\\
+    $\bullet$ Self-Consistency\\
+    $\bullet$ Beam search
+  };
+
+  \node[method, below=4mm of refine] (rm) {
+    $\bullet$ Self-correction\\
+    $\bullet$ Budget forcing\\
+    $\bullet$ Sequential revision\\
+    $\bullet$ ``Wait'' injection
+  };
+
+  \node[method, below=4mm of verify] (vm) {
+    $\bullet$ Outcome RMs (ORMs)\\
+    $\bullet$ Process RMs (PRMs)\\
+    $\bullet$ Generative PRMs\\
+    $\bullet$ Step-level scoring
+  };
+
+  \node[draw, rounded corners, thick, fill=ForestGreen!8,
+        minimum width=12cm, minimum height=0.6cm, align=center]
+    (hybrid) at (5,-0.5)
+    {\textbf{Hybrid / Learned:} o1, o3, DeepSeek-R1, MCTS+PRM};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3em}
+{\small A small model with optimal test-time compute can outperform a \alert{14$\times$ larger model} (Snell et al., ICLR 2025 Oral). The optimal strategy is prompt-dependent.}
+
+\end{frame}
+
+% --- SLIDE 15: TWO AXES OF SCALING -------------------------------------------
+\begin{frame}{Two Axes of Scaling}
+
+{\small The capability frontier now has \textbf{two dimensions}:}
+
+\vspace{0.3em}
+
+\begin{columns}[T]
+  \begin{column}{0.48\textwidth}
+    \textbf{Train-time compute}\\[0.2em]
+    {\small One-time capital expense.\\
+    Bigger models: GPT-2 $\to$ GPT-4.\\
+    More parameters, data, FLOPs.}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \textbf{Test-time compute}\\[0.2em]
+    {\small Per-query operating expense.\\
+    Think longer: o1, DeepSeek-R1.\\
+    Same model, more reasoning tokens.}
+  \end{column}
+\end{columns}
+
+\vspace{0.5em}
+
+{\small \textbf{Strategic implications:}}
+\begin{itemize}\setlength{\itemsep}{0.1em}
+  \item {\small \textbf{High-volume, low-latency}: invest in a fast, large model.}
+  \item {\small \textbf{High-stakes, low-volume}: smaller model + extended thinking.}
+  \item {\small Test-time compute is most effective for \alert{medium-difficulty} problems.}
+\end{itemize}
+
+\end{frame}
+
+% --- SLIDE 16: DISCUSSION QUESTIONS -------------------------------------------
+\begin{frame}{Questions to Take Home}
+
+\begin{enumerate}
+  \item[\textbf{1.}] If we cannot predict what the next model will be capable
+    of, \alert{how should organisations plan for AI adoption}?
+
+  \vspace{0.8em}
+  \item[\textbf{2.}] Chain-of-thought evolved from a prompting trick to a
+    training paradigm in under 3 years.
+    \alert{What reasoning capabilities are next}?
+
+  \vspace{0.8em}
+  \item[\textbf{3.}] Test-time compute trades latency for accuracy.
+    \alert{Which of your business decisions warrant a model that ``thinks
+    longer''}?
+\end{enumerate}
+
+\end{frame}
+
+% ==============================================================================
+%  BIBLIOGRAPHY
+% ==============================================================================
+\begin{frame}[allowframebreaks]{References}
+  \footnotesize
+  \begin{thebibliography}{99}
+
+    \bibitem{anderson1972more}
+    P.W.\ Anderson.
+    \newblock \emph{More Is Different.}
+    \newblock Science, 177(4047):393--396, 1972.
+
+    \bibitem{wei2022emergent}
+    J.\ Wei et al.
+    \newblock \emph{Emergent Abilities of Large Language Models.}
+    \newblock TMLR, 2022.
+
+    \bibitem{lin2022truthfulqa}
+    S.\ Lin, J.\ Hilton, O.\ Evans.
+    \newblock \emph{TruthfulQA: Measuring How Models Mimic Human Falsehoods.}
+    \newblock ACL, 2022.
+
+    \bibitem{schaeffer2023mirage}
+    R.\ Schaeffer, B.\ Miranda, S.\ Koyejo.
+    \newblock \emph{Are Emergent Abilities of Large Language Models a Mirage?}
+    \newblock NeurIPS, 2023. Outstanding Paper Award.
+
+    \bibitem{wei2022cot}
+    J.\ Wei et al.
+    \newblock \emph{Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.}
+    \newblock NeurIPS, 2022.
+
+    \bibitem{kojima2022zeroshotcot}
+    T.\ Kojima et al.
+    \newblock \emph{Large Language Models are Zero-Shot Reasoners.}
+    \newblock NeurIPS, 2022.
+
+    \bibitem{wang2023selfconsistency}
+    X.\ Wang et al.
+    \newblock \emph{Self-Consistency Improves Chain of Thought Reasoning in Language Models.}
+    \newblock ICLR, 2023.
+
+    \bibitem{yao2023tree}
+    S.\ Yao et al.
+    \newblock \emph{Tree of Thoughts: Deliberate Problem Solving with Large Language Models.}
+    \newblock NeurIPS, 2023.
+
+    \bibitem{lightman2024lets}
+    H.\ Lightman et al.
+    \newblock \emph{Let's Verify Step by Step.}
+    \newblock ICLR, 2024.
+
+    \bibitem{deepseek2025r1}
+    DeepSeek-AI et al.
+    \newblock \emph{DeepSeek-R1 Incentivizes Reasoning in LLMs Through Reinforcement Learning.}
+    \newblock Nature, 645:633--638, 2025.
+
+    \bibitem{muennighoff2025s1}
+    N.\ Muennighoff et al.
+    \newblock \emph{s1: Simple Test-Time Scaling.}
+    \newblock arXiv:2501.19393, 2025.
+
+    \bibitem{snell2025scaling}
+    C.\ Snell et al.
+    \newblock \emph{Scaling LLM Test-Time Compute Optimally Can Be More Effective Than Scaling Model Parameters.}
+    \newblock ICLR, 2025. Oral.
+
+  \end{thebibliography}
+\end{frame}
+
+\end{document}

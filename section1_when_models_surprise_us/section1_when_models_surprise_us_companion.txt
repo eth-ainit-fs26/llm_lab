@@ -1,0 +1,214 @@
+================================================================================
+  COMPANION DOCUMENT — SECTION 1: WHEN MODELS SURPRISE US
+  Phase Transitions · Grokking · Test-Time Compute
+================================================================================
+
+1. SESSION OVERVIEW
+================================================================================
+
+Title:        When Models Surprise Us: Phase Transitions, Grokking, and the
+              Test-Time Compute Revolution
+
+Duration:     30 minutes (25 min presentation + 5 min discussion)
+
+Learning Objectives:
+After this session, participants will be able to:
+  (a) Explain why LLM capabilities can appear suddenly at critical scale
+      thresholds, and why this makes capability forecasting unreliable.
+  (b) Describe the grokking phenomenon and articulate why delayed
+      generalisation challenges conventional assumptions about training.
+  (c) Distinguish between train-time and test-time compute scaling, and
+      evaluate the strategic trade-offs between bigger models and longer
+      thinking at inference time.
+
+Program Brochure Summary:
+Large language models do not improve the way we expect. Capabilities can
+appear suddenly when a model crosses a critical size threshold — much like
+water freezing at 0°C. Models can memorise an entire dataset, appear to stop
+learning, and then — thousands of training steps later — suddenly
+generalise. And a small, cheap model that is allowed to "think longer" at
+inference time can outperform a model fourteen times its size. This session
+examines three of the most counterintuitive phenomena in modern AI research,
+drawing on landmark papers from NeurIPS, ICLR, and Nature. The unifying
+message: the dynamics of learning in LLMs violate our deepest intuitions,
+and anyone deploying these systems needs to understand why.
+
+
+2. CURATED READING LIST
+================================================================================
+
+TOPIC A: PHASE TRANSITIONS IN CAPABILITIES
+-------------------------------------------
+
+Accessible article:
+  - "The Unpredictable Abilities AI Models Develop As They Get Bigger"
+    Will Douglas Heaven, MIT Technology Review, July 2023.
+    https://www.technologyreview.com/2023/07/12/1076163/
+
+Technical paper (most important):
+  - Schaeffer, R., Miranda, B., & Koyejo, S. (2023). "Are Emergent Abilities
+    of Large Language Models a Mirage?" NeurIPS 2023. Outstanding Paper Award.
+    https://arxiv.org/abs/2304.15004
+    [Why this one: it is the most rigorous analysis of the emergence debate
+    and won an Outstanding Paper Award. Wei et al. (2022) documented the
+    phenomenon; Schaeffer et al. dissected it.]
+
+Opinion / perspective piece:
+  - Anderson, P.W. (1972). "More Is Different." Science, 177(4047), 393–396.
+    https://doi.org/10.1126/science.177.4047.393
+    [The foundational physics essay on emergence that inspired the framing
+    used in modern LLM research. Short, readable, and intellectually
+    thrilling — even fifty years later.]
+
+
+TOPIC B: GROKKING
+-------------------------------------------
+
+Accessible article:
+  - "Grokking: When Neural Networks Suddenly 'Get It'"
+    Quanta Magazine (Mordechai Rorvig), November 2023.
+    https://www.quantamagazine.org/how-neural-networks-learn-to-grok-20230830/
+
+Technical paper (most important):
+  - Nanda, N., Chan, L., Lieberum, T., Smith, J., & Steinhardt, J. (2023).
+    "Progress Measures for Grokking via Mechanistic Interpretability."
+    ICLR 2023 (Oral).
+    https://arxiv.org/abs/2301.05217
+    [Why this one: it fully reverse-engineers the algorithm a network learns
+    during grokking — showing it discovers discrete Fourier analysis — and
+    defines continuous progress measures that reveal grokking is not sudden
+    but gradual internally.]
+
+Opinion / perspective piece:
+  - Varma, V., Shah, R., Kenton, Z., Kramar, J., & Kumar, R. (2025).
+    "Explaining Grokking Through Circuit Efficiency." ICLR 2025.
+    https://arxiv.org/abs/2309.02390
+    [Doubles as a perspective piece because it reframes grokking as a
+    competition between circuits of different efficiency, predicts the novel
+    phenomenon of "ungrokking," and argues that generalisation is not a
+    permanent endpoint — a genuinely unsettling conclusion.]
+
+
+TOPIC C: THE TEST-TIME COMPUTE REVOLUTION
+-------------------------------------------
+
+Accessible article:
+  - "AI's Next Big Trick: Teaching Models to Think Longer, Not Just Get Bigger"
+    The Economist, February 2025.
+    [Alternatively: OpenAI's blog post introducing o1 (September 2024):
+    https://openai.com/index/learning-to-reason-with-llms/]
+
+Technical paper (most important):
+  - Snell, C., Lee, J., Xu, K., & Kumar, A. (2025). "Scaling LLM Test-Time
+    Compute Optimally Can Be More Effective Than Scaling Model Parameters."
+    ICLR 2025 (Oral).
+    https://arxiv.org/abs/2408.03314
+    [Why this one: provides the most rigorous FLOPs-matched comparison
+    showing that test-time compute can substitute for model size. Essential
+    reading for anyone making infrastructure investment decisions.]
+
+Opinion / perspective piece:
+  - DeepSeek-AI (2025). "DeepSeek-R1: Incentivizing Reasoning Capability
+    in LLMs via Reinforcement Learning." Published in Nature, 2025.
+    https://arxiv.org/abs/2501.12948
+    [Both a technical contribution and a philosophical provocation: a model
+    trained with pure RL, no human demonstrations, spontaneously discovers
+    chain-of-thought reasoning. The "aha moment" anecdote alone is worth
+    the read.]
+
+
+3. FAQ FOR MANAGERS
+================================================================================
+
+Q1: If capabilities emerge unpredictably, how can we plan our AI strategy?
+
+A: You cannot predict exactly what the next model will be able to do, but
+you can build adaptive strategies. Treat model capabilities as a portfolio of
+options: invest in evaluation infrastructure so you can rapidly assess new
+models as they arrive, maintain modular architectures that allow you to swap
+models with minimal friction, and avoid betting your entire roadmap on a
+specific capability appearing at a specific time. The inability to predict
+is not an excuse for inaction — it is an argument for architectural
+flexibility.
+
+
+Q2: Does grokking mean our models might develop unexpected capabilities after
+    we think training is finished?
+
+A: Yes, this is a genuine concern. Grokking shows that a model can transition
+from memorisation to generalisation long after training loss has converged.
+Li et al. (2025) demonstrated this at the 7-billion-parameter scale. For
+safety-critical deployments, this means post-training evaluation is not a
+one-time event — you should re-evaluate models periodically, especially if
+fine-tuning or continued training is applied. The Varma et al. "ungrokking"
+result adds a further wrinkle: capabilities can also be lost.
+
+
+Q3: Should we use smaller models with more test-time compute, or larger
+    models that answer immediately?
+
+A: It depends on the use case. Test-time compute is most effective when: (a)
+the problem is hard enough that the base model cannot solve it immediately,
+(b) the user can tolerate latency (seconds to minutes), and (c) accuracy
+matters more than speed. For high-volume, low-latency tasks (autocomplete,
+classification), a fast model is usually better. For complex reasoning,
+analysis, and planning tasks, a smaller model with extended thinking can
+outperform a model 14x its size. The cost structure is also different:
+training is a one-time capital expense; inference compute is an ongoing
+operating expense that scales with query volume.
+
+
+Q4: How reliable are the "emergent abilities" claims? I have heard some of
+    these are just measurement artifacts.
+
+A: The honest answer is that both sides are partly right. Wei et al. (2022)
+documented real discontinuities in how LLM capabilities scale. Schaeffer
+et al. (2023) showed that 92% of the claimed emergent abilities in the
+BIG-Bench benchmark appeared only under discontinuous evaluation metrics
+(like exact string match). When you switch to continuous metrics (like token
+edit distance), many of the sharp transitions become smooth curves. However,
+some phase-transition-like behaviour persists even under continuous metrics,
+and qualitative capability jumps (e.g., a model that cannot do multi-step
+reasoning at 10B but can at 100B) are difficult to explain away as pure
+measurement artifact. The Berti et al. (2025) survey provides the most
+balanced current assessment.
+
+
+Q5: Will AI models eventually develop genuine understanding, or are they
+    always "just" pattern matching?
+
+A: We don't know. This is one of the deepest open questions in AI research.
+Grokking shows that networks can transition from rote memorisation to
+learning structured algorithms (like Fourier analysis for modular
+arithmetic). DeepSeek-R1 shows that models can independently discover that
+self-reflection improves their answers. Whether this constitutes
+"understanding" depends on your definition of the word — and researchers
+disagree profoundly. What we can say is that the boundary between
+sophisticated pattern matching and genuine understanding is far less clear
+than anyone expected five years ago. For practical purposes, what matters is
+not whether the model "truly understands," but whether its outputs are
+reliable for your specific use case.
+
+
+4. DISCUSSION QUESTIONS (for the 5-minute session close)
+================================================================================
+
+1. PLANNING UNDER UNCERTAINTY
+   If we cannot predict what the next model will be capable of, how should
+   organisations plan for AI adoption? Is the right analogy venture capital
+   (place many small bets) or insurance (hedge against downside)?
+
+2. SAFETY AND DELAYED CAPABILITIES
+   Grokking suggests that understanding can emerge long after data is
+   memorised — and that it can also be lost ("ungrokking"). What does this
+   mean for AI safety testing? Should we treat a "fully trained" model as
+   potentially still changing?
+
+3. THE VALUE OF THINKING TIME
+   Test-time compute trades latency for accuracy. In your organisation,
+   which decisions are important enough to warrant a model that "thinks" for
+   30 seconds before answering? And which decisions are too urgent to wait?
+
+================================================================================
+  END OF COMPANION DOCUMENT
+================================================================================

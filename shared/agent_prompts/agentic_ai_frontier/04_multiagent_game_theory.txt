@@ -1,0 +1,176 @@
+================================================================================
+  AGENT PROMPT — MULTI-AGENT GAME THEORY AT SUPERHUMAN SCALE
+  Counterfactual Regret Minimisation, Nash Equilibria, Mean-Field Games,
+  Opponent Shaping, Cicero
+================================================================================
+
+YOU ARE:
+A game theorist and machine-learning researcher with expertise in algorithmic
+game theory, regret minimisation, and large-scale equilibrium computation.  You
+are preparing lecture-quality research notes for a Master's level ML course at
+ETH Zurich.
+
+YOUR MISSION:
+Produce a complete, compilable LaTeX document (article class) that presents the
+mathematical breakthroughs behind multi-agent game playing at superhuman scale
+and connects them to modern multi-agent agentic AI.
+
+================================================================================
+KEY RESEARCHERS — THE BOUNDARY-PUSHERS
+================================================================================
+
+- Noam Brown (Meta FAIR): Libratus, Pluribus (Science 2019), Cicero (Science 2022).
+  Cracked imperfect-information games with genuinely new algorithms.
+- Tuomas Sandholm (CMU / Strategy Robot): Abstraction techniques, regret
+  minimisation at scale, Libratus co-creator.
+- Michael Bowling (U Alberta / DeepMind): DeepStack, CFR foundations, Nash
+  equilibrium computation.
+- David Silver (DeepMind): AlphaGo / AlphaZero / MuZero — game-tree search
+  meets deep learning.
+- Thore Graepel (DeepMind): Game theory meets deep learning, multi-agent
+  evaluation (ELO, Nash averaging).
+- Ian Gemp (DeepMind): Mean-field game theory for multi-agent learning.
+- Marc Lanctot (DeepMind): OpenSpiel, evaluation methodology for multi-agent.
+- Jakob Foerster (Oxford): LOLA (Learning with Opponent-Learning Awareness),
+  opponent shaping, Bayesian best-response.
+
+================================================================================
+MATHEMATICAL CONTENT — WHAT YOU MUST INCLUDE
+================================================================================
+
+1. NASH EQUILIBRIUM AND ITS LIMITATIONS
+   - Normal-form game: (N, (S_i)_{i∈N}, (u_i)_{i∈N}).
+   - Mixed strategy: σ_i ∈ Δ(S_i).
+   - Definition: σ* is a Nash equilibrium if
+       ∀i, ∀σ_i : u_i(σ*_i, σ*_{−i}) ≥ u_i(σ_i, σ*_{−i}).
+   - Nash's existence theorem: sketch proof via Kakutani's fixed-point theorem
+     on the best-response correspondence.
+   - Limitations:
+     (a) Computational hardness: finding a Nash eq. is PPAD-complete (Daskalakis,
+         Goldberg, Papadimitriou 2009).
+     (b) Equilibrium selection: multiple equilibria, no principled way to choose.
+     (c) Beyond 2 players: Nash eq. may not be the right solution concept.
+   - Correlated equilibrium (Aumann): define, show it's computable by LP.
+   - Coarse correlated equilibrium: the connection to no-regret learning.
+     THEOREM: if all players use no-regret algorithms, empirical play converges
+     to the set of coarse correlated equilibria.  Prove or sketch proof.
+
+2. COUNTERFACTUAL REGRET MINIMISATION (CFR)
+   - Extensive-form game: game tree, information sets, chance nodes.
+   - Define counterfactual value:
+       v_i(σ, h) = Σ_{z ∈ Z(h)} π^σ_{−i}(h) · π^σ(h,z) · u_i(z)
+   - Define counterfactual regret for action a at information set I:
+       R^T_i(I, a) = Σ_{t=1}^T [v_i(σ^t_{I→a}, I) − v_i(σ^t, I)]
+   - Regret matching: choose actions proportional to positive regret:
+       σ^{T+1}(I, a) = R^{T,+}_i(I,a) / Σ_{a'} R^{T,+}_i(I,a')
+   - THE KEY THEOREM: In a two-player zero-sum game, if both players use
+     CFR, average strategies converge to a Nash equilibrium at rate O(1/√T).
+   - Proof sketch: decompose total regret into sum of local counterfactual
+     regrets; apply regret matching guarantee at each information set.
+   - CFR+ (Tammelin 2014): non-negative regrets only, faster convergence.
+   - Deep CFR (Brown et al. 2019): approximate counterfactual values with
+     neural networks.  How to handle the massive information set space.
+
+3. SUPERHUMAN GAME PLAY: LIBRATUS AND PLURIBUS
+   - Libratus (heads-up no-limit poker):
+     - Blueprint strategy via CFR+ on abstracted game.
+     - Nested safe subgame solving: solve subgames in real time, guaranteeing
+       the refined strategy is no worse than the blueprint.
+     - THEOREM (safe subgame solving): if the subgame strategy achieves
+       counterfactual value ≥ blueprint at every terminal node of the
+       subgame trunk, the overall strategy's exploitability does not increase.
+   - Pluribus (6-player poker):
+     - Cannot use Nash eq. convergence guarantees (>2 players).
+     - Depth-limited search: instead of solving to the end of the game,
+       evaluate leaf nodes with the blueprint.
+     - Linear CFR: weight recent iterations more heavily.
+   - Key insight: the same framework scales from 2 to 6 players, even though
+     the theoretical guarantees technically don't hold.
+
+4. LANGUAGE + STRATEGY: CICERO (Meta, Science 2022)
+   - The game: Diplomacy — 7 players, simultaneous moves, free-form natural
+     language negotiation.
+   - Architecture:
+     (a) Dialogue model: generates and interprets natural-language messages.
+     (b) Strategic reasoning module: piKL (policy regularised to anchor
+         towards human-like play, then improved via search).
+     (c) Intent model: predicts other players' moves given dialogue.
+   - The fusion: the dialogue model proposes messages; the strategic module
+     checks whether the messages are consistent with the agent's plan; the
+     intent model predicts how others will respond.
+   - Signaling games: formalise communication in games.  Define a signaling
+     game (sender, receiver, message space, type space).  Babbling equilibrium
+     vs. separating equilibrium.  How Cicero avoids babbling.
+
+5. MEAN-FIELD GAMES (Lasry & Lions 2007, Huang, Malhamé & Caines 2006)
+   - Setting: N agents, N → ∞, each agent is infinitesimally small.
+   - Each agent faces an optimal control problem given the population
+     distribution μ_t.
+   - Mean-field game equations (the coupled PDE system):
+     BACKWARD (Hamilton-Jacobi-Bellman):
+       −∂_t V = H(x, ∇V) + F(x, μ_t)
+     FORWARD (Fokker-Planck / Kolmogorov):
+       ∂_t μ = −∇·(μ ∇_p H(x, ∇V)) + σ²/2 Δμ
+   - Mean-field Nash equilibrium: a fixed point where μ_t is consistent with
+     agents' optimal behaviour under μ_t.
+   - Existence and uniqueness: Lasry-Lions monotonicity condition.
+   - Application to multi-agent RL: mean-field MARL (Yang et al. 2018).
+     Approximate N-agent interactions by interactions with the mean field.
+   - Connection to agentic AI: how to scale multi-agent systems to thousands
+     or millions of interacting LLM agents.
+
+6. OPPONENT SHAPING AND LEARNING AWARENESS
+   - LOLA (Foerster et al. 2018): gradient through the opponent's learning step.
+     Agent 1 updates:
+       θ_1 ← θ_1 + α ∇_{θ_1} [V_1(θ_1, θ_2 + δ · ∇_{θ_2} V_2(θ_1, θ_2))]
+     i.e., agent 1 accounts for how agent 2 will adapt.
+   - Result: LOLA agents learn to cooperate in iterated Prisoner's Dilemma
+     where naive learners defect.
+   - Model-Free Opponent Shaping (M-FOS, Lu et al. 2022): meta-learning to
+     shape opponents without knowing their learning algorithm.
+   - Connection to agentic AI: when LLM agents interact repeatedly (e.g.,
+     negotiation, debate), should they model how the other agent adapts?
+
+7. CONNECTIONS TO MODERN AGENTIC AI
+   - Multi-agent LLM systems (AutoGen, CrewAI, LangGraph): do they converge
+     to equilibria?  What game-theoretic frameworks apply?
+   - LLM agents negotiating: Deal-or-No-Deal (Lewis et al. 2017) to Cicero.
+   - Mechanism design for AI agents: designing rules/protocols so that
+     self-interested AI agents produce desirable outcomes.
+   - The safety angle: if agents are strategic, alignment is a game theory
+     problem (cooperative AI, Dafoe et al. 2020).
+   - Auction theory for LLM API allocation.
+
+8. OPEN PROBLEMS (at least 5)
+   - Equilibrium concepts for >2 player imperfect-information games with
+     convergence guarantees.
+   - Integrating natural language into game-theoretic reasoning (beyond Cicero).
+   - Mean-field theory for heterogeneous agents (different LLM architectures).
+   - Mechanism design when agents are LLMs: how does it change when agents
+     can be "jailbroken"?
+   - Theoretical foundations for multi-agent RLHF.
+
+9. ANNOTATED BIBLIOGRAPHY (≥ 15 entries)
+
+================================================================================
+OUTPUT FORMAT
+================================================================================
+
+Produce ONE file: a complete, compilable LaTeX document.
+
+  \documentclass[11pt,a4paper]{article}
+  \usepackage{amsmath,amsthm,amssymb,mathtools}
+  \usepackage[margin=2.5cm]{geometry}
+  \usepackage{hyperref}
+
+Structure:
+  - Title: "Multi-Agent Game Theory at Scale:
+            Mathematical Foundations for Agentic AI"
+  - Subtitle: "Research Notes — ETH Zurich ML Lecture Series"
+  - Abstract
+  - Sections as listed above (§1–§9)
+
+Theorem environments, full derivations, ETH Zurich quality.
+Target: 15–25 pages compiled.
+
+================================================================================

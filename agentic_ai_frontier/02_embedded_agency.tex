@@ -1,0 +1,1041 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amsthm,amssymb,mathtools}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usepackage{xcolor}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  citecolor=green!50!black,
+  urlcolor=blue!60!black
+}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{problem}{Open Problem}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\PA}{\mathsf{PA}}
+\newcommand{\ZFC}{\mathsf{ZFC}}
+\newcommand{\Prov}{\mathrm{Prov}}
+\newcommand{\Bel}{\mathrm{Bel}}
+\newcommand{\EU}{\mathrm{EU}}
+\newcommand{\Do}{\mathrm{do}}
+\newcommand{\Tr}{\mathrm{Tr}}
+
+\title{\textbf{Embedded Agency and Formal Decision Theory:\\
+Mathematical Foundations for Agentic AI}\\ [0.5em]
+\large Research Notes --- ETH Zurich ML Lecture Series}
+\author{Agentic AI Frontier Seminar}
+\date{Spring 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+These notes survey the mathematical theory of \emph{embedded agency}: the
+study of agents that reason about environments of which they are
+themselves a part.  We develop the core formalisms---logical induction,
+functional decision theory, L\"ob's theorem and the L\"obian obstacle,
+reflective oracles, and Cartesian frames---with full definitions and
+proof sketches aimed at a mathematically mature audience.  We then
+connect these foundations to contemporary agentic AI systems (tool-using
+LLMs, multi-agent architectures, constitutional AI) and close with open
+problems at the research frontier.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%==========================================================================
+\section{The Dualism Problem}\label{sec:dualism}
+%==========================================================================
+
+Classical AI and decision theory rest on a \emph{Cartesian} split:
+the agent is \emph{outside} the environment, receiving observations and
+emitting actions through a clean interface.  Formally, one posits a
+function $\pi : \mathcal{O}^* \to \mathcal{A}$ (the policy), a
+transition kernel $T : \mathcal{S} \times \mathcal{A} \to
+\Delta(\mathcal{S})$, and an observation function $O : \mathcal{S} \to
+\mathcal{O}$, where crucially the agent's internal state is \emph{not}
+an element of $\mathcal{S}$.
+
+\begin{definition}[Dualistic agent model]
+A \emph{dualistic agent--environment pair} is a tuple
+$(\mathcal{S}, \mathcal{A}, \mathcal{O}, T, O, \pi)$ where the
+agent $\pi$ and the environment $(S, T, O)$ share no state.
+The agent can be ``lifted out'' and replaced without altering
+the environment dynamics.
+\end{definition}
+
+This separation breaks down the moment we acknowledge four facts:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Physical embedding.} The agent is made of atoms in the
+    environment.  Its hardware can be damaged, copied, or inspected.
+  \item \textbf{Self-reference.} The agent may reason about its own
+    source code or weights, creating G\"odelian fixed-point phenomena.
+  \item \textbf{Logical uncertainty.} Even with full knowledge of the
+    environment's laws, the agent faces irreducible uncertainty about
+    logical and mathematical consequences.
+  \item \textbf{Subsystem alignment.} The agent's goals may conflict
+    with goals of sub-agents it creates or of the larger system it
+    inhabits.
+\end{enumerate}
+
+Demski and Garrabrant~\cite{demski2019embedded} organise the embedded
+agency research programme around four corresponding sub-problems:
+\begin{itemize}
+  \item \textbf{Decision problem:} How should an embedded agent choose
+    actions when it cannot separate ``intervention'' from ``observation''?
+  \item \textbf{Logical uncertainty problem:} How should an agent assign
+    credences to logical claims it cannot yet verify?
+  \item \textbf{High-bandwidth problem:} The agent is a \emph{small}
+    part of a \emph{large} environment---it cannot simulate the whole.
+  \item \textbf{Subsystem alignment problem:} How can an agent trust
+    future versions of itself, or sub-agents it spawns?
+\end{itemize}
+
+The remainder of these notes addresses each sub-problem through a
+concrete mathematical framework.
+
+%==========================================================================
+\section{Logical Induction}\label{sec:logical-induction}
+%==========================================================================
+
+\subsection{Motivation: beyond Bayesian epistemology}
+
+A Bayesian agent assigns a prior over possible worlds and updates by
+conditioning.  But for an embedded agent, many questions are
+\emph{logical} rather than empirical: ``Is $P \neq NP$?'', ``Does my
+own source code halt on input 42?''  A coherent prior over logical
+sentences requires logical omniscience (assigning probability~1 to all
+theorems), which is computationally impossible.
+
+Logical induction, introduced by Garrabrant et al.~\cite{garrabrant2016logical},
+provides a computable process whose beliefs about logical sentences
+converge to satisfy a rich collection of rationality desiderata.
+
+\subsection{The trading framework}
+
+Fix a first-order language $\mathcal{L}$ (e.g.\ the language of Peano
+arithmetic $\PA$) and an enumeration $\phi_1, \phi_2, \ldots$ of its
+sentences.
+
+\begin{definition}[Pricing]
+A \emph{pricing} is a function $\mathbb{P} : \mathcal{L} \to [0,1]$.
+We interpret $\mathbb{P}(\phi)$ as the ``price of a share'' that pays
+\$1 if $\phi$ is true in the standard model.
+\end{definition}
+
+\begin{definition}[Trader]
+A \emph{trader} is a computable function
+$\mathcal{T} : [0,1]^{<\omega} \to \mathcal{L} \times \R$
+that, given the history of past prices, outputs a sentence $\phi$
+and a stake $\alpha$ (positive = buy, negative = sell).
+The \emph{value} of trader $\mathcal{T}$'s position after day $n$
+relative to a world (a consistent completion $W$ of the deductive
+system) is:
+\[
+  V_n^W(\mathcal{T}) \;=\; \sum_{i=1}^{n} \alpha_i \bigl(
+    \mathbf{1}_W[\phi_i] - \mathbb{P}_i(\phi_i)
+  \bigr),
+\]
+where $\mathbf{1}_W[\phi_i] = 1$ if $\phi_i \in W$ and $0$ otherwise.
+\end{definition}
+
+\begin{definition}[Exploiting a market]
+A trader $\mathcal{T}$ \emph{exploits} a sequence of pricings
+$(\mathbb{P}_n)_{n \geq 1}$ if there exists a constant $c$ such that
+for every consistent completion $W$:
+\[
+  V_n^W(\mathcal{T}) \;\geq\; -c \quad\text{for all } n,
+  \qquad\text{and}\qquad
+  \limsup_{n \to \infty}\, V_n^W(\mathcal{T}) \;=\; +\infty.
+\]
+That is, $\mathcal{T}$ has bounded downside and unbounded upside.
+\end{definition}
+
+\begin{definition}[Logical induction criterion]\label{def:lic}
+A computable sequence of pricings $(\mathbb{P}_n)_{n \geq 1}$ is a
+\emph{logical inductor} over a deductive system $D$ if no
+polynomially-computable trader exploits it.
+\end{definition}
+
+The polynomial-time bound on traders is essential: it models the
+resource limitations of an embedded reasoner while still capturing a
+vast class of ``efficiently noticeable'' patterns.
+
+\subsection{Existence and main properties}
+
+\begin{theorem}[Garrabrant et al.\ 2016]\label{thm:li-existence}
+Logical inductors exist.  Specifically, there is a computable sequence
+of pricings $(\mathbb{P}_n)_{n \geq 1}$ satisfying
+Definition~\ref{def:lic}.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Enumerate all poly-time traders $\mathcal{T}_1, \mathcal{T}_2, \ldots$.
+On day $n$, let trader $\mathcal{T}_k$ (for $k \leq n$) submit demands.
+Set prices by solving a linear programme (or a fixed-point equation)
+that minimises the aggregate ``profit opportunity'' of all traders seen
+so far, subject to prices lying in $[0,1]$.  Because the weight of each
+trader shrinks (e.g.\ weight $2^{-k}$ for $\mathcal{T}_k$), the total
+exploitation is bounded above, and no single trader can achieve
+unbounded profit.
+\end{proof}
+
+\begin{theorem}[Properties of logical inductors]\label{thm:li-props}
+Let $(\mathbb{P}_n)$ be a logical inductor.  Then:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Convergence.} For every sentence $\phi$,
+    $\lim_{n \to \infty} \mathbb{P}_n(\phi)$ exists.  Write
+    $\mathbb{P}_\infty(\phi)$ for the limit.
+  \item \textbf{Coherence.} $\mathbb{P}_\infty$ is a finitely additive
+    probability measure on $\mathcal{L}$ (modulo provable equivalence).
+  \item \textbf{Calibration.} The prices are asymptotically calibrated:
+    among sentences assigned limiting price $p$, the fraction that are
+    true converges to $p$.
+  \item \textbf{Gaifman condition.} If $D \vdash \phi$, then
+    $\mathbb{P}_\infty(\phi) = 1$.  (No probability mass on refutable
+    sentences.)
+  \item \textbf{Non-dogmatism.} If $\phi$ is consistent with $D$, then
+    $\mathbb{P}_\infty(\phi) > 0$.
+  \item \textbf{Domination of computably enumerable sequences.}
+    If a CE sequence of pricings $(\mathbb{Q}_n)$ is itself eventually
+    coherent, then $\mathbb{P}$ eventually assigns at least as much
+    probability to true sentences as $\mathbb{Q}$ does.
+\end{enumerate}
+\end{theorem}
+
+\begin{remark}
+Property (f) is the logical analogue of Blackwell--Dubins merging: the
+logical inductor eventually dominates any ``reasonable'' computable
+belief sequence.  This is the sense in which logical induction is
+\emph{optimal} under computational constraints.
+\end{remark}
+
+\subsection{Relationship to prediction markets}
+
+Logical induction can be understood as an internalised prediction market
+where each trader represents a ``pattern of reasoning.'' The market
+price aggregates these patterns efficiently.  The polynomial-time
+restriction models bounded rationality, and the no-exploitation
+condition is a computationally bounded analogue of the \emph{efficient
+market hypothesis}.
+
+%==========================================================================
+\section{Functional Decision Theory}\label{sec:fdt}
+%==========================================================================
+
+\subsection{Three decision theories}
+
+We consider an agent choosing an action $a \in \mathcal{A}$ in a
+decision problem with outcome function
+$\text{Out}: \mathcal{A} \times \mathcal{E} \to \mathcal{O}$, where
+$\mathcal{E}$ is a set of environment states.
+
+\begin{definition}[Causal Decision Theory (CDT)]
+CDT recommends:
+\[
+  a^*_{\text{CDT}} = \arg\max_{a \in \mathcal{A}} \sum_{e \in \mathcal{E}}
+    P(e \mid \Do(a))\, U(\text{Out}(a, e)),
+\]
+where $P(e \mid \Do(a))$ denotes the probability of $e$ under a causal
+intervention setting the agent's action to $a$, using Pearl's
+do-calculus.
+\end{definition}
+
+\begin{definition}[Evidential Decision Theory (EDT)]
+EDT recommends:
+\[
+  a^*_{\text{EDT}} = \arg\max_{a \in \mathcal{A}} \sum_{e \in \mathcal{E}}
+    P(e \mid a)\, U(\text{Out}(a, e)),
+\]
+where $P(e \mid a)$ is ordinary conditional probability.
+\end{definition}
+
+\begin{definition}[Functional Decision Theory (FDT)]
+FDT (Yudkowsky and Soares~\cite{soares2018fdt}) recommends:
+\[
+  a^*_{\text{FDT}} = \arg\max_{a \in \mathcal{A}} \sum_{e \in \mathcal{E}}
+    P(e \mid \widehat{\text{FDT}}() = a)\, U(\text{Out}(a, e)),
+\]
+where $\widehat{\text{FDT}}()$ is a rigid designator for the output of
+the agent's \emph{decision algorithm}, and the conditional is over
+\emph{logical} or \emph{subjunctive} dependence: ``what would the world
+look like if the computation FDT() returned $a$?''
+\end{definition}
+
+The key distinction: CDT conditions on \emph{causal} intervention, EDT
+on \emph{evidential} correlation, and FDT on \emph{logical/functional}
+dependence of the environment on the agent's algorithm.
+
+\subsection{Newcomb's Problem}
+
+\begin{example}[Newcomb's Problem]
+A predictor Omega, who has never been wrong, places \$1{,}000 in a
+transparent box and either \$1{,}000{,}000 or \$0 in an opaque box,
+depending on whether it predicted you would take one box or two.
+
+\medskip
+\begin{center}
+\begin{tabular}{l|cc}
+  & Omega predicted 1-box & Omega predicted 2-box \\
+\hline
+Take 1 box & \$1{,}000{,}000 & \$0 \\
+Take 2 boxes & \$1{,}001{,}000 & \$1{,}000 \\
+\end{tabular}
+\end{center}
+\medskip
+
+\noindent
+CDT two-boxes (causal dominance), EDT one-boxes (evidential correlation),
+and FDT one-boxes (the computation FDT() returning ``one-box'' is the
+same computation Omega simulated, so $P(\text{predicted 1-box} \mid
+\widehat{\text{FDT}}() = \text{1-box}) \approx 1$).
+\end{example}
+
+\subsection{Prisoner's Dilemma with a copy}
+
+\begin{example}
+You play Prisoner's Dilemma against an exact copy of yourself (same
+source code, same inputs).
+
+CDT: defects (causal independence from the copy).
+
+EDT: cooperates (my action is evidence of my copy's action).
+
+FDT: cooperates (the same computation determines both outputs; if
+$\widehat{\text{FDT}}() = C$, then both cooperate, yielding $(C,C)$).
+
+\medskip
+FDT achieves the cooperative payoff because it recognises that its
+algorithm \emph{is} the same function being evaluated in both positions.
+\end{example}
+
+\subsection{Parfit's Hitchhiker}
+
+\begin{example}
+You are stranded in the desert.  A driver will rescue you if and only if
+she predicts you will pay \$1{,}000 upon reaching town.  Once in town,
+paying is costly and you have no further interaction with the driver.
+
+CDT: does not pay (no causal benefit once in town), hence is not rescued.
+
+FDT: commits to paying, because the computation ``would I pay?'' is
+evaluated \emph{before} the rescue decision.  FDT agents get rescued and
+pay, yielding higher utility than CDT agents who die in the desert.
+\end{example}
+
+\subsection{FDT and logical counterfactuals}
+
+The central difficulty in FDT is defining the \emph{subjunctive
+conditional} $P(e \mid \widehat{F}() = a)$.  This requires a theory of
+\emph{logical counterfactuals}: what would the world be like if a
+mathematical fact were different?  This connects directly to logical
+induction (Section~\ref{sec:logical-induction}): one can use the logical
+inductor's beliefs as the substrate for evaluating such counterfactuals.
+Formalising this rigorously remains an open problem
+(see Section~\ref{sec:open}).
+
+%==========================================================================
+\section{L\"ob's Theorem and the L\"obian Obstacle}\label{sec:lob}
+%==========================================================================
+
+\subsection{Statement}
+
+\begin{theorem}[L\"ob's Theorem, 1955]\label{thm:lob}
+Let $T$ be a recursively axiomatised theory extending $\PA$ and let
+$\Prov_T(\ulcorner \cdot \urcorner)$ be its canonical provability
+predicate.  For any sentence $\phi$:
+\[
+  T \vdash \bigl(\Prov_T(\ulcorner \phi \urcorner) \to \phi\bigr)
+  \quad \Longrightarrow \quad
+  T \vdash \phi.
+\]
+\end{theorem}
+
+Equivalently: if $T$ proves ``if I can prove $\phi$, then $\phi$ is
+true,'' then $T$ already proves $\phi$.  An agent that trusts its own
+proofs can only do so for sentences it has already established.
+
+\subsection{Proof sketch}
+
+\begin{proof}[Proof sketch]
+Assume $T \vdash \Prov_T(\ulcorner \phi \urcorner) \to \phi$.
+\begin{enumerate}
+  \item By the diagonal lemma, obtain a sentence $\psi$ such that
+    $T \vdash \psi \leftrightarrow (\Prov_T(\ulcorner \psi \urcorner)
+    \to \phi)$.
+  \item Since $T \vdash \psi \to (\Prov_T(\ulcorner \psi \urcorner)
+    \to \phi)$, and by the Hilbert--Bernays derivability conditions:
+    \begin{itemize}
+      \item $T \vdash \psi \implies T \vdash \Prov_T(\ulcorner \psi
+        \urcorner)$ \hfill (D1)
+      \item $T \vdash \Prov_T(\ulcorner \psi \to (\Prov_T(\ulcorner
+        \psi \urcorner) \to \phi) \urcorner)$ \hfill (D1 on step 1)
+      \item $T \vdash \Prov_T(\ulcorner \psi \urcorner) \to
+        \Prov_T(\ulcorner \Prov_T(\ulcorner \psi \urcorner) \to \phi
+        \urcorner)$ \hfill (D2: $\Prov$ distributes over $\to$)
+      \item $T \vdash \Prov_T(\ulcorner \psi \urcorner) \to
+        \Prov_T(\ulcorner \Prov_T(\ulcorner \psi \urcorner) \urcorner)
+        $ \hfill (D3)
+    \end{itemize}
+  \item Combining these, $T \vdash \Prov_T(\ulcorner \psi \urcorner)
+    \to \Prov_T(\ulcorner \phi \urcorner)$.
+  \item By hypothesis, $T \vdash \Prov_T(\ulcorner \phi \urcorner) \to
+    \phi$, so $T \vdash \Prov_T(\ulcorner \psi \urcorner) \to \phi$.
+  \item By step 1's equivalence, $T \vdash \psi$.
+  \item By D1, $T \vdash \Prov_T(\ulcorner \psi \urcorner)$.
+  \item By step 4, $T \vdash \phi$.  \qedhere
+\end{enumerate}
+\end{proof}
+
+\subsection{The L\"obian obstacle for cooperation}
+
+Consider two agents, $A$ and $B$, each reasoning in $\PA$, who wish to
+cooperate in a Prisoner's Dilemma.  Agent $A$ might try the strategy:
+\begin{quote}
+``Cooperate if I can prove that $B$ cooperates.''
+\end{quote}
+Symmetrically for $B$.  Let $a$ = ``$A$ cooperates'' and $b$ = ``$B$
+cooperates.''  Then $A$'s strategy amounts to:
+\[
+  \PA \vdash \Prov_\PA(\ulcorner b \urcorner) \to a,
+\]
+and $B$'s to $\PA \vdash \Prov_\PA(\ulcorner a \urcorner) \to b$.
+
+\begin{proposition}[Na\"ive mutual proof search fails]
+The mutual proof search does not terminate: neither agent can establish
+a proof of the other's cooperation without already having such a proof.
+The circularity is exactly the structure L\"ob's theorem governs.
+\end{proposition}
+
+\subsection{The L\"obian handshake (Barasz et al.\ 2014)}
+
+\begin{theorem}[Barasz, Christiano, Fallenstein, Herreshoff, LaVictoire, Yudkowsky~\cite{barasz2014robust}]
+There exist agents $A$ and $B$ using the following strategy that
+provably cooperate:
+
+Agent $A$: ``Cooperate if and only if I can prove in $\PA + \Con(\PA)$
+that $B$ cooperates.''
+
+Agent $B$: ``Cooperate if and only if I can prove in $\PA$ that $A$
+cooperates.''
+
+\medskip\noindent
+Here $A$ reasons in a \emph{stronger} system ($\PA + \Con(\PA)$) than
+$B$ reasons about.  This asymmetry breaks the L\"obian cycle.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Working in $\PA + \Con(\PA)$:
+\begin{enumerate}
+  \item $A$ searches for a $\PA$-proof that $B$ cooperates.
+  \item $B$'s code says: cooperate iff $\PA \vdash a$.
+  \item Suppose for contradiction $\PA \vdash \neg a$.  Then $B$'s
+    strategy is to defect, so $\PA \vdash \neg b$.  But $A$'s strategy
+    in $\PA + \Con(\PA)$ would then also defect, so $\PA + \Con(\PA)
+    \vdash \neg a$.  Since $\PA + \Con(\PA)$ is consistent (by
+    $\Con(\PA)$), we have $\PA \nvdash a$, consistent with $\PA \vdash
+    \neg a$.  But $A$'s code outputs defect, meaning $\PA + \Con(\PA)
+    \vdash \neg a$ and $\PA \vdash \neg a$.  Now: $B$ defects, and $A$
+    defects.  This is consistent, but we can show via the L\"obian
+    structure that $\PA + \Con(\PA) \vdash b$, and hence $A$ cooperates,
+    giving $\PA \vdash a$, so $B$ cooperates.
+  \item The key insight: $A$'s use of the stronger system $\PA +
+    \Con(\PA)$ allows it to verify that $\PA$ is consistent and hence
+    that the mutual proof search terminates.
+\end{enumerate}
+\end{proof}
+
+\begin{remark}
+The L\"obian handshake demonstrates that \emph{hierarchies of logical
+strength} can substitute for trust in multi-agent cooperation.  This is
+a striking connection between proof theory and game theory.
+\end{remark}
+
+%==========================================================================
+\section{Reflective Oracles}\label{sec:reflective-oracles}
+%==========================================================================
+
+\subsection{Motivation}
+
+An embedded agent must reason about other agents who may themselves be
+reasoning about it.  Reflective oracles, introduced by Fallenstein,
+Taylor, and Christiano~\cite{fallenstein2015reflective}, provide a
+mathematical framework in which agents can ``query'' a probabilistic
+oracle about the output of machines that themselves have access to the
+same oracle---without paradox.
+
+\subsection{Definitions}
+
+\begin{definition}[Oracle machine]
+An \emph{oracle machine} $M^O$ is a Turing machine with access to an
+oracle $O$.  We write $M^O(x)$ for the output of $M$ on input $x$
+with oracle $O$.
+\end{definition}
+
+\begin{definition}[Reflective oracle]\label{def:reflective-oracle}
+A \emph{reflective oracle} is a function
+$O : \N \times \N \to \{0, 1\}$ such that for every pair of oracle
+machines $(M_1, M_2)$ with index $e$ and input $x$:
+\begin{enumerate}[label=(\roman*)]
+  \item If $\Pr[M_1^O(x) \text{ halts and outputs } 1] > 1/2$,
+    then $O(e, x) = 1$.
+  \item If $\Pr[M_1^O(x) \text{ halts and outputs } 1] < 1/2$,
+    then $O(e, x) = 0$.
+  \item If the probability is exactly $1/2$, either answer is allowed.
+\end{enumerate}
+Here, the probability is over the internal randomness of $M_1^O$.  The
+encoding $e$ packages the pair $(M_1, M_2)$ such that $O$ is queried
+as: ``Does machine $M_1$ (which itself has access to $O$) output 1 with
+probability $> 1/2$ on input $x$?''
+\end{definition}
+
+The self-referential nature is clear: $O$ answers questions about
+machines that query $O$.
+
+\subsection{Existence via Kakutani's fixed-point theorem}
+
+\begin{theorem}[Existence of reflective oracles~\cite{fallenstein2015reflective}]
+Reflective oracles exist.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Consider the space $\mathcal{X} = \{0,1\}^{\N \times \N}$ of all
+possible oracles, equipped with the product topology.  This is a
+compact, convex subset of a locally convex topological vector space
+(via the embedding into $[0,1]^{\N \times \N}$).
+
+Define the correspondence $F : \mathcal{X} \rightrightarrows \mathcal{X}$
+by:
+\[
+  F(O) = \bigl\{ O' \in \mathcal{X} : O' \text{ is consistent with the
+  probabilities induced by } O \bigr\}.
+\]
+More precisely, for each query $(e, x)$:
+\begin{itemize}
+  \item If $\Pr[M_e^O \text{ outputs } 1] > 1/2$, then $O'(e,x) = 1$.
+  \item If $\Pr[M_e^O \text{ outputs } 1] < 1/2$, then $O'(e,x) = 0$.
+  \item If equal to $1/2$, $O'(e,x)$ may be either $0$ or $1$.
+\end{itemize}
+
+One verifies:
+\begin{enumerate}
+  \item $F(O)$ is non-empty and convex for each $O$ (the ``tie-breaking''
+    case provides the convexity).
+  \item $F$ has closed graph (by continuity of probability measures
+    under the product topology).
+\end{enumerate}
+By Kakutani's fixed-point theorem, $F$ has a fixed point: an oracle
+$O^*$ with $O^* \in F(O^*)$.  This $O^*$ is a reflective oracle.
+\end{proof}
+
+\begin{remark}
+Strictly, one works with a generalisation where the oracle returns
+probabilities rather than bits, and the fixed-point is in a space of
+probability measures. The argument above captures the essential idea.
+\end{remark}
+
+\subsection{Nash equilibrium with source code access}
+
+\begin{theorem}[Nash equilibria under reflective oracles~\cite{fallenstein2015reflective}]
+Consider a game where each player $i$ is an oracle machine $M_i^O$
+choosing a (mixed) strategy.  Under any reflective oracle $O$, the
+resulting strategy profile is a Nash equilibrium of the game.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Suppose player $i$ could improve by deviating to strategy $\sigma'$.
+Encode $\sigma'$ as an oracle machine $M_i'^O$.  Then the reflective
+oracle, being a fixed point, already accounts for the possibility that
+$M_i^O$ outputs $\sigma'$---the oracle's answer for ``what does player
+$i$ do?'' is consistent with $M_i^O$'s actual behaviour.  A profitable
+deviation would break the fixed-point condition, contradiction.
+\end{proof}
+
+This is remarkable: agents with access to each other's source code
+(and a reflective oracle) automatically reach Nash equilibria, without
+any explicit equilibrium computation.
+
+%==========================================================================
+\section{Cartesian Frames}\label{sec:cartesian-frames}
+%==========================================================================
+
+\subsection{Motivation}
+
+The classical agent--environment factorisation assumes a single, fixed
+boundary.  Cartesian frames (Demski and Garrabrant~\cite{demski2020cartesian})
+provide an algebraic framework for studying \emph{multiple} such
+factorisations, their relationships, and when they are equivalent.
+
+\subsection{Basic definitions}
+
+\begin{definition}[Cartesian frame]
+A \emph{Cartesian frame} is a triple $\mathcal{C} = (A, E, \boxtimes)$
+where:
+\begin{itemize}
+  \item $A$ is a set (the \emph{agent}'s possible states/actions),
+  \item $E$ is a set (the \emph{environment}'s possible states),
+  \item $\boxtimes : A \times E \to W$ is a function to a fixed set of
+    \emph{worlds} $W$.
+\end{itemize}
+We think of $\boxtimes(a, e) = w$ as: ``if the agent is in state $a$
+and the environment is in state $e$, the resulting world is $w$.''
+\end{definition}
+
+\begin{definition}[Ensurables and preventables]
+Given a Cartesian frame $(A, E, \boxtimes)$ and a set $S \subseteq W$:
+\begin{itemize}
+  \item $S$ is \emph{ensurable} if there exists $a \in A$ such that
+    for all $e \in E$, $\boxtimes(a, e) \in S$.
+  \item $S$ is \emph{preventable} if $W \setminus S$ is ensurable,
+    i.e., there exists $a \in A$ such that for all $e \in E$,
+    $\boxtimes(a, e) \notin S$.
+  \item $S$ is \emph{controllable} if it is both ensurable and
+    preventable.
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+Ensurables capture what the agent can \emph{guarantee} regardless of
+the environment.  They form a lattice under intersection (but not under
+union in general).
+\end{remark}
+
+\begin{proposition}
+The set of ensurables of a Cartesian frame $(A, E, \boxtimes)$ is
+closed under arbitrary intersection: if $\{S_i\}_{i \in I}$ are all
+ensurable, and $\bigcap_{i \in I} S_i \neq \emptyset$ in the range of
+$\boxtimes$, then $\bigcap_{i \in I} S_i$ is ensurable.
+\end{proposition}
+
+\subsection{Morphisms and biextensional equivalence}
+
+\begin{definition}[Morphism of Cartesian frames]
+A \emph{morphism} from $(A_1, E_1, \boxtimes_1)$ to
+$(A_2, E_2, \boxtimes_2)$ (over the same world set $W$) is a pair of
+functions $f : A_1 \to A_2$ and $g : E_2 \to E_1$ such that for all
+$a \in A_1$ and $e \in E_2$:
+\[
+  \boxtimes_2(f(a), e) = \boxtimes_1(a, g(e)).
+\]
+\end{definition}
+
+Note the \emph{contravariance} in $E$: the environment map goes in the
+opposite direction.  This reflects the adversarial/dual nature of the
+environment relative to the agent.
+
+\begin{definition}[Biextensional equivalence]
+Two Cartesian frames are \emph{biextensionally equivalent} if they have
+the same ensurables and preventables.  Equivalently, after quotienting
+$A$ by the relation $a_1 \sim a_2 \iff \forall e.\, \boxtimes(a_1, e)
+= \boxtimes(a_2, e)$ and quotienting $E$ by
+$e_1 \sim e_2 \iff \forall a.\, \boxtimes(a, e_1) = \boxtimes(a, e_2)$,
+the resulting frames are isomorphic.
+\end{definition}
+
+\begin{theorem}[Biextensional collapse]
+Every Cartesian frame has a unique (up to isomorphism) biextensional
+collapse: a biextensionally equivalent frame in which no two agent states
+are observationally identical and no two environment states are
+observationally identical.
+\end{theorem}
+
+\subsection{Sub-agents and composition}
+
+\begin{definition}[Sub-agent]
+A Cartesian frame $(A', E', \boxtimes')$ is a \emph{sub-agent} of
+$(A, E, \boxtimes)$ if there is a morphism from the first to the
+second that is injective on agent states.  Intuitively, $A'$ represents
+a ``smaller'' agent embedded within $A$, with the remaining degrees of
+freedom absorbed into the environment.
+\end{definition}
+
+\begin{definition}[Tensor product]
+Given Cartesian frames $\mathcal{C}_1 = (A_1, E_1, \boxtimes_1)$ and
+$\mathcal{C}_2 = (A_2, E_2, \boxtimes_2)$, their \emph{tensor product}
+is:
+\[
+  \mathcal{C}_1 \otimes \mathcal{C}_2 =
+    (A_1 \times A_2,\; E_1 \times E_2,\; \boxtimes)
+\]
+where $\boxtimes((a_1, a_2), (e_1, e_2)) =
+  (\boxtimes_1(a_1, e_1), \boxtimes_2(a_2, e_2))$.
+This models two agents acting independently in their respective
+environments.
+\end{definition}
+
+\begin{remark}
+The category of Cartesian frames (with morphisms as defined above) is
+a $*$-autonomous category, connecting to linear logic.  The
+multiplicative structure (tensor, par) captures composition and
+decomposition of agency, while the additive structure captures choice.
+\end{remark}
+
+\subsection{Comparison with the dualistic model}
+
+In the dualistic model of Section~\ref{sec:dualism}, the agent--environment
+boundary is fixed.  In Cartesian frames, we can:
+\begin{itemize}
+  \item \emph{Refactor} the boundary: the same set of worlds may admit
+    multiple non-isomorphic factorisations $(A_1, E_1)$ and $(A_2, E_2)$.
+  \item \emph{Nest} agents: a sub-agent sits inside a larger agent,
+    with the ``gap'' between them part of the environment.
+  \item \emph{Compare} frames: biextensional equivalence tells us when
+    two agent--environment decompositions are ``the same'' from the
+    perspective of agency (same ensurables/preventables).
+\end{itemize}
+
+%==========================================================================
+\section{Connections to Modern Agentic AI}\label{sec:connections}
+%==========================================================================
+
+The formalisms above were developed in the context of ``agent
+foundations'' for superintelligence.  But they connect directly to
+capabilities and failure modes of contemporary AI systems.
+
+\subsection{LLM self-reference}
+
+Large language models routinely produce text that references their own
+capabilities, limitations, or outputs.  This creates G\"odelian
+feedback loops:
+\begin{itemize}
+  \item \textbf{Self-evaluation prompts.}  ``Rate the quality of your
+    previous answer'' asks the model to act as a fixed point of its own
+    evaluation function.
+  \item \textbf{Chain-of-thought faithfulness.}  When a model explains
+    its reasoning, is the explanation causally related to the answer, or
+    merely post-hoc?  This is a version of the embedded agency problem:
+    the ``inner reasoner'' and ``outer reporter'' share the same
+    weights.
+  \item \textbf{L\"obian self-trust.}  A model asked ``Is your next
+    output correct?'' faces a structure isomorphic to the L\"obian
+    obstacle: it cannot verify its own correctness without already
+    having the answer.
+\end{itemize}
+
+\subsection{Tool-using agents}
+
+Modern LLM agents (e.g.\ ReAct, Toolformer, Claude with tool use) are
+embedded in their environment: they emit actions (tool calls) that
+modify state (files, databases, APIs) which then appears in their
+context window.  This creates:
+\begin{itemize}
+  \item \textbf{Observation-action entanglement.}  The agent's output
+    modifies the input it will receive, violating the dualistic
+    assumption.
+  \item \textbf{Logical uncertainty about tool outputs.}  Before calling
+    a tool, the agent has uncertainty about the result that is partly
+    logical (what will this code compute?) and partly empirical (what is
+    the current database state?).
+  \item \textbf{Multi-step planning under self-modification.}  An agent
+    that writes code and then executes it is effectively modifying its
+    own ``policy.''  The Cartesian frames formalism (Section~\ref{sec:cartesian-frames})
+    offers a principled way to reason about which aspects of the world
+    such an agent can control.
+\end{itemize}
+
+\subsection{Multi-agent systems}
+
+When multiple LLM agents interact (e.g.\ in debate, negotiation, or
+collaborative coding), the reflective oracle framework becomes directly
+relevant:
+\begin{itemize}
+  \item Each agent's ``strategy'' depends on what other agents will do,
+    which depends on what \emph{it} will do.
+  \item Reflective oracles guarantee the existence of consistent
+    fixed points (Nash equilibria) even with source-code transparency.
+  \item The L\"obian handshake suggests that cooperation between
+    formally reasoning agents requires \emph{asymmetric trust
+    hierarchies}---a principle that could inform the design of
+    multi-agent communication protocols.
+\end{itemize}
+
+\subsection{Constitutional AI and decision theory}
+
+Constitutional AI (Bai et al.~\cite{bai2022constitutional}) trains
+models to evaluate and revise their own outputs against a set of
+principles.  This is a practical implementation of:
+\begin{itemize}
+  \item \textbf{Reflective stability}: the model's values should be
+    a fixed point of its own revision process (cf.\ reflective oracles).
+  \item \textbf{FDT-like reasoning}: the model reasons about ``what
+    kind of output would a model following these principles produce?''
+    rather than causally intervening on its own weights.
+  \item \textbf{Logical induction over norms}: as the model processes
+    more constitutional principles and examples, its ``normative
+    beliefs'' should converge in a manner analogous to logical induction.
+\end{itemize}
+
+%==========================================================================
+\section{Open Problems}\label{sec:open}
+%==========================================================================
+
+\begin{problem}[Logical counterfactuals]
+Define a satisfactory theory of \emph{logical counterfactuals}: given a
+mathematical structure $\mathcal{M}$ and a sentence $\phi$ true in
+$\mathcal{M}$, what would $\mathcal{M}$ ``look like'' if $\phi$ were
+false?  FDT requires such a theory but none of the existing proposals
+(causal surgery on computation graphs, counterfactual mugging
+responses, modal logic approaches) are fully satisfactory.  A formal
+desideratum: the theory should be compatible with logical induction
+and should handle nested counterfactuals
+($P(e \mid \widehat{F}(\widehat{G}()) = a)$).
+\end{problem}
+
+\begin{problem}[Efficient logical induction]
+Logical inductors as constructed in~\cite{garrabrant2016logical} are
+computationally expensive (polynomial time per step, but with large
+constants, and the polynomial degree grows with the number of traders).
+Can one construct logical inductors that run in $O(n \log n)$ time per
+step?  Alternatively, can neural networks be trained to approximate
+logical inductors?
+\end{problem}
+
+\begin{problem}[Naturalized induction]
+Extend Solomonoff induction to the case where the agent is part of the
+environment.  A naturalized inductor would maintain a distribution over
+``world-programs'' that include the agent itself as a subprocess.  The
+challenge: the agent cannot enumerate world-programs longer than its own
+description length, yet must reason about worlds more complex than
+itself.  What are the right computability-theoretic or
+complexity-theoretic constraints?
+\end{problem}
+
+\begin{problem}[Cartesian frames for neural networks]
+The Cartesian frames formalism is set-theoretic.  Extend it to
+continuous, differentiable settings appropriate for neural networks:
+replace $A$ and $E$ with manifolds, $\boxtimes$ with a smooth map,
+and characterise ``ensurables'' via reachability in the tangent space.
+Can the resulting theory identify meaningful agent--environment
+boundaries within a trained neural network?
+\end{problem}
+
+\begin{problem}[Multi-agent logical induction]
+Extend logical induction to the multi-agent setting: multiple logical
+inductors trading in a shared market, each with different computational
+resources.  Does a multi-agent logical inductor converge to a correlated
+equilibrium?  Can the L\"obian handshake be embedded in such a market?
+\end{problem}
+
+\begin{problem}[Reflective stability under self-improvement]
+An agent that improves its own code creates a sequence of agents
+$A_1, A_2, \ldots$.  Under what conditions does this sequence converge
+to a ``reflectively stable'' agent $A_\infty$ that would not further
+modify itself?  Reflective oracles guarantee existence of fixed points,
+but do not address convergence of iterated self-improvement.  Can one
+prove convergence under suitable smoothness or monotonicity conditions
+on the improvement operator?
+\end{problem}
+
+\begin{problem}[Bounded L\"obian handshakes]
+The L\"obian handshake requires reasoning in formal systems of
+increasing logical strength.  In practice, agents have bounded
+computational resources.  Can one achieve provable cooperation between
+bounded agents (e.g.\ polynomial-time provers) without requiring the
+hierarchy $\PA \subset \PA + \Con(\PA) \subset \cdots$?  Interactive
+proof systems and probabilistically checkable proofs may be relevant.
+\end{problem}
+
+%==========================================================================
+\section{Annotated Bibliography}\label{sec:bibliography}
+%==========================================================================
+
+\begin{enumerate}[label={[\arabic*]},leftmargin=2em]
+
+\item \label{bib:demski2019} \textbf{Demski, A.\ and Garrabrant, S.}
+  (2019). ``Embedded Agency.'' \textit{arXiv:1902.09469}.\\
+  The foundational manifesto for the embedded agency research programme.
+  Identifies four sub-problems (decision, logical uncertainty,
+  high-bandwidth, subsystem alignment) and surveys the state of the art
+  as of 2019.  Essential starting point.
+
+\item \label{bib:garrabrant2016} \textbf{Garrabrant, S., Benson-Tilsen,
+  T., Critch, A., Soares, N., and Taylor, J.} (2016). ``Logical
+  Induction.'' \textit{arXiv:1609.03543}.\\
+  Introduces the logical induction framework.  Proves existence of
+  logical inductors and derives an extensive list of rationality
+  properties (convergence, calibration, Gaifman condition,
+  non-dogmatism, domination of CE sequences).  Technical and
+  self-contained; the main theorem proof runs $\sim$60 pages.
+
+\item \label{bib:soares2018} \textbf{Soares, N.\ and Yudkowsky, E.}
+  (2018). ``Functional Decision Theory: A New Theory of Instrumental
+  Rationality.'' \textit{arXiv:1710.05060}.\\
+  Presents FDT and argues it outperforms CDT and EDT on Newcomb-like
+  problems.  The philosophical framework is accessible; the formal
+  details of logical counterfactuals are acknowledged as open.
+
+\item \label{bib:barasz2014} \textbf{Barasz, M., Christiano, P.,
+  Fallenstein, B., Herreshoff, M., LaVictoire, P., and Yudkowsky, E.}
+  (2014). ``Robust Cooperation in the Prisoner's Dilemma: Program
+  Equilibrium via Provability Logic.'' \textit{arXiv:1401.5577}.\\
+  Introduces the L\"obian handshake: agents that cooperate by reasoning
+  in formal systems of different strengths.  Elegant application of
+  provability logic to game theory.
+
+\item \label{bib:fallenstein2015} \textbf{Fallenstein, B., Taylor, J.,
+  and Christiano, P.} (2015). ``Reflective Oracles: A Foundation for
+  Game Theory in Artificial Intelligence.'' \textit{arXiv:1508.04145}.\\
+  Defines reflective oracles and proves their existence via Kakutani's
+  theorem.  Shows that agents with reflective oracle access automatically
+  reach Nash equilibria.  Foundational for reasoning about interacting
+  agents with mutual source-code access.
+
+\item \label{bib:demski2020} \textbf{Demski, A.\ and Garrabrant, S.}
+  (2020). ``Cartesian Frames.'' \textit{MIRI Technical Report}.\\
+  Introduces Cartesian frames as a category-theoretic framework for
+  agent--environment decompositions.  Defines ensurables, preventables,
+  biextensional equivalence, and sub-agents.  Connects to $*$-autonomous
+  categories and linear logic.
+
+\item \label{bib:lob1955} \textbf{L\"ob, M.H.} (1955). ``Solution of a
+  Problem of Leon Henkin.'' \textit{Journal of Symbolic Logic},
+  20(2):115--118.\\
+  The original proof of L\"ob's theorem.  Short and elegant.  Essential
+  background for the L\"obian obstacle literature.
+
+\item \label{bib:soares2015agent} \textbf{Soares, N.\ and Fallenstein,
+  B.} (2017). ``Agent Foundations for Aligning Machine Intelligence with
+  Human Interests.'' \textit{Machine Intelligence Research Institute
+  Technical Report}.\\
+  A high-level overview of the agent foundations research agenda, placing
+  logical induction, decision theory, and reflective oracles in context.
+  Good secondary source.
+
+\item \label{bib:bai2022} \textbf{Bai, Y., Kadavath, S., Kundu, S.,
+  et al.} (2022). ``Constitutional AI: Harmlessness from AI Feedback.''
+  \textit{arXiv:2212.08073}.\\
+  Introduces constitutional AI: training LLMs to critique and revise
+  their own outputs.  Relevant as a practical instance of reflective
+  stability in deployed systems.
+
+\item \label{bib:critch2020} \textbf{Critch, A.\ and Krueger, D.}
+  (2020). ``AI Research Considerations for Human Existential Safety
+  (ARCHES).'' \textit{arXiv:2006.04948}.\\
+  Surveys multi-agent safety, including formal models of boundaries
+  between agents and environments.  Critch's boundaries formalism
+  connects to Cartesian frames.
+
+\item \label{bib:aaronson2016} \textbf{Aaronson, S.} (2016). ``The
+  Complexity of Agreement.'' In \textit{Computational Complexity and
+  Property Testing}, Springer.\\
+  Discusses Aumann's agreement theorem from a computational complexity
+  perspective.  Relevant to multi-agent logical induction: how quickly
+  can bounded agents reach agreement on logical facts?
+
+\item \label{bib:christiano2014} \textbf{Christiano, P.} (2014).
+  ``Non-Omniscience, Probabilistic Inference, and Metamathematics.''
+  \textit{arXiv:1408.2048}.\\
+  An early approach to logical uncertainty predating logical induction.
+  Uses reflection principles and probabilistic reasoning about
+  arithmetic sentences.
+
+\item \label{bib:yudkowsky2010} \textbf{Yudkowsky, E.} (2010).
+  ``Timeless Decision Theory.'' \textit{MIRI Working Paper}.\\
+  Precursor to FDT.  Introduces the idea of deciding based on
+  ``what kind of algorithm am I'' rather than on causal or evidential
+  considerations.  Less formally developed than FDT but historically
+  important.
+
+\item \label{bib:hutter2005} \textbf{Hutter, M.} (2005). \textit{Universal
+  Artificial Intelligence: Sequential Decisions Based on Algorithmic
+  Probability.}  Springer.\\
+  The AIXI framework: optimal agent in a dualistic setting.  Essential
+  reference for understanding what embedded agency is trying to move
+  \emph{beyond}.  The mathematical formalism (Solomonoff induction +
+  sequential decision theory) is the gold standard for the dualistic
+  approach.
+
+\item \label{bib:hadfield2017} \textbf{Hadfield-Menell, D., Russell,
+  S., Abbeel, P., and Dragan, A.} (2017). ``The Off-Switch Game.''
+  \textit{Proceedings of the AAAI Conference on AI}.\\
+  Analyses the problem of an agent that might resist being shut off.
+  Directly relevant to embedded agency: the off-switch is part of the
+  environment the agent can influence, breaking the dualistic
+  assumption.
+
+\item \label{bib:taylor2016} \textbf{Taylor, J.} (2016). ``Reflective
+  Alignment.'' \textit{MIRI Working Paper}.\\
+  Extends reflective oracles toward alignment: can an agent verify
+  that its successor (self-modified version) shares its values?  Uses
+  logical induction and reflective oracles as building blocks.
+
+\item \label{bib:gaifman2004} \textbf{Gaifman, H.} (2004). ``Reasoning
+  with Limited Resources and Assigning Probabilities to Arithmetical
+  Statements.'' \textit{Synthese}, 140(1--2):97--119.\\
+  Early philosophical treatment of assigning probabilities to logical
+  sentences under bounded resources.  Gaifman's condition (mentioned in
+  logical induction properties) originates here.
+
+\item \label{bib:kakutani1941} \textbf{Kakutani, S.} (1941). ``A
+  Generalization of Brouwer's Fixed Point Theorem.'' \textit{Duke
+  Mathematical Journal}, 8(3):457--459.\\
+  The fixed-point theorem used to prove existence of reflective oracles.
+  States that an upper hemicontinuous correspondence from a compact
+  convex set to itself with non-empty convex values has a fixed point.
+
+\end{enumerate}
+
+%==========================================================================
+% REFERENCES (for \cite commands)
+%==========================================================================
+\begin{thebibliography}{99}
+
+\bibitem{demski2019embedded}
+A.~Demski and S.~Garrabrant.
+\newblock Embedded Agency.
+\newblock \textit{arXiv:1902.09469}, 2019.
+
+\bibitem{garrabrant2016logical}
+S.~Garrabrant, T.~Benson-Tilsen, A.~Critch, N.~Soares, and J.~Taylor.
+\newblock Logical Induction.
+\newblock \textit{arXiv:1609.03543}, 2016.
+
+\bibitem{soares2018fdt}
+N.~Soares and E.~Yudkowsky.
+\newblock Functional Decision Theory: A New Theory of Instrumental
+  Rationality.
+\newblock \textit{arXiv:1710.05060}, 2018.
+
+\bibitem{barasz2014robust}
+M.~Barasz, P.~Christiano, B.~Fallenstein, M.~Herreshoff, P.~LaVictoire, and
+  E.~Yudkowsky.
+\newblock Robust Cooperation in the Prisoner's Dilemma: Program Equilibrium
+  via Provability Logic.
+\newblock \textit{arXiv:1401.5577}, 2014.
+
+\bibitem{fallenstein2015reflective}
+B.~Fallenstein, J.~Taylor, and P.~Christiano.
+\newblock Reflective Oracles: A Foundation for Game Theory in Artificial
+  Intelligence.
+\newblock \textit{arXiv:1508.04145}, 2015.
+
+\bibitem{demski2020cartesian}
+A.~Demski and S.~Garrabrant.
+\newblock Cartesian Frames.
+\newblock MIRI Technical Report, 2020.
+
+\bibitem{bai2022constitutional}
+Y.~Bai, S.~Kadavath, S.~Kundu, et~al.
+\newblock Constitutional AI: Harmlessness from AI Feedback.
+\newblock \textit{arXiv:2212.08073}, 2022.
+
+\end{thebibliography}
+
+\end{document}

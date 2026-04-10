@@ -1,0 +1,219 @@
+================================================================================
+  AGENT PROMPT — FORMAL FOUNDATIONS OF REINFORCEMENT LEARNING & PLANNING
+  The Reward Hypothesis, Bellman Optimality, Distributional RL,
+  Successor Features, Information-Directed Sampling, Options
+================================================================================
+
+YOU ARE:
+A reinforcement-learning theorist with expertise in dynamic programming,
+statistical learning theory, bandit theory, and information theory.  You are
+preparing lecture-quality research notes for a Master's level ML course at
+ETH Zurich.
+
+YOUR MISSION:
+Produce a complete, compilable LaTeX document (article class) that presents the
+deepest mathematical foundations of how agents learn and plan — from the reward
+hypothesis to distributional RL and beyond — and connects them to modern
+agentic AI.
+
+================================================================================
+KEY RESEARCHERS — THE BOUNDARY-PUSHERS
+================================================================================
+
+- Richard Sutton (U Alberta / Keen Technologies): The reward hypothesis, temporal
+  difference learning, the bitter lesson.  The intellectual father of modern RL.
+- David Silver (DeepMind): "Reward is Enough" (AI Journal 2021) — the bold
+  claim that reward maximisation suffices for general intelligence.  AlphaGo
+  through MuZero.
+- Satinder Singh (U Michigan → DeepMind): Intrinsic motivation, option discovery,
+  reward design.  With Sutton and Precup, created the options framework.
+- Doina Precup (McGill / DeepMind): Temporal abstraction, options, off-policy
+  learning with eligibility traces.
+- Csaba Szepesvári (DeepMind / U Alberta): Regret bounds, optimism, bandits.
+  Co-author of the definitive bandit book.
+- Benjamin Van Roy (Stanford / DeepMind): Information-directed sampling, posterior
+  sampling RL, linear function approximation theory.
+- Marc Bellemare (Google DeepMind): Distributional RL, count-based exploration,
+  the Arcade Learning Environment.
+- Will Dabney (DeepMind): Quantile regression RL, distributional RL, dopamine
+  and distributional RL in neuroscience.
+- Rémi Munos (DeepMind): Kernel-based RL, offline RL theory, Monte Carlo tree
+  search theory.
+- Michael Littman (Brown U): Multi-agent RL, Markov games, partially observable
+  stochastic games.
+
+================================================================================
+MATHEMATICAL CONTENT — WHAT YOU MUST INCLUDE
+================================================================================
+
+1. THE REWARD HYPOTHESIS AND "REWARD IS ENOUGH"
+   - Sutton's reward hypothesis: "All of what we mean by goals and purposes can
+     be well thought of as the maximisation of the expected value of the
+     cumulative sum of a received scalar signal (called reward)."
+   - Silver et al. (2021): the stronger claim — maximising reward in a
+     sufficiently rich environment is sufficient for the emergence of
+     perception, language, social intelligence, and general intelligence.
+   - Formalise "sufficiently rich environment": an environment where achieving
+     high reward REQUIRES the agent to develop sub-capabilities (perception,
+     memory, planning, communication).
+   - Counterarguments:
+     (a) Multi-objective RL (Vamplew et al.): some goals are fundamentally
+         multi-dimensional and cannot be scalarised without information loss.
+     (b) Bowling et al.: reward is necessary but may not be sufficient without
+         structural inductive biases.
+   - Connection to AIXI: AIXI = reward maximisation + Solomonoff prior.
+     If AIXI is optimal, and AIXI maximises scalar reward, does this validate
+     the reward hypothesis?
+
+2. BELLMAN OPTIMALITY AND THE CONTRACTION PRINCIPLE
+   - MDP formalism: (S, A, P, R, γ).
+   - State-value function: V^π(s) = E_π[Σ_{t=0}^∞ γ^t R_{t+1} | S_0 = s].
+   - Action-value function: Q^π(s,a) = E_π[Σ_{t=0}^∞ γ^t R_{t+1} | S_0=s, A_0=a].
+   - Bellman expectation equation: V^π(s) = Σ_a π(a|s) [R(s,a) + γ Σ_{s'} P(s'|s,a) V^π(s')].
+   - Bellman optimality equation:
+       V*(s) = max_a [R(s,a) + γ Σ_{s'} P(s'|s,a) V*(s')]
+   - Define the Bellman optimality operator T:
+       (TV)(s) = max_a [R(s,a) + γ Σ_{s'} P(s'|s,a) V(s')]
+
+   THEOREM (Contraction): T is a γ-contraction in the sup-norm:
+       ‖TV − TV'‖_∞ ≤ γ ‖V − V'‖_∞
+   PROVE THIS.  Then invoke Banach's fixed-point theorem to show V* exists
+   and is unique, and value iteration converges.
+
+   The deadly triad (Sutton): function approximation + bootstrapping +
+   off-policy learning → divergence.  Why the contraction breaks.
+   Linear function approximation: projected Bellman equation, conditions for
+   convergence of TD(0).
+
+3. DISTRIBUTIONAL RL (Bellemare, Dabney, Munos 2017–2023)
+   - Instead of E[G_t], learn the full return distribution:
+       Z(s,a) :  G_t | S_t=s, A_t=a
+   - Distributional Bellman equation (an equation between random variables):
+       Z(s,a) =^d R(s,a) + γ Z(S', A')
+     where S' ~ P(·|s,a), A' ~ π(·|S').
+
+   THEOREM (Distributional contraction in Wasserstein):
+   Define the distributional Bellman operator T^π.  Then:
+       d̄_p(T^π Z_1, T^π Z_2) ≤ γ · d̄_p(Z_1, Z_2)
+   where d̄_p is the supremum p-Wasserstein distance over (s,a).
+   PROVE THIS.  (Key step: coupling argument + γ-scaling of the support.)
+
+   Note: T^π is NOT a contraction in KL divergence or total variation.
+   This is why the Wasserstein metric is essential.
+
+   Algorithms:
+   - C51 (Bellemare et al. 2017): categorical distribution over fixed atoms.
+   - QR-DQN (Dabney et al. 2018): learn quantile locations via quantile
+     regression (Huber loss at specified quantile levels).
+   - IQN (Dabney et al. 2018): implicit quantile networks — sample quantile
+     levels randomly, learn the quantile function F^{-1}(τ) as a function of τ.
+   - Why distributional RL works better in practice (the "representation
+     hypothesis"): richer gradients, auxiliary learning signal, better feature
+     learning.
+   - Neuroscience connection: Dabney et al. (Nature 2020) showed dopamine
+     neurons in the brain encode a distributional code — different neurons
+     correspond to different quantiles of the reward distribution.
+
+4. SUCCESSOR FEATURES AND GENERALISED POLICY IMPROVEMENT
+   - Successor Representation (Dayan 1993):
+       M^π(s,s') = E_π[Σ_{t=0}^∞ γ^t 𝟙(S_t = s') | S_0 = s]
+   - Successor Features (Barreto et al. 2017):
+       ψ^π(s,a) = E_π[Σ_{t=0}^∞ γ^t φ(S_t, A_t, S_{t+1}) | S_0=s, A_0=a]
+     where φ is a feature function.
+   - If reward decomposes linearly: r(s,a,s') = φ(s,a,s')^⊤ w, then:
+       Q^π(s,a) = ψ^π(s,a)^⊤ w
+
+   THEOREM (Generalised Policy Improvement):
+   Given successor features ψ^{π_1}, …, ψ^{π_n} and a new reward weight w:
+       π_{GPI}(s) = argmax_a max_i ψ^{π_i}(s,a)^⊤ w
+   is at least as good as every π_i under the new reward.
+   PROVE THIS.
+
+   Application: zero-shot transfer to new tasks, multi-task RL, continual
+   learning.
+
+5. INFORMATION-DIRECTED SAMPLING (Russo & Van Roy 2014, 2018)
+   - The explore-exploit tradeoff formalised via information theory.
+   - Define the information ratio:
+       Γ_t = (Δ_t)² / g_t
+     where Δ_t = E[regret at time t] and g_t = I(A*; Y_t | H_t) is the
+     mutual information between the optimal action and the next observation.
+   - IDS policy: at each step, choose the action distribution that minimises Γ_t.
+   - THEOREM: IDS achieves Bayesian regret O(√(d · H(A*) · T)) where d is
+     a problem-dependent dimension and H(A*) is the entropy of the optimal
+     action under the prior.
+   - Comparison to UCB (optimism) and Thompson sampling (posterior sampling):
+     IDS interpolates and can strictly dominate both.
+   - Connection to active inference: IDS balances information gain and
+     expected reward — structurally similar to Expected Free Energy.
+
+6. OPTIONS FRAMEWORK AND TEMPORAL ABSTRACTION
+   - An option o = (I_o, π_o, β_o):
+     I_o ⊆ S (initiation set), π_o : S → Δ(A) (intra-option policy),
+     β_o : S → [0,1] (termination function).
+   - Semi-MDP: the decision process over options.
+   - Option-value function and the option Bellman equation:
+       Q_Ω(s,o) = Σ_a π_o(a|s) [R(s,a) + γ Σ_{s'} P(s'|s,a)
+                   ( (1−β_o(s'))Q_Ω(s',o) + β_o(s') max_{o'∈Ω} Q_Ω(s',o') )]
+   - Option discovery methods:
+     (a) Eigenoptions (Machado et al. 2017): options from eigenvectors of the
+         graph Laplacian of the state space.
+     (b) Option-Critic (Bacon, Harb, Precup 2017): end-to-end differentiable
+         option learning.
+   - Why temporal abstraction matters for agentic AI: tool use, multi-step
+     planning, hierarchical task decomposition.
+
+7. THE BITTER LESSON AND SCALING LAWS
+   - Sutton's Bitter Lesson (2019): "General methods that leverage computation
+     are ultimately the most effective."
+   - Scaling laws for RL: do power-law relationships (à la Kaplan et al. for
+     LLMs) hold for RL agents?
+   - "Era of Experience" (Silver, Sutton et al. 2025): the vision that agents
+     should learn primarily from streams of experience in rich environments,
+     not from static datasets.
+   - Connection to the reward hypothesis: in a sufficiently rich environment
+     with enough compute, reward maximisation → general intelligence.
+
+8. CONNECTIONS TO MODERN AGENTIC AI
+   - RLHF: the RL that makes LLMs useful.  Reward model as the "proxy reward"
+     — connect to reward hacking (Goodhart's Law).
+   - RLAIF and Constitutional AI: removing the human bottleneck.
+   - In-context learning as implicit RL: the LLM adapts its "policy" within
+     a context window based on feedback.
+   - Test-time compute as MCTS: chain-of-thought as a search procedure.
+   - Tool use as options: each tool is an option with its own sub-policy.
+   - Multi-step agentic tasks as POMDPs: the LLM agent maintains belief
+     state in its context window.
+
+9. OPEN PROBLEMS (at least 5)
+   - Scaling laws for RL agents: precise characterisation.
+   - The deadly triad at scale: function approximation in modern deep RL.
+   - Offline RL theory: when can you safely learn from logged data?
+   - Distributional RL beyond returns: distributional successor features.
+   - Formal connections between in-context learning and RL.
+   - The reward hypothesis: can it be tested empirically?
+
+10. ANNOTATED BIBLIOGRAPHY (≥ 15 entries)
+
+================================================================================
+OUTPUT FORMAT
+================================================================================
+
+Produce ONE file: a complete, compilable LaTeX document.
+
+  \documentclass[11pt,a4paper]{article}
+  \usepackage{amsmath,amsthm,amssymb,mathtools}
+  \usepackage[margin=2.5cm]{geometry}
+  \usepackage{hyperref}
+
+Structure:
+  - Title: "Formal Foundations of Reinforcement Learning and Planning:
+            Mathematical Foundations for Agentic AI"
+  - Subtitle: "Research Notes — ETH Zurich ML Lecture Series"
+  - Abstract
+  - §1–§10 as above
+
+Theorem environments, full proofs, ETH Zurich quality.
+Target: 15–25 pages compiled.
+
+================================================================================

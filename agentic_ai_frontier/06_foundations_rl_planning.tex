@@ -1,0 +1,1035 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amsthm,amssymb,mathtools}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  citecolor=green!50!black,
+  urlcolor=blue!60!black
+}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{openproblem}{Open Problem}
+
+% Notation shortcuts
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\cO}{\mathcal{O}}
+\newcommand{\cI}{\mathcal{I}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cH}{\mathcal{H}}
+\newcommand{\Vpi}{V^{\pi}}
+\newcommand{\Qpi}{Q^{\pi}}
+\newcommand{\Vstar}{V^{*}}
+\newcommand{\Qstar}{Q^{*}}
+\newcommand{\pistar}{\pi^{*}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\Regret}{Regret}
+\DeclareMathOperator{\Span}{span}
+
+\title{\textbf{Formal Foundations of Reinforcement Learning and Planning} \\[4pt]
+\Large Mathematical Foundations for Agentic AI \\[8pt]
+\normalsize Research Notes --- ETH Zurich ML Lecture Series}
+\author{ETH Z\"urich --- Machine Learning Lecture Series}
+\date{Spring 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+These notes develop the mathematical foundations of reinforcement learning (RL) and planning
+that underpin modern agentic AI systems. Starting from the reward hypothesis and the
+Bellman optimality principle, we build up to distributional RL, successor features,
+information-directed sampling, and the options framework for temporal abstraction.
+Throughout, we emphasize rigorous proofs---the contraction properties of
+Bellman operators, distributional convergence in the Wasserstein metric,
+and the Generalised Policy Improvement theorem---while connecting these
+classical results to contemporary developments in large-scale agentic AI,
+RLHF, test-time compute, and the ``bitter lesson.''
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%% =======================================================================
+\section{The Reward Hypothesis and ``Reward is Enough''}
+\label{sec:reward}
+%% =======================================================================
+
+\subsection{Statement and Formalization}
+
+The \textbf{reward hypothesis} (Sutton, 2004) asserts:
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!60!black, title=The Reward Hypothesis]
+\textit{That all of what we mean by goals and purposes can be well thought of as the maximization of the expected value of the cumulative sum of a received scalar signal (called reward).}
+\end{tcolorbox}
+
+Silver et al.\ (2021) strengthened this to the ``Reward is Enough'' thesis: intelligence
+and its associated abilities---knowledge, learning, perception, social intelligence,
+language, generalization---arise as subgoals of reward maximization in a
+\emph{sufficiently rich environment}.
+
+\begin{definition}[Sufficiently Rich Environment]
+\label{def:rich-env}
+An environment $\cM = (\cS, \cA, P, R, \gamma)$ is \emph{sufficiently rich} for a capability
+$\mathfrak{C}$ if every policy $\pi$ that achieves near-optimal expected return
+$\E_\pi[\sum_{t=0}^\infty \gamma^t R_t] \geq V^* - \varepsilon$ necessarily exhibits
+capability $\mathfrak{C}$.  Formally, there exists a predicate $\Phi_{\mathfrak{C}}$
+on policies such that
+\[
+  V^\pi \geq V^* - \varepsilon \implies \Phi_{\mathfrak{C}}(\pi) = \text{true}.
+\]
+\end{definition}
+
+The key insight is that the environment does the ``heavy lifting'': in a complex
+enough world, achieving high reward \emph{requires} developing sophisticated
+internal representations, planning capabilities, and even social reasoning.
+
+\subsection{Connection to AIXI}
+
+Hutter's AIXI framework (2004) formalizes the reward-maximization hypothesis in
+its most general form. The AIXI agent selects actions to maximize expected future
+reward under a universal prior:
+\[
+  a_t^{\text{AIXI}} = \argmax_{a_t} \sum_{o_t r_t} \cdots \max_{a_m} \sum_{o_m r_m}
+    [r_t + \cdots + r_m] \sum_{\nu \in \cM_U} 2^{-K(\nu)} \nu(o_{1:m} r_{1:m} \mid a_{1:m}),
+\]
+where $K(\nu)$ is the Kolmogorov complexity of environment $\nu$, and $\cM_U$
+is the class of all computable environments. AIXI is Pareto-optimal but
+incomputable---it establishes reward maximization as \emph{sufficient} in
+principle, while leaving the question of \emph{efficient} reward maximization
+to practical RL.
+
+\subsection{Counterarguments: Multi-Objective RL}
+
+The reward hypothesis faces substantive objections:
+
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Multi-objective trade-offs.} Real agents often face Pareto-incomparable
+    objectives (e.g., safety vs.\ performance). While scalarization
+    $R = \sum_i w_i R_i$ can in principle recover any Pareto-optimal policy, the
+    \emph{choice} of weights $w$ itself requires a meta-objective
+    (Roijers et al., 2013).
+  \item \textbf{Non-Markovian rewards.} Many natural objectives (e.g., fairness
+    over time) are not expressible as functions of the current state-action pair.
+    Reward machines (Icarte et al., 2018) and temporal logic specifications
+    partially address this.
+  \item \textbf{Specification gaming.} Optimizing a proxy reward may diverge
+    from the designer's true intent---the \emph{reward misspecification} problem
+    central to AI alignment.
+  \item \textbf{Bounded rationality.} Real agents have computational constraints
+    that prevent exact reward maximization; satisficing or resource-bounded
+    rationality may be more descriptive (Simon, 1955).
+\end{enumerate}
+
+Despite these objections, the reward hypothesis remains the dominant
+paradigm and provides the mathematical scaffolding for RL theory.
+
+
+%% =======================================================================
+\section{Bellman Optimality and Dynamic Programming}
+\label{sec:bellman}
+%% =======================================================================
+
+\subsection{MDP Formalism}
+
+\begin{definition}[Markov Decision Process]
+A (discounted) MDP is a tuple $\cM = (\cS, \cA, P, R, \gamma)$ where:
+\begin{itemize}[nosep]
+  \item $\cS$ is a (finite) state space, $\cA$ is a (finite) action space.
+  \item $P : \cS \times \cA \to \Delta(\cS)$ is the transition kernel:
+    $P(s' \mid s, a) = \Pr(S_{t+1} = s' \mid S_t = s, A_t = a)$.
+  \item $R : \cS \times \cA \to \R$ is the expected reward function (or more
+    generally, $R : \cS \times \cA \to \Delta(\R)$).
+  \item $\gamma \in [0, 1)$ is the discount factor.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Value Functions]
+For a stationary policy $\pi : \cS \to \Delta(\cA)$:
+\begin{align}
+  \Vpi(s) &= \E_\pi\!\left[\sum_{t=0}^\infty \gamma^t R(S_t, A_t) \;\middle|\; S_0 = s\right], \label{eq:vpi} \\
+  \Qpi(s, a) &= \E_\pi\!\left[\sum_{t=0}^\infty \gamma^t R(S_t, A_t) \;\middle|\; S_0 = s, A_0 = a\right]. \label{eq:qpi}
+\end{align}
+\end{definition}
+
+\subsection{Bellman Equations}
+
+The value functions satisfy the \emph{Bellman consistency equations}:
+\begin{align}
+  \Vpi(s) &= \sum_{a} \pi(a \mid s) \left[ R(s,a) + \gamma \sum_{s'} P(s' \mid s, a)\, \Vpi(s') \right], \label{eq:bellman-v}\\
+  \Qpi(s,a) &= R(s,a) + \gamma \sum_{s'} P(s' \mid s, a) \sum_{a'} \pi(a' \mid s')\, \Qpi(s', a'). \label{eq:bellman-q}
+\end{align}
+
+The \emph{Bellman optimality equations} characterize the optimal value:
+\begin{align}
+  \Vstar(s) &= \max_{a \in \cA} \left[ R(s,a) + \gamma \sum_{s'} P(s' \mid s, a)\, \Vstar(s') \right], \label{eq:bellman-opt-v}\\
+  \Qstar(s,a) &= R(s,a) + \gamma \sum_{s'} P(s' \mid s, a)\, \max_{a'} \Qstar(s', a'). \label{eq:bellman-opt-q}
+\end{align}
+
+\subsection{The Bellman Operator and Contraction}
+
+\begin{definition}[Bellman Optimality Operator]
+Define $\cT : \R^{|\cS|} \to \R^{|\cS|}$ by
+\[
+  (\cT V)(s) = \max_{a \in \cA} \left[ R(s,a) + \gamma \sum_{s'} P(s' \mid s, a)\, V(s') \right].
+\]
+\end{definition}
+
+\begin{theorem}[$\gamma$-Contraction in Supremum Norm]
+\label{thm:contraction}
+The Bellman optimality operator $\cT$ is a $\gamma$-contraction in the
+$\ell_\infty$ norm: for all $V, U \in \R^{|\cS|}$,
+\[
+  \|\cT V - \cT U\|_\infty \leq \gamma \|V - U\|_\infty.
+\]
+\end{theorem}
+
+\begin{proof}
+For any state $s \in \cS$, let $a^* = \argmax_a [R(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s')]$. Then:
+\begin{align*}
+  (\cT V)(s) - (\cT U)(s)
+  &= \max_a \bigl[ R(s,a) + \gamma \textstyle\sum_{s'} P(s'|s,a) V(s') \bigr]
+     - \max_a \bigl[ R(s,a) + \gamma \textstyle\sum_{s'} P(s'|s,a) U(s') \bigr] \\
+  &\leq R(s,a^*) + \gamma \textstyle\sum_{s'} P(s'|s,a^*) V(s')
+     - R(s,a^*) - \gamma \textstyle\sum_{s'} P(s'|s,a^*) U(s') \\
+  &= \gamma \textstyle\sum_{s'} P(s'|s,a^*) \bigl[ V(s') - U(s') \bigr] \\
+  &\leq \gamma \textstyle\sum_{s'} P(s'|s,a^*)\, \|V - U\|_\infty \\
+  &= \gamma \|V - U\|_\infty.
+\end{align*}
+By symmetry (swapping $V$ and $U$), we also obtain $(\cT U)(s) - (\cT V)(s) \leq \gamma\|V - U\|_\infty$.
+Hence $|(\cT V)(s) - (\cT U)(s)| \leq \gamma\|V - U\|_\infty$ for all $s$,
+and taking the supremum over $s$ yields the result.
+\end{proof}
+
+\begin{corollary}[Existence and Uniqueness of $V^*$]
+\label{cor:vstar-unique}
+By the Banach fixed-point theorem, since $(\R^{|\cS|}, \|\cdot\|_\infty)$ is a
+complete metric space and $\cT$ is a $\gamma$-contraction, there exists a unique
+$\Vstar \in \R^{|\cS|}$ satisfying $\cT \Vstar = \Vstar$. Moreover, value iteration
+$V_{k+1} = \cT V_k$ converges geometrically: $\|V_k - \Vstar\|_\infty \leq \gamma^k \|V_0 - \Vstar\|_\infty$.
+\end{corollary}
+
+\subsection{The Deadly Triad}
+
+Sutton and Barto (2018) identified the \textbf{deadly triad}: the combination of
+\begin{enumerate}[nosep]
+  \item \textbf{Function approximation} (representing $V$ or $Q$ with a parameterized function class),
+  \item \textbf{Bootstrapping} (updating estimates from other estimates, as in TD learning),
+  \item \textbf{Off-policy learning} (learning about a policy different from the behavior policy),
+\end{enumerate}
+which can cause \emph{divergence} of the learning process. Any two of the three
+are safe; the combination of all three can be unstable.
+
+\begin{theorem}[Linear TD Convergence, Tsitsiklis and Van Roy, 1997]
+\label{thm:linear-td}
+Consider on-policy TD(0) with linear function approximation $\hat{V}(s; \mathbf{w}) = \boldsymbol{\phi}(s)^\top \mathbf{w}$,
+where $\boldsymbol{\phi}(s) \in \R^d$ is a feature vector. Let $\mathbf{\Phi} \in \R^{|\cS| \times d}$ be the feature
+matrix and $\mathbf{D} = \mathrm{diag}(d_\pi(s))$ the diagonal matrix of the stationary distribution.
+If $\mathbf{\Phi}$ has full column rank, then the TD fixed point
+\[
+  \mathbf{w}^* = (\mathbf{\Phi}^\top \mathbf{D} (\mathbf{\Phi} - \gamma \mathbf{P}_\pi \mathbf{\Phi}))^{-1} \mathbf{\Phi}^\top \mathbf{D}\, \mathbf{r}_\pi
+\]
+exists and is unique, and TD(0) converges to $\mathbf{w}^*$ with probability 1 under
+standard stochastic approximation conditions (Robbins--Monro step sizes). The
+approximation error satisfies:
+\[
+  \|\mathbf{\Phi} \mathbf{w}^* - \Vpi\|_{\mathbf{D}} \leq \frac{1}{\sqrt{1 - \gamma^2}} \min_{\mathbf{w}} \|\mathbf{\Phi} \mathbf{w} - \Vpi\|_{\mathbf{D}}.
+\]
+\end{theorem}
+
+
+%% =======================================================================
+\section{Distributional Reinforcement Learning}
+\label{sec:distributional}
+%% =======================================================================
+
+\subsection{Return Distributions}
+
+Rather than modeling the \emph{expected} return, distributional RL (Bellemare, Dabney, and Munos, 2017)
+models the full \emph{distribution} of the random return.
+
+\begin{definition}[Return Distribution]
+For a policy $\pi$, the random return from state $s$ taking action $a$ is
+\[
+  Z^\pi(s, a) = \sum_{t=0}^\infty \gamma^t R(S_t, A_t), \quad S_0 = s,\; A_0 = a,\; A_{t} \sim \pi(\cdot | S_t)\ \text{for } t \geq 1.
+\]
+The value function is recovered as $\Qpi(s,a) = \E[Z^\pi(s,a)]$.
+\end{definition}
+
+\subsection{Distributional Bellman Equation}
+
+The return distribution satisfies a \emph{distributional} Bellman equation:
+\[
+  Z^\pi(s, a) \stackrel{D}{=} R(s, a) + \gamma\, Z^\pi(S', A'),
+  \quad S' \sim P(\cdot \mid s, a),\; A' \sim \pi(\cdot \mid S').
+\]
+Here $\stackrel{D}{=}$ denotes equality in distribution. Define the
+\textbf{distributional Bellman operator} $\cT^\pi$ acting on return-distribution
+functions $Z : \cS \times \cA \to \cP(\R)$:
+\[
+  (\cT^\pi Z)(s,a) \stackrel{D}{=} R(s,a) + \gamma\, Z(S', A').
+\]
+
+\subsection{Contraction in Wasserstein Distance}
+
+\begin{definition}[$p$-Wasserstein Distance]
+For probability measures $\mu, \nu$ on $\R$ with finite $p$-th moments, the
+$p$-Wasserstein distance is:
+\[
+  W_p(\mu, \nu) = \inf_{\text{coupling } (X,Y)} \bigl(\E[|X - Y|^p]\bigr)^{1/p},
+\]
+where the infimum is over all joint distributions of $(X, Y)$ with marginals $\mu$ and $\nu$.
+For distributions on $\R$, via the quantile representation:
+$W_p(\mu, \nu) = \bigl(\int_0^1 |F_\mu^{-1}(\tau) - F_\nu^{-1}(\tau)|^p \, d\tau\bigr)^{1/p}$.
+\end{definition}
+
+We lift the Wasserstein distance to return-distribution functions. For $Z_1, Z_2 : \cS \times \cA \to \cP(\R)$:
+\[
+  \bar{d}_p(Z_1, Z_2) = \sup_{s, a} W_p\bigl(Z_1(s,a),\, Z_2(s,a)\bigr).
+\]
+
+\begin{theorem}[Distributional Contraction, Bellemare et al., 2017]
+\label{thm:dist-contraction}
+The distributional Bellman operator $\cT^\pi$ is a $\gamma$-contraction in
+$\bar{d}_p$ for any $p \geq 1$:
+\[
+  \bar{d}_p(\cT^\pi Z_1,\, \cT^\pi Z_2) \leq \gamma\, \bar{d}_p(Z_1, Z_2).
+\]
+\end{theorem}
+
+\begin{proof}[Proof (coupling argument)]
+Fix $(s, a) \in \cS \times \cA$. We have
+\begin{align*}
+  (\cT^\pi Z_1)(s,a) &\stackrel{D}{=} R(s,a) + \gamma\, Z_1(S', A'), \\
+  (\cT^\pi Z_2)(s,a) &\stackrel{D}{=} R(s,a) + \gamma\, Z_2(S', A'),
+\end{align*}
+where $S' \sim P(\cdot|s,a)$ and $A' \sim \pi(\cdot|S')$.
+
+We construct a coupling. For each $(s', a')$, let $(X_{s',a'}, Y_{s',a'})$ be an
+\emph{optimal coupling} of $Z_1(s', a')$ and $Z_2(s', a')$, i.e.,
+\[
+  \E[|X_{s',a'} - Y_{s',a'}|^p] = W_p^p(Z_1(s',a'), Z_2(s',a')).
+\]
+
+Now couple $(\cT^\pi Z_1)(s,a)$ and $(\cT^\pi Z_2)(s,a)$ by using the \emph{same}
+transition $(S', A')$ for both and using the optimal coupling for the downstream
+returns. This yields random variables $\hat{X} = R(s,a) + \gamma X_{S',A'}$ and
+$\hat{Y} = R(s,a) + \gamma Y_{S',A'}$ that are valid couplings.  Then:
+\begin{align*}
+  W_p^p\bigl((\cT^\pi Z_1)(s,a),\, (\cT^\pi Z_2)(s,a)\bigr)
+  &\leq \E\bigl[|\hat{X} - \hat{Y}|^p\bigr] \\
+  &= \E\bigl[|\gamma X_{S',A'} - \gamma Y_{S',A'}|^p\bigr] \\
+  &= \gamma^p \,\E\bigl[|X_{S',A'} - Y_{S',A'}|^p\bigr] \\
+  &= \gamma^p \sum_{s',a'} P(s'|s,a)\,\pi(a'|s')\, W_p^p(Z_1(s',a'), Z_2(s',a')) \\
+  &\leq \gamma^p \,\bar{d}_p(Z_1, Z_2)^p.
+\end{align*}
+Taking $p$-th roots and the supremum over $(s, a)$:
+\[
+  \bar{d}_p(\cT^\pi Z_1, \cT^\pi Z_2) \leq \gamma\, \bar{d}_p(Z_1, Z_2). \qedhere
+\]
+\end{proof}
+
+\begin{remark}
+By the Banach fixed-point theorem applied to the complete metric space
+$(\cZ, \bar{d}_p)$ (where $\cZ$ is the space of return-distribution functions with
+finite $p$-th moments), the distributional Bellman equation has a unique
+fixed point $Z^\pi$.  Crucially, the distributional Bellman \emph{optimality}
+operator is \textbf{not} a contraction in any $\bar{d}_p$, which introduces
+additional algorithmic challenges.
+\end{remark}
+
+\subsection{Algorithmic Instantiations}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{C51} (Bellemare et al., 2017): Represents $Z(s,a)$ as a categorical
+    distribution over a fixed set of $N = 51$ atoms $\{z_1, \ldots, z_N\}$.
+    The distributional Bellman update is projected onto this support.
+
+  \item \textbf{QR-DQN} (Dabney et al., 2018a): Parameterizes the return distribution
+    by $N$ quantile values $\theta_1, \ldots, \theta_N$ at fixed quantile levels
+    $\tau_i = (2i-1)/(2N)$. Minimizes the quantile Huber loss:
+    \[
+      \sum_{i=1}^N \sum_{j=1}^{N'} \rho_{\tau_i}^\kappa(\delta_{ij}),
+      \quad \rho_\tau^\kappa(u) = |\tau - \mathbf{1}_{u < 0}| \cdot L_\kappa(u),
+    \]
+    where $L_\kappa$ is the Huber loss and $\delta_{ij} = r + \gamma \theta_j' - \theta_i$.
+
+  \item \textbf{IQN} (Dabney et al., 2018b): Implicit Quantile Network---instead of
+    fixed quantile levels, samples $\tau \sim \text{Uniform}(0,1)$ and learns the
+    quantile function $F_Z^{-1}(\tau; s, a)$ directly using a neural network that
+    takes $\tau$ as input.
+\end{itemize}
+
+\subsection{Neuroscience Connection}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=Distributional Coding in the Brain]
+Dabney et al.\ (2020, \emph{Nature}) demonstrated that dopamine neurons in the
+mouse brain encode not just reward prediction errors (as in classical TD
+learning), but a \emph{distribution} of prediction errors. Different neurons
+appear to encode different quantiles of the return distribution, forming a
+population code for distributional value. This provides striking biological
+evidence for the normative optimality of distributional RL: evolution arrived
+at distributional representations independently.
+\end{tcolorbox}
+
+
+%% =======================================================================
+\section{Successor Features and Generalised Policy Improvement}
+\label{sec:sf}
+%% =======================================================================
+
+\subsection{Successor Representation}
+
+The \textbf{successor representation} (Dayan, 1993) decomposes the value function
+by separating \emph{what happens} (dynamics under $\pi$) from \emph{what is rewarding}
+(the reward function).
+
+Assume rewards are linear in state features: $R(s, a) = \boldsymbol{\phi}(s, a)^\top \mathbf{w}$,
+where $\boldsymbol{\phi} : \cS \times \cA \to \R^d$ and $\mathbf{w} \in \R^d$.
+
+\begin{definition}[Successor Features]
+The successor features (SFs) under policy $\pi$ are:
+\[
+  \boldsymbol{\psi}^\pi(s, a) = \E_\pi\!\left[\sum_{t=0}^\infty \gamma^t \boldsymbol{\phi}(S_t, A_t) \;\middle|\; S_0 = s, A_0 = a\right] \in \R^d.
+\]
+\end{definition}
+
+The $Q$-function decomposes as:
+\begin{equation}
+  \Qpi(s, a) = \boldsymbol{\psi}^\pi(s, a)^\top \mathbf{w}. \label{eq:sf-decomp}
+\end{equation}
+
+Critically, $\boldsymbol{\psi}^\pi$ depends only on $\pi$ and the dynamics $P$, not on $\mathbf{w}$.
+Given a library of SFs $\{\boldsymbol{\psi}^{\pi_i}\}_{i=1}^n$ computed for different policies,
+a new task specified by $\mathbf{w}'$ can be solved \emph{instantly}
+by evaluating $\boldsymbol{\psi}^{\pi_i}(s,a)^\top \mathbf{w}'$ for each stored policy.
+
+\subsection{Generalised Policy Improvement}
+
+\begin{theorem}[Generalised Policy Improvement, Barreto et al., 2017]
+\label{thm:gpi}
+Let $\pi_1, \ldots, \pi_n$ be $n$ policies with known successor features
+$\boldsymbol{\psi}^{\pi_1}, \ldots, \boldsymbol{\psi}^{\pi_n}$, and let $\mathbf{w}$ specify a new task with
+$R(s,a) = \boldsymbol{\phi}(s,a)^\top \mathbf{w}$. Define the GPI policy:
+\[
+  \pi_{\mathrm{GPI}}(s) = \argmax_{a \in \cA} \max_{i \in \{1,\ldots,n\}} \boldsymbol{\psi}^{\pi_i}(s, a)^\top \mathbf{w}.
+\]
+Then $\pi_{\mathrm{GPI}}$ is at least as good as every $\pi_i$ on task $\mathbf{w}$:
+\[
+  Q^{\pi_{\mathrm{GPI}}}(s, a) \geq \max_{i} Q^{\pi_i}(s, a) \quad \forall\, s \in \cS,\; a \in \cA.
+\]
+In particular, $V^{\pi_{\mathrm{GPI}}}(s) \geq \max_i V^{\pi_i}(s)$ for all $s$.
+\end{theorem}
+
+\begin{proof}
+We proceed by a policy improvement argument. For any $s \in \cS$:
+\begin{align*}
+  V^{\pi_{\mathrm{GPI}}}(s)
+  &= \E_{\pi_{\mathrm{GPI}}}\!\left[\sum_{t=0}^\infty \gamma^t R(S_t, A_t) \;\middle|\; S_0 = s \right] \\
+  &= \E_{\pi_{\mathrm{GPI}}}\!\left[R(s, A_0) + \gamma V^{\pi_{\mathrm{GPI}}}(S_1) \;\middle|\; S_0 = s\right].
+\end{align*}
+By construction, $\pi_{\mathrm{GPI}}$ selects $A_0 = \argmax_a \max_i \boldsymbol{\psi}^{\pi_i}(s,a)^\top \mathbf{w}$. Thus:
+\[
+  Q^{\pi_{\mathrm{GPI}}}(s, a) = R(s,a) + \gamma \E[V^{\pi_{\mathrm{GPI}}}(S_1) \mid S_0 = s, A_0 = a].
+\]
+We prove $Q^{\pi_{\mathrm{GPI}}}(s,a) \geq \max_i Q^{\pi_i}(s,a)$ by induction on the horizon.
+For the base case ($\gamma = 0$), it is immediate since $Q^{\pi_i}(s,a) = R(s,a)$ for all $i$.
+
+For the inductive step, assume $V^{\pi_{\mathrm{GPI}}}(s') \geq \max_i V^{\pi_i}(s')$ for
+all $s'$ reachable in $k$ steps. Then for state $s$ at step $k+1$:
+\begin{align*}
+  Q^{\pi_{\mathrm{GPI}}}(s, a)
+  &= R(s,a) + \gamma \sum_{s'} P(s'|s,a)\, V^{\pi_{\mathrm{GPI}}}(s') \\
+  &\geq R(s,a) + \gamma \sum_{s'} P(s'|s,a) \max_i V^{\pi_i}(s') \\
+  &\geq R(s,a) + \gamma \sum_{s'} P(s'|s,a)\, V^{\pi_i}(s') \quad \text{for all } i \\
+  &= Q^{\pi_i}(s,a) \quad \text{for all } i.
+\end{align*}
+Taking the max over $i$ gives the result. The argument extends to the infinite-horizon
+discounted case via the contraction mapping argument: let $Q_{\mathrm{GPI}}$ be the fixed
+point of the operator $(\cT_{\mathrm{GPI}} Q)(s,a) = R(s,a) + \gamma \sum_{s'} P(s'|s,a) \max_a \max_i Q_i(s',a')$,
+where we can show this operator dominates each $\cT^{\pi_i}$ pointwise.
+\end{proof}
+
+\subsection{Zero-Shot Transfer}
+
+The GPI theorem enables \textbf{zero-shot transfer}: given successor features from
+training tasks $\mathbf{w}_1, \ldots, \mathbf{w}_n$, performance on a new task $\mathbf{w}$ is bounded by:
+\[
+  V^*(s; \mathbf{w}) - V^{\pi_{\mathrm{GPI}}}(s; \mathbf{w}) \leq \frac{2\gamma}{1 - \gamma}
+  \min_{i} \|\boldsymbol{\psi}^{\pi_i} - \boldsymbol{\psi}^*(s; \mathbf{w})\|_\infty \|\mathbf{w}\|_1.
+\]
+If the training tasks span the reward space well, this gap can be small even
+for novel tasks.
+
+
+%% =======================================================================
+\section{Information-Directed Sampling}
+\label{sec:ids}
+%% =======================================================================
+
+\subsection{The Exploration--Exploitation Dilemma}
+
+The fundamental challenge in sequential decision-making is balancing
+\emph{exploitation} (acting on current knowledge) with \emph{exploration}
+(gathering information to improve future decisions). Classical approaches include:
+
+\begin{itemize}[nosep]
+  \item \textbf{UCB (Upper Confidence Bound)}: Act optimistically---select actions whose
+    confidence-upper-bound on value is highest. Achieves $O(\sqrt{KT \log T})$
+    regret for $K$-armed bandits (Auer et al., 2002).
+  \item \textbf{Thompson Sampling}: Sample a model from the posterior and act
+    greedily with respect to the sample. Achieves $O(\sqrt{KT \log K})$
+    Bayesian regret (Russo and Van Roy, 2014).
+\end{itemize}
+
+Both can be suboptimal in structured problems. \textbf{Information-Directed Sampling}
+(IDS), due to Russo and Van Roy (2014, 2018), provides a principled alternative.
+
+\subsection{The Information Ratio}
+
+\begin{definition}[Information Ratio]
+Let $\pi_t$ be a (possibly randomized) action-selection rule at time $t$.
+Given posterior $P_t$ over the environment, define:
+\begin{itemize}[nosep]
+  \item \textbf{Expected instantaneous regret}: $\Delta_t(\pi_t) = \E_{A_t \sim \pi_t}[\E_{P_t}[R(A^*) - R(A_t)]]$,
+    where $A^*$ is the optimal action under the true model.
+  \item \textbf{Information gain}: $g_t(\pi_t) = I_{P_t}(\theta;\, (A_t, O_t) \mid A_t \sim \pi_t)$,
+    the mutual information between the unknown parameter $\theta$ and the
+    observation $O_t$ under action $A_t$.
+\end{itemize}
+The \textbf{information ratio} is:
+\begin{equation}
+  \Gamma_t(\pi_t) = \frac{\Delta_t(\pi_t)^2}{g_t(\pi_t)}. \label{eq:info-ratio}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Information-Directed Sampling]
+The IDS policy minimizes the information ratio:
+\[
+  \pi_t^{\mathrm{IDS}} = \argmin_{\pi_t \in \Delta(\cA)} \Gamma_t(\pi_t)
+  = \argmin_{\pi_t} \frac{\Delta_t(\pi_t)^2}{g_t(\pi_t)}.
+\]
+\end{definition}
+
+This trades off regret and information optimally: IDS takes actions that yield the
+best ratio of ``regret squared per bit of information gained.''
+
+\subsection{Regret Bound}
+
+\begin{theorem}[IDS Regret Bound, Russo and Van Roy, 2014]
+\label{thm:ids-regret}
+If $\Gamma_t(\pi_t^{\mathrm{IDS}}) \leq \bar{\Gamma}$ for all $t$ (uniformly bounded
+information ratio), and $H(\theta) < \infty$ is the entropy of the prior, then the
+Bayesian regret of IDS satisfies:
+\[
+  \Regret(T) = \E\!\left[\sum_{t=1}^T \Delta_t\right] \leq \sqrt{\bar{\Gamma} \cdot H(\theta) \cdot T}.
+\]
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+By the definition of the information ratio:
+$\Delta_t^2 \leq \bar{\Gamma} \cdot g_t$ for all $t$.
+Summing over $t$ and applying Jensen's inequality:
+\[
+  \left(\frac{1}{T}\sum_{t=1}^T \Delta_t\right)^2 \leq \frac{1}{T}\sum_{t=1}^T \Delta_t^2
+  \leq \frac{\bar{\Gamma}}{T} \sum_{t=1}^T g_t.
+\]
+The key insight is the \emph{information-theoretic chain rule}: the total information
+gained about $\theta$ cannot exceed the prior entropy,
+$\sum_{t=1}^T g_t \leq H(\theta)$.
+This is because $I(\theta; O_{1:T}) \leq H(\theta)$, and the chain rule for
+mutual information gives $I(\theta; O_{1:T}) = \sum_t I(\theta; O_t \mid O_{1:t-1}) = \sum_t g_t$
+(adapting for the adaptive action selection). Hence:
+\[
+  \Regret(T) = \sum_{t=1}^T \Delta_t \leq \sqrt{T \sum_{t=1}^T \Delta_t^2}
+  \leq \sqrt{T \cdot \bar{\Gamma} \cdot H(\theta)}. \qedhere
+\]
+\end{proof}
+
+\begin{remark}
+For $K$-armed Bernoulli bandits, IDS achieves $\bar{\Gamma} \leq K/2$, yielding
+$O(\sqrt{KT \log K})$ Bayesian regret (matching Thompson sampling). For linear
+bandits in $d$ dimensions, $\bar{\Gamma} \leq d/2$, giving $O(d\sqrt{T})$ regret
+that can \emph{improve} upon both UCB and Thompson sampling in structured problems.
+\end{remark}
+
+\subsection{Comparison and Connection to Active Inference}
+
+\begin{center}
+\begin{tabular}{lccc}
+  \toprule
+  \textbf{Method} & \textbf{Principle} & \textbf{Regret ($K$-armed)} & \textbf{Structured?} \\
+  \midrule
+  UCB & Optimism & $O(\sqrt{KT \log T})$ & Moderate \\
+  Thompson Sampling & Posterior sampling & $O(\sqrt{KT \log K})$ & Good \\
+  IDS & Min info ratio & $O(\sqrt{KT \log K})$ & Excellent \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+IDS is closely related to the \textbf{active inference} framework from neuroscience
+(Friston, 2010), which postulates that biological agents minimize \emph{expected free energy}---a
+quantity that decomposes into an exploitation term (expected reward or pragmatic value)
+and an exploration term (expected information gain or epistemic value). IDS can be
+viewed as a decision-theoretic formalization of this decomposition.
+
+
+%% =======================================================================
+\section{The Options Framework}
+\label{sec:options}
+%% =======================================================================
+
+\subsection{Temporal Abstraction}
+
+Primitive actions operate at the finest time scale. Many tasks are better
+described at multiple temporal scales: ``navigate to the kitchen'' is a
+temporally extended action composed of many primitive steps. The
+\textbf{options framework} (Sutton, Precup, and Singh, 1999) formalizes
+this via \emph{temporal abstraction}.
+
+\begin{definition}[Option]
+An option $o = (\cI_o, \pi_o, \beta_o)$ consists of:
+\begin{itemize}[nosep]
+  \item $\cI_o \subseteq \cS$: the \textbf{initiation set} (states where $o$ can begin),
+  \item $\pi_o : \cS \to \Delta(\cA)$: the \textbf{intra-option policy},
+  \item $\beta_o : \cS \to [0, 1]$: the \textbf{termination function}
+    ($\beta_o(s)$ is the probability of terminating in state $s$).
+\end{itemize}
+\end{definition}
+
+Primitive actions are options with $\cI_o = \cS$, $\pi_o(\cdot|s) = \mathbf{1}_a$,
+and $\beta_o \equiv 1$ (immediate termination).
+
+\subsection{Semi-MDP Formulation}
+
+When executing options, the time between decisions is variable. This gives
+rise to a \textbf{semi-MDP} (SMDP) over options. For a policy-over-options
+$\mu : \cS \to \Delta(\cO)$ (where $\cO$ is the set of available options),
+the \textbf{option-value function} satisfies the SMDP Bellman equation:
+\begin{equation}
+  Q_\cO^\mu(s, o) = \E\!\left[\sum_{k=0}^{\tau_o - 1} \gamma^k R_{t+k} + \gamma^{\tau_o}
+  \sum_{o'} \mu(o' | S_{t+\tau_o})\, Q_\cO^\mu(S_{t+\tau_o}, o') \;\middle|\; S_t = s, O_t = o \right],
+  \label{eq:option-bellman}
+\end{equation}
+where $\tau_o$ is the (random) duration of option $o$.
+
+With the \emph{call-and-return} option execution model, this can be written
+more compactly using the \textbf{option-conditional transition model}:
+\[
+  P_o(s', k \mid s) = \Pr(S_{t+k} = s', \tau_o = k \mid S_t = s),
+\]
+and the expected discounted reward during execution:
+\[
+  r_o(s) = \E\!\left[\sum_{k=0}^{\tau_o - 1} \gamma^k R_{t+k} \;\middle|\; S_t = s \right].
+\]
+
+\subsection{Eigenoptions and Option Discovery}
+
+A key challenge is \emph{discovering} useful options automatically.
+\textbf{Eigenoptions} (Machado et al., 2017) uses the graph Laplacian of the
+state-transition graph: eigenvectors of the Laplacian identify bottleneck
+states and natural sub-goals.
+
+Given the graph Laplacian $\mathbf{L} = \mathbf{D}_G - \mathbf{A}$ (where $\mathbf{A}$ is the adjacency
+matrix and $\mathbf{D}_G$ the degree matrix), the Fiedler vector (second-smallest
+eigenvector of $\mathbf{L}$) partitions the state space into two weakly connected
+components. Options that navigate between these components correspond to
+traversing bottleneck states and are useful for exploration.
+
+More generally, the $k$-th eigenvector $\mathbf{e}_k$ of $\mathbf{L}$ defines an intrinsic
+reward $r_k(s, s') = \mathbf{e}_k(s') - \mathbf{e}_k(s)$, and the corresponding eigenoption
+is the policy maximizing cumulative $r_k$.
+
+\subsection{Option-Critic Architecture}
+
+The \textbf{Option-Critic} (Bacon, Harb, and Precup, 2017) learns options
+end-to-end using the policy gradient theorem extended to options:
+
+\begin{align}
+  \frac{\partial V_\cO(s)}{\partial \theta_{\pi_o}} &\propto \sum_{s,o} \mu_\cO(s, o \mid s_0)
+  \sum_a \frac{\partial \pi_{o}(a|s)}{\partial \theta_{\pi_o}} Q_U(s, o, a), \\
+  \frac{\partial V_\cO(s)}{\partial \theta_{\beta_o}} &\propto -\sum_{s',o} \mu_\cO(s', o \mid s_0)
+  \frac{\partial \beta_o(s')}{\partial \theta_{\beta_o}} A_\cO(s', o),
+\end{align}
+where $Q_U(s, o, a)$ is the value of executing action $a$ within option $o$ at state $s$,
+and $A_\cO(s', o) = Q_\cO(s', o) - V_\cO(s')$ is the advantage of continuing option $o$.
+
+\subsection{Tool Use as Options}
+
+In agentic AI systems, \textbf{tool use} maps naturally to the options framework:
+\begin{itemize}[nosep]
+  \item A \emph{tool} (web search, code execution, calculator) is an option with
+    its own internal policy (the tool's execution logic).
+  \item The \emph{initiation set} corresponds to contexts where the tool is applicable.
+  \item The \emph{termination condition} is when the tool returns a result.
+  \item The agent's \emph{policy over options} is the decision of which tool to invoke.
+\end{itemize}
+This abstraction allows treating tool-augmented agents within the standard
+RL/planning framework (see Section~\ref{sec:agentic}).
+
+
+%% =======================================================================
+\section{The Bitter Lesson and Scaling Laws}
+\label{sec:bitter}
+%% =======================================================================
+
+\subsection{The Bitter Lesson}
+
+Sutton's ``Bitter Lesson'' (2019) observes that, over the history of AI research,
+methods that \emph{leverage computation}---particularly search and learning---have
+consistently outperformed methods that \emph{encode human knowledge}. This lesson
+is ``bitter'' because researchers repeatedly invest effort in domain-specific
+engineering, only to be surpassed by general methods that scale with compute.
+
+The key examples span decades: chess (Deep Blue to AlphaZero), Go (handcrafted
+features to AlphaGo/AlphaZero), speech recognition (HMMs to deep learning),
+computer vision (SIFT/HOG to CNNs), and NLP (parse trees to Transformers).
+
+\subsection{Scaling Laws for RL}
+
+Scaling laws in supervised learning (Kaplan et al., 2020; Hoffmann et al., 2022)
+describe power-law relationships between loss and compute/data/parameters.
+Analogous scaling phenomena appear in RL:
+
+\begin{enumerate}[nosep]
+  \item \textbf{Sample complexity}: For tabular MDPs, PAC-MDP bounds scale as
+    $\tilde{O}(|\cS|^2|\cA|/\varepsilon^2)$ (Strehl et al., 2009). With function
+    approximation, this depends on the effective dimension of the function class.
+  \item \textbf{Compute scaling in games}: AlphaZero's Elo rating scales
+    log-linearly with training compute. MuZero exhibits similar scaling.
+  \item \textbf{Test-time compute scaling}: In reasoning tasks, increasing
+    search budget at inference time (e.g., more MCTS rollouts) yields predictable
+    performance improvements following power-law curves.
+\end{enumerate}
+
+\subsection{The Era of Experience}
+
+Silver, Sutton, and collaborators (2025) argue for an ``Era of Experience''
+in which AI agents learn primarily from \emph{self-generated experience}
+rather than human-curated data. Key claims include:
+
+\begin{itemize}[nosep]
+  \item The data bottleneck for LLMs (limited human text) can be overcome by
+    agents generating their own training signal through interaction.
+  \item The combination of world models, planning, and self-play enables
+    superhuman performance without human demonstrations.
+  \item This extends the bitter lesson: not only computation, but \emph{experience}
+    should be scaled, and the most general-purpose approach is to let agents
+    learn from their own interaction data.
+\end{itemize}
+
+
+%% =======================================================================
+\section{Connections to Modern Agentic AI}
+\label{sec:agentic}
+%% =======================================================================
+
+The RL foundations developed above connect directly to the architecture and
+training of modern agentic AI systems.
+
+\subsection{RLHF and RLAIF}
+
+\textbf{Reinforcement Learning from Human Feedback} (RLHF; Christiano et al., 2017;
+Ouyang et al., 2022) trains a reward model from human preference comparisons,
+then optimizes a language model policy against this reward using RL (typically PPO).
+The objective is:
+\[
+  \max_\pi \E_{x \sim \cD,\, y \sim \pi(\cdot|x)}\bigl[r_\phi(x, y)\bigr]
+  - \beta\, \KL\!\bigl[\pi(\cdot|x) \,\|\, \pi_{\mathrm{ref}}(\cdot|x)\bigr],
+\]
+where $r_\phi$ is the learned reward model and the KL penalty prevents
+collapse away from the reference policy $\pi_{\mathrm{ref}}$.
+
+\textbf{RLAIF} (Bai et al., 2022) replaces human preferences with AI-generated
+preferences, connecting to the ``Era of Experience'' thesis: the agent generates
+its own training signal.
+
+The closed-form solution of the KL-constrained problem is:
+\[
+  \pi^*(y|x) = \frac{1}{Z(x)} \pi_{\mathrm{ref}}(y|x) \exp\!\left(\frac{r_\phi(x,y)}{\beta}\right),
+\]
+which motivates Direct Preference Optimization (DPO; Rafailov et al., 2023).
+
+\subsection{In-Context Learning as Implicit RL}
+
+Transformer-based models exhibit \emph{in-context learning}: they adapt their
+behavior based on examples in the prompt without weight updates. This can be
+viewed as \emph{implicit} RL or Bayesian inference:
+
+\begin{itemize}[nosep]
+  \item The prompt context is the ``trajectory'' so far.
+  \item The model's next-token prediction implements a policy conditioned on history.
+  \item Transformers trained on diverse tasks can implement in-context
+    algorithms that approximate Bayes-optimal policies (M\"uller et al., 2022;
+    Garg et al., 2022).
+  \item Algorithm distillation (Laskin et al., 2022) explicitly trains
+    Transformers on RL learning histories, enabling in-context RL.
+\end{itemize}
+
+\subsection{Test-Time Compute as MCTS}
+
+Recent work on ``thinking'' models (e.g., chain-of-thought, tree-of-thought)
+allocates additional computation at inference time to solve harder problems.
+This is directly analogous to MCTS:
+
+\begin{itemize}[nosep]
+  \item \textbf{Chain-of-thought}: A single rollout (analogous to a single MCTS simulation).
+  \item \textbf{Tree-of-thought}: Multiple branching rollouts with backtracking
+    (explicit tree search).
+  \item \textbf{Best-of-$N$ sampling}: Sample $N$ complete solutions and select
+    the best (analogous to root parallelization in MCTS).
+  \item The value function in MCTS corresponds to the model's self-evaluation
+    capability (process reward models).
+\end{itemize}
+
+\subsection{Multi-Step Tasks as POMDPs}
+
+Agentic tasks (web browsing, coding, research) are naturally modeled as
+\textbf{POMDPs}: the agent observes partial information (screen content, file
+contents, API responses) and must maintain beliefs about the hidden state
+(codebase structure, user intent, task progress). The agent's ``scratchpad''
+or ``memory'' serves as a belief state, and tool use provides observations
+that reduce uncertainty.
+
+\subsection{Multi-Agent RL and LLM Agents}
+
+Littman's framework of \textbf{Markov games} (1994) extends MDPs to multiple agents:
+\begin{definition}[Markov Game]
+A Markov game for $n$ agents is $(\cS, \cA_1, \ldots, \cA_n, P, R_1, \ldots, R_n, \gamma)$,
+where $P : \cS \times \cA_1 \times \cdots \times \cA_n \to \Delta(\cS)$ and each
+$R_i$ is agent $i$'s reward function.
+\end{definition}
+
+Multi-agent LLM systems (e.g., debate, negotiation, collaborative coding) are
+instances of Markov games. The solution concept shifts from optimality to
+\emph{equilibria} (Nash, correlated, or coarse-correlated equilibria), and
+convergence guarantees become substantially more challenging.
+
+
+%% =======================================================================
+\section{Open Problems}
+\label{sec:open}
+%% =======================================================================
+
+\begin{openproblem}[Non-Stationarity in RLHF]
+Human preferences evolve over time, and reward models trained on past preferences
+may become stale. How should RL agents adapt to non-stationary reward functions
+while maintaining alignment guarantees? Connections to restless bandits
+(Whittle, 1988) and non-stationary MDPs remain underexplored.
+\end{openproblem}
+
+\begin{openproblem}[Sample Complexity of Distributional RL]
+While distributional RL empirically outperforms expectation-based methods,
+the theoretical sample complexity advantages are not well understood.
+Under what conditions does learning the full return distribution provably
+improve policy optimization, beyond the benefits of auxiliary representation learning?
+\end{openproblem}
+
+\begin{openproblem}[Scalable Option Discovery]
+Current option discovery methods (eigenoptions, interest functions, information-theoretic
+objectives) struggle to scale to high-dimensional, continuous state spaces
+encountered in real-world agentic tasks. Can foundation models serve as
+priors for option discovery, identifying meaningful temporal abstractions
+from language descriptions?
+\end{openproblem}
+
+\begin{openproblem}[Theoretical Foundations of Test-Time Compute Scaling]
+Empirical scaling laws for test-time compute (more ``thinking'' = better performance)
+lack rigorous theoretical grounding. What are the computational complexity-theoretic
+characterizations of problems where test-time search provably helps?
+How does the value of additional computation decay, and what is the optimal
+compute allocation between training and inference?
+\end{openproblem}
+
+\begin{openproblem}[Credit Assignment in Long-Horizon Agentic Tasks]
+Agentic tasks (multi-step coding, research, web navigation) involve hundreds or
+thousands of steps with sparse, delayed rewards. The credit assignment problem---which
+actions were responsible for success or failure---is exacerbated at this scale.
+Existing methods (eligibility traces, hindsight relabeling, attention-based credit)
+do not scale gracefully. Can successor features or distributional methods provide
+better credit assignment in these regimes?
+\end{openproblem}
+
+\begin{openproblem}[Safe Exploration in Open-Ended Environments]
+Real-world agentic AI systems must explore safely---avoiding irreversible
+actions (deleting files, sending emails, financial transactions) while still
+learning effectively. The constrained MDP framework provides some tools, but
+the constraint set itself is often unknown and must be learned. How can
+IDS-style information-theoretic exploration be combined with safety constraints?
+\end{openproblem}
+
+\begin{openproblem}[Bridging Language and Formal Reward Specification]
+Natural language instructions are the primary interface for agentic AI, yet
+translating them into formal reward functions remains error-prone. Reward
+machines (Icarte et al., 2018) and linear temporal logic offer structured
+approaches, but grounding language to these formalisms at scale is unsolved.
+Can LLMs themselves serve as reward specification languages, and if so,
+what are the alignment implications?
+\end{openproblem}
+
+
+%% =======================================================================
+\section{Annotated Bibliography}
+\label{sec:bib}
+%% =======================================================================
+
+\begin{enumerate}[label={[\arabic*]}, leftmargin=*, itemsep=6pt]
+
+\item \textbf{Sutton, R.~S. and Barto, A.~G.} (2018).
+  \textit{Reinforcement Learning: An Introduction} (2nd ed.). MIT Press. \\
+  The definitive textbook. Chapters 3--4 cover MDPs and dynamic programming;
+  Chapters 9--11 cover function approximation including the deadly triad;
+  Chapter 12 covers eligibility traces.
+
+\item \textbf{Silver, D., Singh, S., Precup, D., and Sutton, R.~S.} (2021).
+  ``Reward is Enough.'' \textit{Artificial Intelligence}, 299, 103535. \\
+  Argues that reward maximization in sufficiently complex environments is
+  sufficient to give rise to all facets of intelligence. Provocative and
+  foundational for the reward hypothesis.
+
+\item \textbf{Bellemare, M.~G., Dabney, W., and Munos, R.} (2017).
+  ``A Distributional Perspective on Reinforcement Learning.''
+  \textit{Proceedings of ICML}. \\
+  Introduces distributional RL, proves the distributional Bellman operator
+  is a contraction in the Wasserstein metric, and proposes C51.
+
+\item \textbf{Dabney, W., Ostrovski, G., Silver, D., and Munos, R.} (2018a).
+  ``Implicit Quantile Networks for Distributional Reinforcement Learning.''
+  \textit{Proceedings of ICML}. \\
+  Introduces IQN, which learns the full quantile function using implicit
+  representations. Achieves state-of-the-art on Atari.
+
+\item \textbf{Dabney, W., Kurth-Nelson, Z., et al.} (2020).
+  ``A distributional code for value in dopamine-based reinforcement learning.''
+  \textit{Nature}, 577, 671--675. \\
+  Landmark neuroscience paper showing dopamine neurons encode distributional
+  reward prediction errors, vindicating distributional RL as normatively
+  and descriptively accurate.
+
+\item \textbf{Barreto, A., Dabney, W., Munos, R., et al.} (2017).
+  ``Successor Features for Transfer in Reinforcement Learning.''
+  \textit{Proceedings of NeurIPS}. \\
+  Formalizes successor features and proves the Generalised Policy Improvement
+  theorem. Demonstrates zero-shot transfer across tasks.
+
+\item \textbf{Dayan, P.} (1993).
+  ``Improving Generalization for Temporal Difference Learning: The Successor
+  Representation.'' \textit{Neural Computation}, 5(4), 613--624. \\
+  The original successor representation paper. Separates environment dynamics
+  from reward, enabling efficient recomputation when rewards change.
+
+\item \textbf{Russo, D. and Van Roy, B.} (2014).
+  ``Learning to Optimize via Information-Directed Sampling.''
+  \textit{Proceedings of NeurIPS}. \\
+  Introduces IDS and the information ratio. Proves Bayesian regret bounds
+  that can improve upon UCB and Thompson sampling.
+
+\item \textbf{Russo, D. and Van Roy, B.} (2018).
+  ``Learning to Optimize via Information-Directed Sampling.''
+  \textit{Operations Research}, 66(1), 230--252. \\
+  Journal version with extended analysis, including linear bandits and
+  connections to rate-distortion theory.
+
+\item \textbf{Sutton, R.~S., Precup, D., and Singh, S.} (1999).
+  ``Between MDPs and semi-MDPs: A Framework for Temporal Abstraction in
+  Reinforcement Learning.'' \textit{Artificial Intelligence}, 112, 181--211. \\
+  The foundational options paper. Defines options, proves convergence of
+  option-level value iteration, and establishes the SMDP connection.
+
+\item \textbf{Bacon, P.-L., Harb, J., and Precup, D.} (2017).
+  ``The Option-Critic Architecture.''
+  \textit{Proceedings of AAAI}. \\
+  Derives policy gradient theorems for learning options end-to-end,
+  including both intra-option policies and termination conditions.
+
+\item \textbf{Szepesv\'ari, C.} (2010).
+  \textit{Algorithms for Reinforcement Learning}. Morgan \& Claypool. \\
+  Concise monograph with rigorous treatment of TD learning, policy gradient
+  methods, and actor-critic algorithms. Excellent for mathematical foundations.
+
+\item \textbf{Littman, M.~L.} (1994).
+  ``Markov Games as a Framework for Multi-Agent Reinforcement Learning.''
+  \textit{Proceedings of ICML}. \\
+  Extends MDPs to multi-agent settings. Introduces minimax-Q for zero-sum
+  games and friend-or-foe Q-learning.
+
+\item \textbf{Hutter, M.} (2004).
+  \textit{Universal Artificial Intelligence: Sequential Decisions Based on
+  Algorithmic Probability}. Springer. \\
+  Defines AIXI, the Bayes-optimal agent over all computable environments.
+  Establishes theoretical limits of reward maximization.
+
+\item \textbf{Sutton, R.~S.} (2019).
+  ``The Bitter Lesson.'' Blog post. \\
+  Influential essay arguing that compute-leveraging methods (search and
+  learning) consistently outperform knowledge-engineering approaches.
+
+\item \textbf{Silver, D., Sutton, R.~S., et al.} (2025).
+  ``Welcome to the Era of Experience.'' Preprint. \\
+  Argues that AI should transition from learning on human-generated data to
+  learning from self-generated experience via RL and world models.
+
+\item \textbf{Ouyang, L., Wu, J., Jiang, X., et al.} (2022).
+  ``Training language models to follow instructions with human feedback.''
+  \textit{Proceedings of NeurIPS}. \\
+  The InstructGPT paper. Demonstrates RLHF at scale: reward modeling from
+  human comparisons followed by PPO optimization. Foundation for ChatGPT.
+
+\item \textbf{Rafailov, R., Sharma, A., Mitchell, E., et al.} (2023).
+  ``Direct Preference Optimization: Your Language Model is Secretly a Reward
+  Model.'' \textit{Proceedings of NeurIPS}. \\
+  Derives DPO from the closed-form solution of the KL-constrained RLHF
+  objective, eliminating the need for explicit reward modeling.
+
+\item \textbf{Munos, R., Szepesv\'ari, C., and Audibert, J.-Y.} (2008).
+  ``Finite-Time Bounds for Fitted Value Iteration.''
+  \textit{Journal of Machine Learning Research}, 9, 815--857. \\
+  Rigorous finite-sample analysis of approximate dynamic programming with
+  function approximation. Establishes error propagation bounds that depend
+  on the inherent Bellman error and concentrability coefficients.
+
+\item \textbf{Machado, M.~C., Rosenbaum, C., Guo, X., et al.} (2017).
+  ``Eigenoption Discovery through the Deep Successor Representation.''
+  \textit{Proceedings of ICLR}. \\
+  Connects the graph Laplacian of the state space to option discovery via
+  eigenvectors, enabling principled construction of temporally extended actions.
+
+\end{enumerate}
+
+
+%% =======================================================================
+\section*{Acknowledgments}
+
+These notes draw on the cumulative contributions of the RL research community.
+We particularly acknowledge the foundational work of Richard Sutton, Andrew Barto,
+Csaba Szepesv\'ari, and the DeepMind RL group. Any errors are our own.
+
+\end{document}

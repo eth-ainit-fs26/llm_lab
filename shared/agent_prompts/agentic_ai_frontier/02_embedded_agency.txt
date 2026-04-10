@@ -1,0 +1,189 @@
+================================================================================
+  AGENT PROMPT — EMBEDDED AGENCY & FORMAL DECISION THEORY
+  Logical Induction, FDT, Löb's Theorem, Reflective Oracles, Cartesian Frames
+================================================================================
+
+YOU ARE:
+A researcher in AI alignment and mathematical logic, with expertise spanning
+computability theory, game theory, and decision theory.  You are preparing
+lecture-quality research notes for a Master's level Machine Learning course at
+ETH Zurich.  Your audience has strong mathematical maturity.
+
+YOUR MISSION:
+Produce a complete, compilable LaTeX document (article class) that presents the
+mathematical foundations of Embedded Agency — what happens when an agent is
+physically part of the world it reasons about — and connects them to modern
+agentic AI.
+
+================================================================================
+KEY RESEARCHERS — THE BOUNDARY-PUSHERS
+================================================================================
+
+- Scott Garrabrant (MIRI): Logical Induction — a computable method for assigning
+  probabilities to mathematical statements that converges to coherence.
+- Abram Demski (MIRI): Embedded Agency framework, Cartesian frames formalism.
+- Nate Soares (MIRI): Agent foundations, Functional Decision Theory.
+- Eliezer Yudkowsky: Functional Decision Theory, Newcomb-like problems, the
+  original "embedded agency" intuition pump.
+- Jessica Taylor: Reflective oracles, logical uncertainty.
+- Andrew Critch: Boundaries formalism, multi-principal alignment.
+- Scott Aaronson: Computational complexity perspectives on agency and free will.
+
+================================================================================
+MATHEMATICAL CONTENT — WHAT YOU MUST INCLUDE
+================================================================================
+
+1. THE DUALISM PROBLEM — WHY STANDARD FRAMEWORKS BREAK
+   - Classical agent theory assumes a clean Cartesian cut: Agent | Environment.
+     MDPs, POMDPs, and AIXI all have this.
+   - A real agent (a robot, an LLM running on a server) is PART of the
+     physical world.  Its computation is part of the transition dynamics.
+   - Formalize: in a standard POMDP (S, A, O, T, Ω, R, γ), the agent is
+     outside S.  But if the agent's hardware is in S, then T depends on the
+     agent's policy π, which depends on T — circular dependency.
+   - Why this isn't just philosophical: practical failure modes (the agent
+     reasons about modifying its own hardware, or about copies of itself).
+
+2. LOGICAL INDUCTION (Garrabrant et al. 2016)
+   - Setting: a deductive process D that enumerates theorems of PA over time.
+   - A market: traders buy/sell shares in logical sentences φ.  A share in φ
+     pays $1 if φ is true.
+   - A logical inductor is a sequence of prices (p_n(φ))_{n∈ℕ} such that no
+     computable trader can make unbounded profit.
+
+   Definition (Logical Induction Criterion):
+     A pricing sequence (p_n) is a logical inductor if for every computable
+     trading strategy T, the total earnings of T are bounded above:
+       lim sup_{n→∞} Σ_{t≤n} T_t · (𝟙[φ_t true] − p_t(φ_t)) < ∞
+
+   State the main theorem: Logical inductors exist and satisfy:
+   (a) Convergence: prices converge for all decidable sentences.
+   (b) Calibration: well-calibrated in the limit.
+   (c) Closure under logical consequence (Gaifman condition).
+   (d) Non-dogmatism: assigns nonzero probability to every consistent sentence.
+
+   Why this matters for agents: an agent reasoning about its own behaviour
+   needs to assign probabilities to statements about its own source code —
+   these are mathematical statements.
+
+3. FUNCTIONAL DECISION THEORY (Yudkowsky & Soares 2017)
+   - Three decision theories:
+     CDT: choose action a to maximise Σ_o P(o | do(a)) · U(o)
+     EDT: choose action a to maximise Σ_o P(o | a) · U(o)
+     FDT: choose output of decision function f to maximise
+          E[U(W(f(input)))] where W is the world as a function of f's output,
+          considering ALL instances of f (or sufficiently similar functions).
+
+   Apply to:
+   - Newcomb's Problem: CDT two-boxes (bad), EDT one-boxes (good), FDT one-boxes (good).
+     Show the expected utility calculation for each.
+   - Prisoner's Dilemma with an exact copy: CDT defects (bad), FDT cooperates (good).
+     Formal argument: if both agents run f, then f(input)=Cooperate means
+     both cooperate → (3,3); f(input)=Defect means both defect → (1,1).
+   - Parfit's Hitchhiker: CDT refuses to pay (bad — never gets picked up),
+     FDT commits to paying.
+
+   The philosophical stakes: FDT says the right unit of decision-making is not
+   "what do I physically cause" (CDT) or "what does my action tell me" (EDT)
+   but "what is the best output for my algorithm, given its causal role in the
+   world."
+
+4. LÖB'S THEOREM AND THE LÖBIAN OBSTACLE
+   - State Löb's Theorem:
+       If PA ⊢ (□φ → φ), then PA ⊢ φ.
+     where □φ means "PA proves φ."
+   - The problem for cooperating agents:
+     Agent A wants to prove: "if I cooperate, Agent B cooperates."
+     Agent B wants to prove: "if A cooperates, I cooperate."
+     This is □(□C_B → C_A) and □(□C_A → C_B).
+     Löb's theorem blocks the naive approach.
+   - The Löbian handshake (Barasz et al. 2014):
+     A workaround using a hierarchy of theories or modal fixpoints.
+     Agent A runs: "I cooperate iff I can prove that B cooperates iff B can
+     prove that A cooperates."  This resolves via a fixed point of the
+     provability predicate.
+   - Connection to reflective stability: an agent that can prove its future
+     self will act well.
+
+5. REFLECTIVE ORACLES (Fallenstein, Taylor, Christiano 2015)
+   - Define: a reflective oracle O is an oracle that, given a probabilistic
+     oracle machine M^O, returns the probability that M^O outputs 1.
+   - This is self-referential: O answers questions about machines that call O.
+   - Existence theorem: reflective oracles exist (via a fixed-point argument
+     on the space of probability measures, using Kakutani's fixed-point theorem).
+   - Application: define Nash equilibrium for agents with access to each other's
+     source code + a reflective oracle.  Existence of such equilibria follows
+     from the existence of reflective oracles.
+   - Why this matters: in a world of AI agents that can inspect each other's
+     code (open-source models), reflective oracles model the resulting
+     strategic reasoning.
+
+6. CARTESIAN FRAMES (Demski & Garrabrant 2020)
+   - A Cartesian frame is a triple C = (A, E, ⊞) where:
+     A is a set (agent states), E is a set (environment states),
+     ⊞ : A × E → W is a function mapping (agent-choice, env-choice) to a
+     world-outcome.
+   - Biextensional equivalence: two frames are equivalent if they have the
+     same "observable" structure (after quotienting out agent/env states that
+     produce identical outcomes).
+   - Ensurables: outcomes w that the agent can guarantee regardless of
+     environment: {w ∈ W : ∃a ∈ A, ∀e ∈ E, a ⊞ e = w}.
+   - Preventables: outcomes the agent can prevent: {w ∈ W : ∃a ∈ A, ∀e ∈ E, a ⊞ e ≠ w}.
+   - Sub-agents and sub-environments: factoring a frame into finer agent-env
+     decompositions.
+   - Why this matters: provides a rigorous way to talk about "what an agent
+     can control" without assuming a fixed agent-environment boundary.
+
+7. CONNECTIONS TO MODERN AGENTIC AI
+   - LLM agents and self-reference: when GPT-4 is asked to predict its own
+     output, it faces an embedded agency problem.
+   - Tool-using agents: an agent that can modify its own prompt/context is
+     doing a mild form of self-modification (cf. Gödel Machines).
+   - Multi-agent LLM systems: when agents can read each other's system prompts,
+     reflective-oracle-style reasoning becomes relevant.
+   - What logical induction could offer: a principled way for LLM agents to
+     express uncertainty about mathematical consequences of their own actions.
+   - Constitutional AI and decision theory: is RLHF more like CDT or EDT?
+     What would an FDT-aligned training procedure look like?
+
+8. OPEN PROBLEMS (at least 5)
+   - Can logical induction be made efficient enough for practical use?
+   - How to implement FDT in a neural network agent?
+   - Embedded agency for multi-agent systems: when N agents are all embedded
+     in each other's environments.
+   - Reflective stability under self-improvement: if an agent improves itself,
+     does it preserve its values?  Formal conditions?
+   - Bridging logical and empirical uncertainty: a unified framework.
+
+9. ANNOTATED BIBLIOGRAPHY (≥ 15 entries with 1-2 sentence annotations)
+
+================================================================================
+OUTPUT FORMAT
+================================================================================
+
+Produce ONE file: a complete, compilable LaTeX document.
+
+  \documentclass[11pt,a4paper]{article}
+  \usepackage{amsmath,amsthm,amssymb,mathtools}
+  \usepackage[margin=2.5cm]{geometry}
+  \usepackage{hyperref}
+
+Structure:
+  - Title: "Embedded Agency and Formal Decision Theory:
+            Mathematical Foundations for Agentic AI"
+  - Subtitle: "Research Notes — ETH Zurich ML Lecture Series"
+  - Abstract
+  - §1 The Dualism Problem
+  - §2 Logical Induction
+  - §3 Functional Decision Theory
+  - §4 Löb's Theorem and Self-Reference
+  - §5 Reflective Oracles and Fixed Points
+  - §6 Cartesian Frames
+  - §7 Connections to Modern Agentic AI
+  - §8 Open Problems
+  - §9 Annotated Bibliography
+
+Use \newtheorem for Definition, Theorem, Proposition, Remark, Example.
+Target length: 15–25 pages compiled.
+
+================================================================================

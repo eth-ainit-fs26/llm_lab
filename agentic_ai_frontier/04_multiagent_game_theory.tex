@@ -1,0 +1,1006 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Multi-Agent Game Theory at Scale
+%% Research Notes — ETH Zurich ML Lecture Series
+%% Agentic AI Frontier, Lecture 04
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[11pt,a4paper]{article}
+
+%%% ─── packages ──────────────────────────────────────────
+\usepackage{amsmath,amsthm,amssymb,mathtools}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{natbib}
+\usepackage{thmtools}
+
+%%% ─── theorem environments ─────────────────────────────
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{openproblem}{Open Problem}
+
+%%% ─── macros ────────────────────────────────────────────
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cH}{\mathcal{H}}
+\newcommand{\cI}{\mathcal{I}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\br}{\mathrm{BR}}
+\newcommand{\NE}{\mathrm{NE}}
+\newcommand{\supp}{\mathrm{supp}}
+\newcommand{\KL}{\mathrm{KL}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+%%% ─── metadata ──────────────────────────────────────────
+\title{\textbf{Multi-Agent Game Theory at Scale:\\
+Mathematical Foundations for Agentic AI}}
+\author{Research Notes --- ETH Z\"urich ML Lecture Series\\[4pt]
+\small Agentic AI Frontier, Lecture~04}
+\date{Spring Semester 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+These notes provide a self-contained treatment of multi-agent game theory
+as it applies to modern large-scale AI systems.  We develop the
+mathematical foundations of Nash equilibria, counterfactual regret
+minimisation (CFR), and mean-field games, then trace the line from
+classical solution concepts through landmark systems---Libratus, Pluribus,
+Cicero---to contemporary questions about multi-agent LLM deployments and
+AI safety.  The target audience is Master's students with background in
+machine learning, optimisation, and probability theory.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%===================================================================
+\section{Introduction}\label{sec:intro}
+%===================================================================
+
+Game theory studies strategic interaction: settings where the outcome for
+each participant depends on the actions of all.  As AI systems move from
+single-agent pipelines to \emph{agentic} architectures---where multiple
+LLM-powered agents negotiate, plan, and act in shared
+environments---the classical toolkit of Nash equilibria, regret
+minimisation, and mechanism design becomes directly relevant.
+
+\paragraph{Why game theory for ML researchers.}
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Training as a game.}  GANs, RLHF, and self-play all
+    involve multiple interacting objectives.
+  \item \textbf{Deployment as a game.}  Autonomous agents bidding in
+    auctions, negotiating contracts, or coordinating in multi-agent
+    environments face genuine strategic uncertainty.
+  \item \textbf{Safety as a game.}  Alignment can be formalised as a
+    principal--agent problem; robustness against adversarial attacks is a
+    zero-sum game.
+\end{enumerate}
+
+The notes are organised as follows.  Section~\ref{sec:nash} reviews
+classical solution concepts.  Section~\ref{sec:cfr} develops
+counterfactual regret minimisation.
+Sections~\ref{sec:libratus}--\ref{sec:cicero} cover the landmark poker
+and Diplomacy AI systems.  Section~\ref{sec:mfg} introduces mean-field
+games.  Section~\ref{sec:opponent_shaping} treats opponent shaping.
+Section~\ref{sec:agentic} draws connections to modern agentic AI.
+Section~\ref{sec:open} lists open problems, and
+Section~\ref{sec:biblio} provides an annotated bibliography.
+
+%===================================================================
+\section{Nash Equilibria and Classical Solution Concepts}\label{sec:nash}
+%===================================================================
+
+\subsection{Normal-Form Games}
+
+\begin{definition}[Normal-form game]
+A \emph{finite normal-form game} is a tuple
+$\Gamma = (N, (A_i)_{i\in N}, (u_i)_{i\in N})$ where
+\begin{itemize}
+  \item $N = \{1,\dots,n\}$ is the set of \emph{players},
+  \item $A_i$ is the finite \emph{action set} of player~$i$,
+  \item $u_i : \prod_{j} A_j \to \R$ is the \emph{utility function} of
+    player~$i$.
+\end{itemize}
+\end{definition}
+
+A \emph{mixed strategy} for player~$i$ is a distribution
+$\sigma_i \in \Delta(A_i)$.  Write $\sigma = (\sigma_i)_{i\in N}$ for a
+\emph{strategy profile} and $\sigma_{-i}$ for the profile of all players
+except~$i$.  The expected utility under $\sigma$ is
+\[
+  U_i(\sigma)
+  = \sum_{a \in \prod_j A_j}
+    \Bigl(\prod_{j\in N} \sigma_j(a_j)\Bigr)\, u_i(a).
+\]
+
+\subsection{Nash Equilibrium}
+
+\begin{definition}[Nash equilibrium]
+A strategy profile $\sigma^*$ is a \emph{Nash equilibrium} (NE) if, for
+every player~$i$ and every alternative strategy $\sigma_i' \in
+\Delta(A_i)$,
+\[
+  U_i(\sigma_i^*, \sigma_{-i}^*) \;\geq\; U_i(\sigma_i', \sigma_{-i}^*).
+\]
+Equivalently, every player plays a \emph{best response} to the others.
+\end{definition}
+
+\begin{definition}[$\varepsilon$-Nash equilibrium]
+A profile $\sigma$ is an $\varepsilon$-Nash equilibrium if for every
+player~$i$ and every $\sigma_i'$,
+\[
+  U_i(\sigma_i, \sigma_{-i}) \;\geq\; U_i(\sigma_i', \sigma_{-i}) - \varepsilon.
+\]
+\end{definition}
+
+\subsection{Nash's Existence Theorem}
+
+\begin{theorem}[Nash, 1950]\label{thm:nash}
+Every finite normal-form game possesses at least one mixed-strategy Nash
+equilibrium.
+\end{theorem}
+
+\begin{proof}[Proof sketch via Kakutani's fixed-point theorem]
+Define the \emph{best-response correspondence}
+$\br_i(\sigma_{-i}) = \argmax_{\sigma_i' \in \Delta(A_i)}
+U_i(\sigma_i', \sigma_{-i})$.  Let $F : \Sigma \rightrightarrows \Sigma$
+be the joint best-response map
+$F(\sigma) = \prod_i \br_i(\sigma_{-i})$ where
+$\Sigma = \prod_i \Delta(A_i)$.  The set $\Sigma$ is a non-empty,
+compact, convex subset of Euclidean space.  Each $\br_i$ is
+upper-hemicontinuous (by the Maximum Theorem) and convex-valued (since
+$U_i$ is linear in $\sigma_i$).  Hence $F$ satisfies the hypotheses of
+\emph{Kakutani's fixed-point theorem}, so there exists
+$\sigma^* \in F(\sigma^*)$, which is by construction a Nash equilibrium.
+\end{proof}
+
+\subsection{Computational Complexity of Nash Equilibria}
+
+\begin{theorem}[Daskalakis, Goldberg, Papadimitriou, 2009; Chen, Deng, 2006]
+Computing a Nash equilibrium of a two-player normal-form game is
+\emph{PPAD-complete}.
+\end{theorem}
+
+\begin{remark}
+PPAD (Polynomial Parity Arguments on Directed graphs) is a complexity
+class that captures the difficulty of problems whose existence is
+guaranteed by a parity argument.  PPAD-completeness implies that, unless
+PPAD$\,\subseteq\,$P (widely believed false), there is no polynomial-time
+algorithm for finding an exact NE.  This motivates the search for
+\emph{approximate} equilibria and equilibria of \emph{structured} game
+classes.
+\end{remark}
+
+\subsection{Correlated Equilibrium}
+
+\begin{definition}[Correlated equilibrium, Aumann 1974]
+A distribution $\mu \in \Delta(\prod_i A_i)$ is a \emph{correlated
+equilibrium} (CE) if, for every player~$i$ and every function
+$\phi_i : A_i \to A_i$,
+\[
+  \sum_{a \in \prod_j A_j} \mu(a)\, u_i(a)
+  \;\geq\;
+  \sum_{a \in \prod_j A_j} \mu(a)\, u_i(\phi_i(a_i), a_{-i}).
+\]
+\end{definition}
+
+The set of correlated equilibria is a \emph{convex polytope} defined by
+linear inequalities, so a CE can be found in polynomial time via linear
+programming.  Every NE induces a CE (take $\mu = \prod_i \sigma_i^*$),
+but the converse is false; the CE polytope is generally larger.
+
+\subsection{Coarse Correlated Equilibrium and No-Regret Learning}
+
+\begin{definition}[Coarse correlated equilibrium]
+A distribution $\mu$ is a \emph{coarse correlated equilibrium} (CCE) if,
+for every player~$i$ and every action $a_i' \in A_i$,
+\[
+  \E_{a\sim\mu}[u_i(a)]
+  \;\geq\;
+  \E_{a\sim\mu}[u_i(a_i', a_{-i})].
+\]
+\end{definition}
+
+The connection to learning is fundamental:
+
+\begin{theorem}[No-regret $\Rightarrow$ CCE convergence]
+\label{thm:no_regret_cce}
+If every player~$i$ uses a no-external-regret learning algorithm (so that
+each player's regret $R_i^T$ satisfies $R_i^T / T \to 0$), then the
+empirical distribution of play converges to the set of coarse correlated
+equilibria.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Let $\bar{\mu}^T = \frac{1}{T}\sum_{t=1}^{T} \delta_{a^t}$ be the
+empirical distribution.  Player~$i$'s regret is
+$R_i^T = \max_{a_i'}\sum_{t=1}^T [u_i(a_i', a_{-i}^t) - u_i(a^t)]$.
+Dividing by $T$ and rearranging gives exactly the CCE condition with
+slack $R_i^T/T \to 0$.
+\end{proof}
+
+\begin{remark}
+If every player uses a no-\emph{internal}-regret (or no-\emph{swap}-regret)
+algorithm, the empirical play converges to the set of \emph{correlated}
+equilibria.  In two-player zero-sum games, no-regret learning yields
+convergence to Nash equilibrium of the \emph{average} strategies (though
+not the last iterate in general).
+\end{remark}
+
+%===================================================================
+\section{Counterfactual Regret Minimisation (CFR)}\label{sec:cfr}
+%===================================================================
+
+\subsection{Extensive-Form Games}
+
+\begin{definition}[Extensive-form game of imperfect information]
+An extensive-form game is specified by:
+\begin{itemize}
+  \item A game tree with \emph{histories} $\cH$, terminal histories
+    $\cZ \subset \cH$, and a player function $P : \cH\setminus\cZ \to
+    N \cup \{c\}$ (where $c$ denotes chance).
+  \item For each player~$i$, an \emph{information partition} $\cI_i$
+    that groups histories into \emph{information sets}; at histories in
+    the same information set, the player cannot distinguish the game
+    states.
+  \item Action sets $A(I)$ for each information set $I \in \cI_i$, with
+    $A(h) = A(I)$ for all $h \in I$.
+  \item Utility functions $u_i : \cZ \to \R$.
+\end{itemize}
+\end{definition}
+
+A \emph{behavioural strategy} $\sigma_i$ assigns a distribution over
+$A(I)$ to each information set $I \in \cI_i$.  By Kuhn's theorem, in
+games of perfect recall, behavioural and mixed strategies are equivalent.
+
+\paragraph{Notation.}  For a terminal history $z$ and strategy profile
+$\sigma$, write $\pi^\sigma(z) = \prod_{h \sqsubset z} \sigma_{P(h)}(a_h)$
+for the probability of reaching $z$, where $a_h$ is the action taken at
+$h$ on the path to $z$.  Decompose:
+\[
+  \pi^\sigma(z) = \pi_i^\sigma(z)\cdot \pi_{-i}^\sigma(z)\cdot \pi_c(z),
+\]
+where $\pi_i^\sigma(z)$ is the product of player~$i$'s action
+probabilities, $\pi_{-i}^\sigma$ is the opponents', and $\pi_c$ is
+chance's.
+
+\subsection{Counterfactual Value}
+
+\begin{definition}[Counterfactual value]
+The \emph{counterfactual value} of information set $I \in \cI_i$ under
+profile $\sigma$ is
+\[
+  v_i^\sigma(I)
+  = \sum_{z \in \cZ_I} \pi_{-i}^\sigma(z[I])\, \pi_c(z[I])\,
+    \pi^\sigma(z \mid z[I])\, u_i(z),
+\]
+where $\cZ_I$ is the set of terminal histories passing through $I$,
+$z[I]$ is the prefix of $z$ at $I$, and $\pi^\sigma(z \mid z[I])$ is the
+probability of the continuation from $z[I]$ to $z$ under $\sigma$.
+Intuitively, this is the expected value for player~$i$ at $I$, weighted
+by the opponents' and chance's probability of reaching $I$, but
+\emph{assuming player~$i$ plays to reach~$I$}.
+\end{definition}
+
+For a specific action $a \in A(I)$:
+\[
+  v_i^\sigma(I, a)
+  = \sum_{z \in \cZ_{I,a}} \pi_{-i}^\sigma(z[I])\, \pi_c(z[I])\,
+    \pi^\sigma(z \mid z[I], a)\, u_i(z).
+\]
+
+\subsection{Counterfactual Regret and Regret Matching}
+
+\begin{definition}[Instantaneous counterfactual regret]
+For action $a$ at information set $I$ at iteration~$t$:
+\[
+  r^t(I, a) = v_i^{\sigma^t}(I, a) - v_i^{\sigma^t}(I).
+\]
+The \emph{cumulative counterfactual regret} is
+$R^T(I, a) = \sum_{t=1}^T r^t(I, a)$.
+\end{definition}
+
+\paragraph{Regret matching.}  At each iteration, CFR updates the strategy
+at each information set via \emph{regret matching}:
+\[
+  \sigma^{T+1}(I, a) =
+  \begin{cases}
+    \dfrac{R^{T,+}(I, a)}{\displaystyle\sum_{a'} R^{T,+}(I, a')}
+    & \text{if } \sum_{a'} R^{T,+}(I, a') > 0, \\[8pt]
+    \dfrac{1}{|A(I)|} & \text{otherwise},
+  \end{cases}
+\]
+where $R^{T,+}(I,a) = \max(R^T(I,a), 0)$.
+
+\begin{algorithm}[t]
+\caption{Vanilla CFR}
+\label{alg:cfr}
+\begin{algorithmic}[1]
+\State Initialise $\sigma^1$ uniformly, $R^0(I,a) \gets 0$,
+  $S^0(I,a) \gets 0$ for all $I, a$.
+\For{$t = 1, 2, \ldots, T$}
+  \For{each player $i$}
+    \State Traverse game tree; compute $v_i^{\sigma^t}(I,a)$ for all
+      $I \in \cI_i$, $a \in A(I)$.
+    \State $R^t(I,a) \gets R^{t-1}(I,a) + r^t(I,a)$
+    \State $S^t(I,a) \gets S^{t-1}(I,a) + \pi_i^{\sigma^t}(I)\,\sigma^t(I,a)$
+      \Comment{Average strategy weights}
+  \EndFor
+  \State Update $\sigma^{t+1}$ via regret matching.
+\EndFor
+\State \Return $\bar{\sigma}^T(I,a) = S^T(I,a) / \sum_{a'} S^T(I,a')$
+  \Comment{Average strategy}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Convergence Theorem}
+
+\begin{theorem}[CFR convergence, Zinkevich et al.\ 2007]\label{thm:cfr}
+In a two-player zero-sum extensive-form game of perfect recall, the
+average strategy profile $\bar{\sigma}^T$ produced by CFR is a
+$2\Delta_u \sqrt{|\cI| \cdot \max_I|A(I)|}\,/\,\sqrt{T}$\,-Nash
+equilibrium, where $\Delta_u = \max_z u(z) - \min_z u(z)$ is the range
+of utilities and $|\cI| = |\cI_1| + |\cI_2|$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The key insight is the \emph{counterfactual regret decomposition}: the
+overall regret of player~$i$ is bounded by the sum of positive
+counterfactual regrets:
+\[
+  R_i^T \;\leq\; \sum_{I \in \cI_i} R^{T,+}_{\max}(I),
+  \qquad
+  R^{T,+}_{\max}(I) = \max_{a} R^{T,+}(I,a).
+\]
+Regret matching at each information set guarantees
+$R^{T,+}_{\max}(I) \leq \Delta_u \sqrt{|A(I)| \cdot T}$ (this follows
+from the regret bound of the multiplicative-weights / regret-matching
+algorithm).  Therefore:
+\[
+  R_i^T
+  \leq \sum_{I \in \cI_i} \Delta_u \sqrt{|A(I)|\, T}
+  \leq \Delta_u \sqrt{T} \cdot |\cI_i| \cdot \sqrt{\max_I |A(I)|}.
+\]
+In a two-player zero-sum game, if both players have average regret at
+most $\varepsilon$, then the average strategy profile is a
+$2\varepsilon$-Nash equilibrium (since the game value is well-defined and
+each player's average strategy is $\varepsilon$-close to a best
+response).  The bound $\varepsilon = O(1/\sqrt{T})$ follows.
+\end{proof}
+
+\subsection{CFR+ and Variants}
+
+\textbf{CFR+} (Tammelin et al., 2015; Bowling et al.) modifies the regret
+accumulation rule to
+\[
+  R^t(I,a) \gets \max\bigl(R^{t-1}(I,a) + r^t(I,a),\; 0\bigr),
+\]
+i.e., cumulative regrets are clipped to non-negative values at every
+step (``regret matching+'').  Additionally, the average strategy uses
+linear weighting $S^t(I,a) \gets S^{t-1}(I,a) + t\cdot\pi_i^{\sigma^t}(I)\,\sigma^t(I,a)$, which upweights later (better) strategies.  Empirically, CFR+
+converges orders of magnitude faster than vanilla CFR.
+
+\textbf{Monte Carlo CFR (MCCFR)} uses sampling to avoid full tree
+traversals.  Variants include \emph{outcome sampling} (single trajectory)
+and \emph{external sampling} (sample opponent/chance, traverse all of
+player~$i$'s actions).
+
+\textbf{Deep CFR} (Brown et al., 2019) replaces the regret tables with
+neural networks.  At each CFR iteration, advantage values are computed
+via traversals and stored in a reservoir buffer; a neural network is
+trained to predict cumulative advantages $\hat{R}^T(I,a)$.  A separate
+network approximates the average strategy.
+
+%===================================================================
+\section{Libratus and Pluribus}\label{sec:libratus}
+%===================================================================
+
+\subsection{Libratus: Superhuman Heads-Up No-Limit Texas Hold'em}
+
+Libratus (Brown and Sandholm, 2018) defeated top professional players in
+heads-up no-limit Texas Hold'em.  The system has three modules:
+
+\begin{enumerate}
+  \item \textbf{Blueprint computation.}  An abstracted version of the game
+    is solved using Monte Carlo CFR.  Card abstraction groups
+    strategically similar hands; bet abstraction discretises the
+    continuous betting actions.
+  \item \textbf{Subgame solving.}  During play, when the opponent takes
+    an action outside the abstraction, Libratus constructs and solves a
+    \emph{subgame} in real time.
+  \item \textbf{Self-improver.}  After each day of play, Libratus adds
+    new bet sizes to the abstraction at branches the opponents
+    frequently visited, then re-solves.
+\end{enumerate}
+
+\subsection{Safe Subgame Solving}
+
+Naive subgame solving can increase exploitability.  The key theoretical
+contribution is \emph{safe} (or reach-aware) subgame solving:
+
+\begin{theorem}[Safe subgame solving, Brown and Sandholm 2017]
+Let $\sigma$ be a Nash equilibrium of the full game and let $S$ be a
+subgame rooted at a public state.  If we re-solve $S$ subject to the
+constraint that the value achieved for each opponent reach distribution
+is at least as high as under $\sigma$, then the resulting strategy is
+part of a Nash equilibrium of the full game.
+\end{theorem}
+
+\begin{remark}
+In practice, one does not have an NE of the full game; one has the
+blueprint $\hat{\sigma}$.  Subgame solving refines the blueprint locally,
+and the ``safe'' constraints prevent any increase in exploitability
+relative to $\hat{\sigma}$.
+\end{remark}
+
+\subsection{Pluribus: Six-Player No-Limit Hold'em}
+
+Pluribus (Brown and Sandholm, 2019) extended superhuman play to
+six-player poker.  Key innovations:
+
+\begin{itemize}
+  \item \textbf{Depth-limited search.}  Instead of solving to the end of
+    the game, Pluribus searches only a few moves ahead and uses a learned
+    \emph{value function} (the blueprint strategy's expected value) at
+    leaf nodes.
+  \item \textbf{Linear CFR.}  Regrets are weighted linearly by iteration
+    number: $R^T(I,a) = \sum_{t=1}^T t \cdot r^t(I,a)$, discounting
+    early (poor) iterations.
+  \item \textbf{Multi-player subgame solving.}  In multiplayer games,
+    Nash equilibria are not unique and not interchangeable.  Pluribus
+    handles this by assuming opponents play according to a small number
+    of ``blueprint-like'' strategies and solving against this restricted
+    opponent model.
+\end{itemize}
+
+%===================================================================
+\section{Cicero: AI for Diplomacy}\label{sec:cicero}
+%===================================================================
+
+\subsection{The Challenge of Diplomacy}
+
+Diplomacy is a seven-player board game of negotiation and alliance
+formation.  Unlike poker, it requires:
+\begin{itemize}
+  \item \textbf{Natural language communication} --- players negotiate via
+    free-form messages.
+  \item \textbf{Cooperation and betrayal} --- alliances are non-binding.
+  \item \textbf{Very large action spaces} --- each turn involves
+    simultaneous orders for multiple units.
+\end{itemize}
+No prior AI had achieved human-level play.
+
+\subsection{Cicero's Architecture (Meta FAIR, 2022)}
+
+Cicero (FAIR/Meta, led by Noam Brown et al.) integrates:
+
+\begin{enumerate}
+  \item \textbf{Strategic reasoning engine.}  A planning module based on
+    \emph{piKL} (policy-regularised iterative Kullback--Leibler
+    divergence).  Given a prior policy $\pi_0$ (a supervised-learning
+    model trained on human games), piKL solves:
+    \[
+      \sigma_i^* = \argmax_{\sigma_i} \left[
+        U_i(\sigma_i, \sigma_{-i})
+        - \lambda\, \KL(\sigma_i \| \pi_0)
+      \right],
+    \]
+    iterating best responses while staying close to human-like play.
+    This is crucial: pure equilibrium play would be alien to human
+    partners and undermine cooperation.
+
+  \item \textbf{Dialogue model.}  A large language model (fine-tuned
+    BART/R2C2) that generates natural language messages \emph{conditioned
+    on the intended actions}.
+
+  \item \textbf{Intent model.}  Predicts other players' intended actions
+    from their messages, enabling Cicero to ``read between the lines.''
+
+  \item \textbf{Filtering pipeline.}  Generated messages are filtered
+    for consistency with the strategic plan, honesty (relative to
+    Cicero's actual intentions), and coherence.
+\end{enumerate}
+
+\subsection{Signaling Games Formalization}
+
+Diplomacy can be partially formalised through the lens of \emph{signaling
+games} (Crawford and Sobel, 1982):
+
+\begin{definition}[Signaling game]
+A signaling game consists of a \emph{sender} with private type
+$\theta \in \Theta$, a \emph{message space} $M$, and a \emph{receiver}
+who takes action $a \in A$ after observing the message.  A
+\emph{perfect Bayesian equilibrium} specifies:
+\begin{itemize}
+  \item Sender strategy $\mu : \Theta \to \Delta(M)$,
+  \item Receiver strategy $\alpha : M \to \Delta(A)$,
+  \item Receiver beliefs $\beta : M \to \Delta(\Theta)$ consistent with
+    Bayes' rule on the equilibrium path.
+\end{itemize}
+\end{definition}
+
+In Diplomacy, each player is simultaneously a sender and receiver.  The
+``type'' corresponds to the player's strategic intent (which units to move
+where), the messages are natural language, and the actions are the orders
+submitted.  Cicero's architecture approximates an equilibrium of this
+signaling game: the intent model estimates $\beta$, the strategic engine
+computes $\alpha$ (best-response actions given beliefs), and the dialogue
+model implements $\mu$ (generating messages consistent with intent).
+
+A key subtlety is \emph{cheap talk} (messages are costless): in classical
+cheap talk games, only ``babbling'' equilibria survive under misaligned
+incentives.  Diplomacy partly escapes this because players have
+\emph{partially aligned} interests (they need allies) and the game is
+repeated (reputation matters).
+
+%===================================================================
+\section{Mean-Field Games}\label{sec:mfg}
+%===================================================================
+
+\subsection{Motivation: The $N \to \infty$ Limit}
+
+Many real-world multi-agent systems involve a very large number of
+interacting agents: financial markets, autonomous vehicle fleets, content
+recommendation ecosystems.  Solving for Nash equilibria in $N$-player
+games is intractable for large $N$.  \emph{Mean-field game theory}
+(independently introduced by Lasry and Lions, 2006--2007, and Huang,
+Malham\'e, and Caines, 2006) studies the limiting regime $N \to \infty$,
+where each agent interacts with the \emph{population distribution}
+rather than with individual agents.
+
+\subsection{The Mean-Field Game PDE System}
+
+Consider a continuum of agents, each with state $x \in \R^d$, evolving
+according to the controlled stochastic differential equation:
+\[
+  dX_t = b(X_t, \alpha_t, m_t)\,dt + \sigma\,dW_t,
+\]
+where $\alpha_t$ is the control, $m_t$ is the population distribution at
+time~$t$, and $W_t$ is a standard Brownian motion.  Each agent minimises
+a cost functional:
+\[
+  J(\alpha; m) = \E\left[
+    \int_0^T L(X_t, \alpha_t, m_t)\,dt + G(X_T, m_T)
+  \right].
+\]
+
+A \emph{mean-field Nash equilibrium} is a pair $(\alpha^*, m^*)$ such
+that:
+\begin{enumerate}
+  \item $\alpha^*$ is optimal for the cost $J(\cdot\,; m^*)$ (taking
+    $m^*$ as given),
+  \item $m^*$ is the distribution of the state process under $\alpha^*$.
+\end{enumerate}
+
+This fixed-point condition yields a coupled PDE system:
+
+\begin{theorem}[Mean-field game PDE system, Lasry and Lions 2007]
+Under regularity conditions, a mean-field Nash equilibrium is
+characterised by the system
+\begin{align}
+  -\partial_t u - \nu\Delta u + H(x, \nabla u, m) &= 0
+    &\quad &\text{(Hamilton--Jacobi--Bellman, backward)},
+    \label{eq:hjb} \\
+  \partial_t m - \nu\Delta m
+    - \mathrm{div}\!\left(m\,\nabla_p H(x, \nabla u, m)\right) &= 0
+    &\quad &\text{(Fokker--Planck / Kolmogorov, forward)},
+    \label{eq:fp}
+\end{align}
+with terminal condition $u(T,x) = G(x, m_T)$ and initial condition
+$m(0, \cdot) = m_0$, where $H$ is the Hamiltonian of the optimal control
+problem and $\nu = \sigma^2/2$.
+\end{theorem}
+
+The HJB equation~\eqref{eq:hjb} runs \emph{backward} in time from the
+terminal cost, determining the value function and hence the optimal
+policy.  The Fokker--Planck equation~\eqref{eq:fp} runs \emph{forward},
+propagating the population density under the optimal policy.  The
+coupling makes this a challenging forward--backward system.
+
+\subsection{Existence and Uniqueness: Lasry--Lions Monotonicity}
+
+\begin{definition}[Lasry--Lions monotonicity condition]
+The running cost $L$ and terminal cost $G$ satisfy the \emph{Lasry--Lions
+monotonicity condition} if, for all distributions $m_1, m_2$,
+\[
+  \int_{\R^d} \bigl[F(x, m_1) - F(x, m_2)\bigr]\,d(m_1 - m_2)(x)
+  \;\geq\; 0,
+\]
+where $F$ denotes the coupling terms through which $m$ enters the costs.
+\end{definition}
+
+\begin{theorem}[Uniqueness under monotonicity]
+If the Lasry--Lions monotonicity condition holds strictly, then the
+mean-field game PDE system has at most one solution, and hence the
+mean-field Nash equilibrium is unique.
+\end{theorem}
+
+Intuitively, monotonicity means that agents are ``repelled'' by
+crowding---costs increase where the population concentrates.  This is
+natural in congestion games but violated in models with herding or
+network effects.
+
+\subsection{Mean-Field Multi-Agent Reinforcement Learning}
+
+In the ML setting, the MFG framework is combined with RL:
+
+\begin{itemize}
+  \item \textbf{Mean-Field MARL} (Yang et al., 2018): each agent's
+    Q-function depends on its own action and the mean action of
+    neighbours, reducing the joint action space from $|A|^N$ to
+    $|A| \times |A|$.
+  \item \textbf{MF-OMO} (Gemp et al., DeepMind): online mirror descent
+    in the space of population distributions.
+  \item \textbf{Neural MFG} (Carmona and Lauri\`ere, 2019): solve the
+    coupled PDE system using neural networks (physics-informed or via
+    direct policy optimisation).
+\end{itemize}
+
+%===================================================================
+\section{Opponent Shaping}\label{sec:opponent_shaping}
+%===================================================================
+
+\subsection{Beyond Best Response: Shaping Opponents' Learning}
+
+Standard game-theoretic algorithms assume opponents are fixed or
+adversarial.  \emph{Opponent shaping} considers agents that explicitly
+account for their influence on other agents' learning dynamics.
+
+\subsection{LOLA: Learning with Opponent-Learning Awareness}
+
+Foerster et al.\ (2018) introduced LOLA.  Consider two agents with
+parameters $\theta_1, \theta_2$ and differentiable expected returns
+$V_1(\theta_1, \theta_2)$, $V_2(\theta_1, \theta_2)$.  A naive learner
+updates:
+\[
+  \theta_1 \gets \theta_1 + \alpha\,\nabla_{\theta_1} V_1(\theta_1, \theta_2).
+\]
+
+LOLA anticipates that player~2 will perform a gradient step, so
+player~1 optimises $V_1$ \emph{after} player~2's anticipated update:
+
+\begin{definition}[LOLA update]
+Player~1's LOLA gradient is:
+\[
+  \nabla_{\theta_1}^{\text{LOLA}} V_1
+  = \nabla_{\theta_1} V_1
+  + \alpha_2\, \nabla_{\theta_1}\bigl(\nabla_{\theta_2} V_2\bigr)^\top
+    \nabla_{\theta_2} V_1,
+\]
+where $\alpha_2$ is player~2's learning rate.  The additional term
+$\nabla_{\theta_1}(\nabla_{\theta_2} V_2)^\top \nabla_{\theta_2} V_1$
+is a second-order correction that ``steers'' player~2's learning in a
+direction beneficial to player~1.
+\end{definition}
+
+\begin{remark}
+The LOLA update requires computing a Hessian--vector product
+$\nabla_{\theta_1}(\nabla_{\theta_2} V_2)$, which is tractable via
+automatic differentiation (forward-mode or reverse-mode with
+\texttt{jax.grad}).  Higher-order extensions (LOLA-$k$, SOS) account for
+$k$ levels of recursive reasoning.
+\end{remark}
+
+\paragraph{Results.}
+In the Iterated Prisoner's Dilemma, LOLA agents learn tit-for-tat--like
+strategies and achieve mutual cooperation, whereas naive learners
+converge to mutual defection.
+
+\subsection{Model-Free Opponent Shaping (M-FOS)}
+
+Lu et al.\ (2022) introduced M-FOS, which formulates opponent shaping as
+a \emph{meta-game}: a ``meta-agent'' learns a policy over the space of
+inner-loop learning algorithms.  The meta-agent's action at each step is
+a parameter update (or a choice of learning rule) for the inner agent.
+
+Key features of M-FOS:
+\begin{itemize}
+  \item Does not require differentiating through the opponent's update
+    (model-free).
+  \item Uses RL (PPO) to optimise the meta-agent's policy.
+  \item Recovers LOLA-like behaviour in matrix games and scales to more
+    complex settings.
+  \item Can discover novel shaping strategies not captured by fixed-order
+    Taylor approximations.
+\end{itemize}
+
+%===================================================================
+\section{Connections to Modern Agentic AI}\label{sec:agentic}
+%===================================================================
+
+The recent proliferation of LLM-based agents creates new multi-agent
+settings where game-theoretic reasoning is essential.
+
+\subsection{Multi-Agent LLM Systems}
+
+When multiple LLM-powered agents interact---e.g., a buyer agent
+negotiating with a seller agent, or multiple coding agents working on a
+shared codebase---the interaction is inherently game-theoretic:
+\begin{itemize}
+  \item Each agent has its own objective (its user's instructions).
+  \item Agents may have private information (user preferences, budget
+    constraints).
+  \item Communication is in natural language, creating a signaling game.
+\end{itemize}
+
+Cicero's architecture provides a template: strategic reasoning (what to
+do) is separated from communication (what to say), with an intent model
+bridging the two.
+
+\subsection{Mechanism Design for AI}
+
+\emph{Mechanism design} (``reverse game theory'') asks: how should we
+design the rules of interaction to achieve desirable outcomes?
+
+\begin{itemize}
+  \item \textbf{AI constitutions as mechanisms.}  A system prompt or
+    RLHF reward model defines the ``rules'' under which an LLM agent
+    operates.  Designing these to be incentive-compatible (so the agent
+    has no reason to deviate) is a mechanism design problem.
+  \item \textbf{Multi-agent coordination.}  When multiple agents share a
+    resource (API rate limits, shared memory, a code repository), a
+    mechanism (e.g., a priority queue, a voting protocol) determines
+    allocation.  The VCG mechanism and its computational approximations
+    are directly relevant.
+  \item \textbf{Automated mechanism design.}  Conitzer and Sandholm's
+    line of work on computationally designing optimal mechanisms can be
+    applied to design interaction protocols for AI agents.
+\end{itemize}
+
+\subsection{Safety as Game Theory}
+
+\begin{itemize}
+  \item \textbf{Red-teaming as adversarial games.}  Testing AI systems
+    against adversarial attacks (jailbreaks, prompt injections) is a
+    zero-sum game between attacker and defender.
+  \item \textbf{Principal--agent models.}  The alignment problem---ensuring
+    an AI agent acts in its principal's interest---is a classical
+    contract theory / principal--agent problem with moral hazard (hidden
+    action) and adverse selection (hidden type).
+  \item \textbf{Cooperative AI} (Dafoe et al., 2020).  Designing agents
+    that can credibly commit to cooperative strategies, even in the
+    absence of binding agreements, requires game-theoretic tools
+    (commitment devices, reputation, repeated game strategies).
+\end{itemize}
+
+\subsection{Auction Theory for LLM APIs}
+
+LLM inference is a scarce resource.  Multiple users compete for compute.
+This is naturally modelled as an auction:
+\begin{itemize}
+  \item Users have private valuations for faster/better inference.
+  \item The provider allocates compute (batch priority, model routing).
+  \item Auction mechanisms (first-price, second-price, combinatorial)
+    determine pricing and allocation.
+\end{itemize}
+The theoretical framework of Myerson (1981) optimal auction design
+applies.  Recent work explores dynamic auctions for streaming compute,
+connecting to the bandit literature.
+
+%===================================================================
+\section{Open Problems}\label{sec:open}
+%===================================================================
+
+\begin{openproblem}[Last-iterate convergence in general games]
+No-regret algorithms converge in average to (coarse) correlated
+equilibria in general games and to Nash equilibria in two-player
+zero-sum games.  Under what conditions do \emph{last-iterate}
+convergence guarantees hold, and at what rate?  Recent work (e.g.,
+optimistic gradient descent/ascent) shows last-iterate convergence in
+zero-sum games, but the general-sum and multi-player cases remain
+largely open.
+\end{openproblem}
+
+\begin{openproblem}[Scalable equilibrium computation beyond two-player zero-sum]
+CFR and its variants converge to NE in two-player zero-sum games.  In
+general-sum or multiplayer games, NE need not be unique, may be
+non-interchangeable, and computing any NE is PPAD-hard.  What
+practically relevant relaxations (e.g., team equilibria, extensive-form
+correlated equilibria, trembling-hand equilibria) are both tractable and
+strategically meaningful?
+\end{openproblem}
+
+\begin{openproblem}[Learning in mean-field games without monotonicity]
+Most theoretical guarantees for MFG rely on the Lasry--Lions monotonicity
+condition.  Real-world systems (social networks, financial markets)
+often exhibit herding, network effects, and strategic complementarities
+that violate monotonicity.  Can we design provably convergent learning
+algorithms for non-monotone MFGs?
+\end{openproblem}
+
+\begin{openproblem}[Game-theoretic foundations of multi-agent LLM interaction]
+When multiple LLM agents interact via natural language, what is the
+appropriate solution concept?  Classical equilibria assume common
+knowledge of rationality, but LLM agents may have bounded rationality,
+prompt-dependent biases, and opaque objectives.  Developing a formal
+theory---possibly drawing on bounded rationality, level-$k$ thinking, or
+cognitive hierarchy models---is a major open problem.
+\end{openproblem}
+
+\begin{openproblem}[Mechanism design under LLM manipulation]
+LLM-powered agents can generate persuasive but potentially deceptive
+text.  Classical mechanism design assumes agents can misreport their
+\emph{type} but cannot alter the mechanism itself.  When agents can
+manipulate the mechanism designer (e.g., via prompt injection, social
+engineering), the revelation principle breaks down.  How do we design
+robust mechanisms in this setting?
+\end{openproblem}
+
+\begin{openproblem}[Opponent shaping at scale]
+LOLA and M-FOS have been demonstrated in small games.  Scaling opponent
+shaping to large multi-agent environments (e.g., economy simulations,
+multi-agent robotics) with many heterogeneous agents is an open
+challenge.  Connections to meta-learning and the mean-field limit may
+provide tractable approximations.
+\end{openproblem}
+
+\begin{openproblem}[Sample complexity of game solving with function approximation]
+Deep CFR and similar methods use neural function approximation.  What
+are the sample complexity guarantees?  Can we characterise the
+approximation--regret trade-off when the counterfactual value function
+class has limited capacity?
+\end{openproblem}
+
+%===================================================================
+\section{Annotated Bibliography}\label{sec:biblio}
+%===================================================================
+
+\begin{enumerate}[label={[\arabic*]}, leftmargin=*, itemsep=6pt]
+
+\item \textbf{Nash, J.\ (1950).}  \emph{Equilibrium points in $n$-person
+  games.}  Proceedings of the National Academy of Sciences.\\
+  The foundational paper proving existence of mixed-strategy equilibria in
+  finite games via Kakutani's fixed-point theorem.
+
+\item \textbf{Aumann, R.\ (1974).}  \emph{Subjectivity and correlation in
+  randomized strategies.}  Journal of Mathematical Economics.\\
+  Introduces correlated equilibrium, a solution concept strictly more
+  general than Nash equilibrium and computable via linear programming.
+
+\item \textbf{Zinkevich, M., Johanson, M., Bowling, M., and Piccione, C.\
+  (2007).}  \emph{Regret minimization in games with incomplete
+  information.}  NeurIPS.\\
+  The original CFR paper.  Proves that regret matching at each
+  information set yields $O(1/\sqrt{T})$ convergence to NE in
+  two-player zero-sum extensive-form games.  Michael Bowling's group at
+  the University of Alberta.
+
+\item \textbf{Bowling, M., Burch, N., Johanson, M., and Tammelin, O.\
+  (2015).}  \emph{Heads-up limit hold'em poker is solved.}  Science.\\
+  Uses CFR+ to essentially solve heads-up limit Texas Hold'em
+  ($\sim\!10^{14}$ information sets), producing a near-perfect
+  strategy.
+
+\item \textbf{Brown, N.\ and Sandholm, T.\ (2018).}  \emph{Superhuman AI
+  for heads-up no-limit poker: Libratus beats top professionals.}
+  Science.\\
+  Describes the Libratus system: blueprint via MCCFR, safe subgame
+  solving, and self-improvement.  A landmark in AI game-playing.
+
+\item \textbf{Brown, N.\ and Sandholm, T.\ (2019).}  \emph{Superhuman AI
+  for multiplayer poker.}  Science.\\
+  Pluribus: extends superhuman poker play to six players using
+  depth-limited search and linear CFR.
+
+\item \textbf{Moravčík, M., Schmid, M., Burch, N., et al.\ (2017).}
+  \emph{DeepStack: Expert-level artificial intelligence in heads-up
+  no-limit poker.}  Science.\\
+  DeepMind/U Alberta collaboration.  Uses continual re-solving with deep
+  neural networks for value estimation.
+
+\item \textbf{Brown, N., Lerer, A., Gross, S., and Sandholm, T.\ (2019).}
+  \emph{Deep counterfactual regret minimization.}  ICML.\\
+  Replaces tabular regret storage with neural networks, enabling CFR to
+  scale to very large games.
+
+\item \textbf{FAIR/Meta et al.\ (2022).}  \emph{Human-level play in the
+  game of Diplomacy by combining language models with strategic
+  reasoning.}  Science.\\
+  The Cicero paper.  Combines a dialogue module (LLM) with a strategic
+  planning module (piKL) and an intent prediction model, achieving
+  human-level Diplomacy play.  Led by Noam Brown.
+
+\item \textbf{Lasry, J.-M.\ and Lions, P.-L.\ (2007).}  \emph{Mean field
+  games.}  Japanese Journal of Mathematics.\\
+  Foundational paper on mean-field games.  Derives the coupled HJB /
+  Fokker--Planck PDE system and proves existence and uniqueness under
+  monotonicity conditions.
+
+\item \textbf{Huang, M., Malham\'e, R., and Caines, P.\ (2006).}
+  \emph{Large population stochastic dynamic games: closed-loop
+  McKean--Vlasov systems and the Nash certainty equivalence principle.}
+  Communications in Information and Systems.\\
+  Independent co-discovery of mean-field game theory, with a focus on
+  linear-quadratic models and the ``Nash certainty equivalence''
+  principle.
+
+\item \textbf{Foerster, J., Chen, R., Al-Shedivat, M., et al.\ (2018).}
+  \emph{Learning with opponent-learning awareness.}  AAMAS.\\
+  Introduces LOLA: agents that differentiate through the opponent's
+  anticipated learning step.  Shows emergence of cooperation in the
+  Iterated Prisoner's Dilemma.
+
+\item \textbf{Lu, C., Willi, T., Letcher, A., and Foerster, J.\ (2022).}
+  \emph{Model-free opponent shaping.}  ICML.\\
+  M-FOS: uses meta-learning to shape opponents without requiring
+  differentiable opponent models.
+
+\item \textbf{Silver, D., Schrittwieser, J., Simonyan, K., et al.\
+  (2017).}  \emph{Mastering the game of Go without human knowledge.}
+  Nature.\\
+  AlphaGo Zero / AlphaZero.  Self-play + MCTS + deep neural networks.
+  While not directly game-theoretic in the equilibrium-computation
+  sense, the self-play framework implicitly converges towards
+  minimax-optimal play in two-player zero-sum games.
+
+\item \textbf{Lanctot, M., Lockhart, E., Lespiau, J.-B., et al.\ (2019).}
+  \emph{OpenSpiel: A framework for reinforcement learning in games.}
+  arXiv:1908.09453.\\
+  Open-source framework (DeepMind) implementing a wide range of games
+  and algorithms (CFR, MCCFR, neural fictitious self-play, etc.).
+  Essential infrastructure for game-theoretic AI research.
+
+\item \textbf{Daskalakis, C., Goldberg, P., and Papadimitriou, C.\
+  (2009).}  \emph{The complexity of computing a Nash equilibrium.}
+  SIAM Journal on Computing.\\
+  Proves that computing a Nash equilibrium in a two-player game is
+  PPAD-complete, establishing a fundamental barrier to efficient
+  computation.
+
+\item \textbf{Yang, Y., Luo, R., Li, M., et al.\ (2018).}  \emph{Mean
+  field multi-agent reinforcement learning.}  ICML.\\
+  Applies the mean-field approximation to MARL, reducing the
+  exponential joint action space to a tractable form.
+
+\item \textbf{Dafoe, A., Hughes, E., Bachrach, Y., et al.\ (2020).}
+  \emph{Open problems in cooperative AI.}  arXiv:2012.08630.\\
+  A research agenda (DeepMind, with Thore Graepel among the authors)
+  for building AI systems that can cooperate with humans and other
+  agents.  Identifies key challenges at the intersection of game theory
+  and AI safety.
+
+\item \textbf{Conitzer, V.\ and Sandholm, T.\ (2002).}  \emph{Complexity
+  of mechanism design.}  UAI.\\
+  Foundational work on automated mechanism design: computationally
+  designing optimal mechanisms for given objectives, connecting game
+  theory to algorithm design.
+
+\item \textbf{Carmona, R.\ and Lauri\`ere, M.\ (2019).}  \emph{Convergence
+  analysis of machine learning algorithms for the numerical solution of
+  mean field control and mean field games.}  Annals of Applied
+  Probability.\\
+  Provides theoretical guarantees for neural-network-based solvers of
+  mean-field game PDEs.
+
+\end{enumerate}
+
+%===================================================================
+\section*{Acknowledgments}
+%===================================================================
+
+These notes draw on the work of many research groups, including Meta FAIR
+(Noam Brown, Adam Lerer), CMU (Tuomas Sandholm), the University of
+Alberta (Michael Bowling, Neil Burch), DeepMind (David Silver, Thore
+Graepel, Marc Lanctot, Ian Gemp), and the University of Oxford (Jakob
+Foerster).  We are grateful to the broader game theory and multi-agent
+learning communities for the open-source tools (OpenSpiel) and benchmark
+environments that make this research possible.
+
+\end{document}

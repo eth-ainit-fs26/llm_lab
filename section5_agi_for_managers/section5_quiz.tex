@@ -1,0 +1,182 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{ETH Zurich Executive Education}
+\lhead{Section 5 --- How Close Are We to AGI?}
+\cfoot{\thepage}
+
+\title{Calibration Quiz: How Close Are We to AGI?}
+\author{Companion to the ETH Zurich Executive Lecture}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Instructions.}
+Answer each question with a single number or multiple choice letter.
+For forecasting questions, also write a 90\% confidence interval (a lower and upper
+bound you are 90\% sure contains the true answer). This is a calibration
+exercise --- the aim is not to be right, but to learn how wide your uncertainty
+really is.
+
+\vspace{1em}
+
+\section*{Part I --- Facts}
+
+\begin{enumerate}[label=Q\arabic*.]
+
+\item In Morris et al.\ (DeepMind, 2024), the ``Levels of AGI'' framework
+      defines five levels of \emph{performance} (Emerging, Competent, Expert,
+      Virtuoso, Superhuman). At which level do the authors place today's
+      top frontier models \emph{in the General category}?
+\begin{enumerate}[label=(\alph*)]
+    \item Emerging AGI \qquad (b) Competent AGI \qquad (c) Expert AGI
+    \item Virtuoso AGI \qquad (e) Superhuman AGI (ASI)
+\end{enumerate}
+
+\item In Bubeck et al.\ (Microsoft Research, 2023), ``Sparks of Artificial
+      General Intelligence,'' which \emph{single} claim is the most
+      contested by other researchers?
+\begin{enumerate}[label=(\alph*)]
+    \item GPT-4 can solve novel mathematical problems
+    \item GPT-4 shows signs of a general theory of mind
+    \item GPT-4 exhibits behaviour that could reasonably be called
+          early AGI
+    \item GPT-4 can use tools to interact with the world
+\end{enumerate}
+
+\item AlphaGeometry (Trinh et al., \emph{Nature}, 2024) solved how many of
+      the 30 most recent IMO geometry problems in the test set?
+\begin{enumerate}[label=(\alph*)]
+    \item 10 \qquad (b) 18 \qquad (c) 25 \qquad (d) 30
+\end{enumerate}
+
+\item AlphaGeometry's training data consists of:
+\begin{enumerate}[label=(\alph*)]
+    \item 1 million human-annotated geometry proofs
+    \item 100 million \emph{synthetic} theorems generated algorithmically
+    \item 10 000 IMO-style problems scraped from past competitions
+    \item A corpus of geometry textbooks
+\end{enumerate}
+
+\item In the METR task-horizon analysis (2024--2026), the time-length of
+      tasks that frontier models can complete autonomously at 50\% success
+      rate has been doubling approximately every:
+\begin{enumerate}[label=(\alph*)]
+    \item 2 months \qquad (b) 7 months \qquad
+    (c) 18 months \qquad (d) 3 years
+\end{enumerate}
+
+\item The Grace et al.\ (2024) survey of AI researchers found that the
+      aggregate forecast for a 50\% probability of ``High-Level Machine
+      Intelligence'' (HLMI) shifted between the 2022 and 2023 surveys by
+      approximately how many years?
+\begin{enumerate}[label=(\alph*)]
+    \item Later by 13 years \qquad (b) Earlier by 1 year
+    \item Earlier by 13 years \qquad (d) No significant change
+\end{enumerate}
+
+\item The 2024 \emph{Science} consensus paper ``Managing extreme AI risks
+      amid rapid progress'' was co-authored by how many winners of the
+      Turing Award?
+\begin{enumerate}[label=(\alph*)]
+    \item 0 \qquad (b) 1 \qquad (c) 2 \qquad (d) 4
+\end{enumerate}
+
+\end{enumerate}
+
+\vspace{1em}
+\section*{Part II --- Calibration (give a point estimate AND a 90\% CI)}
+
+\begin{enumerate}[label=Q\arabic*., start=8]
+
+\item In what year will an autonomous AI agent be able to complete,
+      on its own, \emph{40 hours} of continuous expert knowledge work at
+      a 50\% success rate? (According to a straight-line extrapolation
+      of the METR trend.) \\
+      Point estimate: \rule{2cm}{0.4pt} \quad
+      90\% CI: [\rule{2cm}{0.4pt}, \rule{2cm}{0.4pt}]
+
+\item What fraction of AI researchers in Grace et al.\ (2024) put at least
+      a 10\% chance on ``human extinction or similarly permanent and severe
+      disempowerment of the human species'' as a consequence of advanced AI? \\
+      Point estimate: \rule{2cm}{0.4pt}\%
+
+\item By what year do Grace et al.\ aggregate forecasts assign 50\%
+      probability to \emph{full automation of labour}? \\
+      Point estimate: \rule{2cm}{0.4pt} \quad
+      90\% CI: [\rule{2cm}{0.4pt}, \rule{2cm}{0.4pt}]
+
+\end{enumerate}
+
+\vspace{1em}
+\section*{Part III --- Judgement calls (short answers)}
+
+\begin{enumerate}[label=Q\arabic*., start=11]
+
+\item In one sentence: why does Schaeffer et al.\ (NeurIPS 2023) argue that
+      many ``emergent abilities'' of LLMs are a \emph{mirage}?
+
+\item In one sentence: what is the single strongest argument Bubeck et al.\
+      offer for calling GPT-4 a step towards AGI?
+
+\item In one sentence: what is the single strongest counter-argument a
+      skeptic (e.g., Chollet, LeCun, Marcus) would offer?
+
+\item Your company has a 3\,000-person customer-service centre. Based on
+      the METR trend, what should your 18-month plan address? Give three
+      bullet points.
+
+\item The Bengio--Hinton--Russell consensus paper lists concrete
+      \emph{governance} actions. Name at least two.
+
+\end{enumerate}
+
+\vspace{2em}
+\hrule
+\vspace{1em}
+
+\section*{Answer Key (for the lecturer)}
+
+\begin{enumerate}[label=Q\arabic*.]
+\item (a) Emerging AGI --- Morris et al.\ argue current frontier LLMs meet
+      the \emph{Emerging} level of General AGI but not Competent.
+\item (c) --- the ``sparks of AGI'' framing is what most practitioners pushed
+      back on, not the individual capability claims.
+\item (c) 25 of 30, vs.\ gold-medallist average of 25.9.
+\item (b) 100 million synthetic theorems, generated by a combinatorial
+      construction engine + symbolic deduction.
+\item (b) $\approx$\,7 months (with a 95\% CI roughly 4--14 months).
+\item (c) Earlier by 13 years --- HLMI forecast shifted from 2060 to 2047
+      between the 2022 and 2023 rounds.
+\item (c) Two: Geoffrey Hinton and Andrew Yao.
+\item Under straight-line METR extrapolation from 2024 baseline, 40\,h
+      corresponds roughly to the 2030--2032 window; heavy uncertainty is
+      warranted.
+\item 38\% of respondents gave $\geq 10\%$ probability to extremely bad
+      outcomes.
+\item The aggregate 50\% forecast for full automation of labour is
+      approximately the year 2116, with enormous spread.
+\item Schaeffer et al.: many ``emergent'' jumps disappear when you use
+      continuous rather than thresholded metrics --- the emergence is an
+      artefact of the measurement, not the model.
+\item Bubeck et al.: GPT-4's performance is general across an unusually
+      wide range of cognitive tasks, not just the ones it was trained on.
+\item Skeptics: GPT-4 still fails on simple out-of-distribution tasks that
+      a child handles; benchmarks leak into training data; no causal model
+      of the world.
+\item Acceptable answers include: automate Tier-1 triage, retrain staff
+      toward exception handling, instrument the system so failures are
+      caught early, prepare the workforce transition.
+\item The paper's governance asks include: mandatory capability evaluations
+      before deployment, national AI safety institutes, liability for AI
+      harms, compute-based licensing for frontier training runs, information
+      sharing between developers and regulators.
+\end{enumerate}
+
+\end{document}

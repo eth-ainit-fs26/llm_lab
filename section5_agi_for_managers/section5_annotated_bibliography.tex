@@ -1,0 +1,269 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{microtype}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{ETH Zurich Executive Education}
+\lhead{Section 5 --- Annotated Bibliography}
+\cfoot{\thepage}
+
+\title{How Close Are We to AGI? \\[0.2em]
+       \large Annotated Bibliography for the ETH Zurich Executive Lecture}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\noindent
+Six anchor references shape this lecture. A further cluster of supporting
+references is provided for participants who wish to read beyond the session.
+Each entry carries a one-sentence plain-English takeaway suitable for a
+manager's reading-list briefing.
+
+\section*{Six Anchor References}
+
+\subsection*{A1. Morris et al.\ (DeepMind), \emph{Levels of AGI} (2024)}
+
+\textbf{Full citation.}
+Morris, M.\,R., Sohl-Dickstein, J., Fiedel, N., Warkentin, T., Dafoe, A.,
+Faust, A., Farabet, C.\ and Legg, S.\
+\emph{Levels of AGI for Operationalizing Progress on the Path to AGI}.
+arXiv:2311.02462 (2024).
+Published as a Position paper at ICML 2024.
+
+\textbf{What it says.}
+Proposes a 5$\times$2 matrix: five levels of performance (Emerging,
+Competent, Expert, Virtuoso, Superhuman) crossed with two levels of
+generality (Narrow, General). Today's frontier models are placed at
+\emph{Emerging AGI} (General).
+
+\textbf{Why it matters for managers.}
+Before arguing about ``when AGI arrives,'' you need a shared definition.
+This is the best-engineered working definition available, authored by
+the research group (DeepMind) most likely to build one.
+
+\subsection*{A2. Bubeck et al.\ (Microsoft), \emph{Sparks of AGI} (2023)}
+
+\textbf{Full citation.}
+Bubeck, S., Chandrasekaran, V., Eldan, R., Gehrke, J., Horvitz, E.,
+Kamar, E., Lee, P., Lee, Y.\,T., Li, Y., Lundberg, S., Nori, H., Palangi,
+H., Ribeiro, M.\,T.\ and Zhang, Y.
+\emph{Sparks of Artificial General Intelligence: Early experiments
+with GPT-4}. arXiv:2303.12712 (2023).
+
+\textbf{What it says.}
+Microsoft researchers with early GPT-4 access document qualitative
+demonstrations of problem-solving across mathematics, code, vision,
+medicine, law and theory-of-mind tasks. Argue the behaviour is
+``reasonably viewed as an early (yet still incomplete) version of
+an artificial general intelligence system.''
+
+\textbf{Why it matters for managers.}
+This is the paper that moved the AGI debate from internet forums into
+the board room. Reading the demonstrations and the authors' caveats
+is essential; taking the paper's headline claim at face value is not
+recommended.
+
+\subsection*{A3. Trinh et al.\ (DeepMind), \emph{AlphaGeometry} (2024)}
+
+\textbf{Full citation.}
+Trinh, T.\,H., Wu, Y., Le, Q.\,V., He, H.\ and Luong, T.
+\emph{Solving olympiad geometry without human demonstrations}.
+\emph{Nature} \textbf{625}, 476--482 (2024).
+
+\textbf{What it says.}
+A neuro-symbolic system (language model + symbolic deduction engine)
+solves 25 of 30 IMO-level geometry problems --- comparable to a gold
+medallist (25.9 average). Training uses 100\,million synthetic theorems
+generated algorithmically, with no human proofs.
+
+\textbf{Why it matters for managers.}
+Proof-of-principle that (a) AI can now do \emph{creative} mathematical
+reasoning, and (b) in domains with a formal verifier, human data is no
+longer a bottleneck. Follow-on work (AlphaProof, AlphaGeometry 2, 2024)
+achieved silver medal at the IMO itself. Expect any domain with a formal
+verifier to fall fast.
+
+\subsection*{A4. METR, \emph{Measuring the Ability of Autonomous Agents to
+Complete Tasks} (2024--2026)}
+
+\textbf{Full citation.}
+Model Evaluation and Threat Research (METR). Technical reports and
+blog posts, 2024--2026. \url{https://metr.org/blog}
+
+\textbf{What it says.}
+Defines a task-horizon metric: the time-length of a task on which an
+autonomous agent achieves 50\% success. Tracks how this horizon has
+scaled with model generation. Reports a doubling approximately every
+seven months over the recent window.
+
+\textbf{Why it matters for managers.}
+If the trend continues, multi-day autonomous task completion arrives
+in the late 2020s. Whether or not the extrapolation holds, the METR
+trajectory is the most business-relevant capability signal currently
+published; tracking it quarterly is a reasonable policy.
+
+\subsection*{A5. Grace et al., \emph{Thousands of AI Authors on the Future of
+AI} (2024)}
+
+\textbf{Full citation.}
+Grace, K., Stewart, H., Sandkuehler, J.\,F., Thomas, S., Weinstein-Raun,
+B.\ and Brauner, J.
+\emph{Thousands of AI Authors on the Future of AI}.
+arXiv:2401.02843 (2024).
+
+\textbf{What it says.}
+Largest expert survey to date (2\,778 respondents, all published authors
+at top AI venues). Aggregate 50\% forecast for High-Level Machine
+Intelligence: 2047 --- 13 years earlier than the same survey gave in
+2022. 38\% of respondents assign at least 10\% probability to
+``extremely bad outcomes'' from advanced AI.
+
+\textbf{Why it matters for managers.}
+Expert forecasts are not ground truth, but this is the largest and
+most rigorously gathered sample available. The key insight: the
+experts disagree by decades --- that disagreement is itself a signal
+about the state of knowledge.
+
+\subsection*{A6. Bengio, Hinton, Russell et al., \emph{Managing Extreme AI
+Risks Amid Rapid Progress} (\emph{Science}, 2024)}
+
+\textbf{Full citation.}
+Bengio, Y., Hinton, G., Yao, A., Song, D., Abbeel, P., Darrell, T.,
+Harari, Y.\,N., Zhang, Y.-Q., Xue, L., Shalev-Shwartz, S., Hadfield, G.,
+Clune, J., Maharaj, T., Hutter, F., Baydin, A.\,G., McIlraith, S., Gao,
+Q., Acharya, A., Krueger, D., Dragan, A., Torr, P., Russell, S.,
+Kahneman, D., Brauner, J.\ and Mindermann, S.
+\emph{Managing extreme AI risks amid rapid progress}.
+\emph{Science} \textbf{384}(6698), 842--845 (2024).
+DOI: 10.1126/science.adn0117.
+
+\textbf{What it says.}
+A consensus statement by leading AI researchers, including two Turing
+Award winners (Hinton, Yao) and a Nobel-Prize recipient (Kahneman),
+arguing that current AI trajectories create plausible existential-scale
+risks. Concrete governance asks include mandatory pre-deployment
+evaluation, national AI safety institutes, compute-based licensing for
+frontier training runs, and developer liability.
+
+\textbf{Why it matters for managers.}
+When Nobel and Turing laureates publish a joint statement in
+\emph{Science}, the appropriate managerial response is not to decide
+``who's right'' but to ensure the policy infrastructure, internal
+governance and evaluation capability exist to respond to whichever
+scenario plays out.
+
+\section*{Supporting References}
+
+\subsection*{S1. Kaplan et al., \emph{Scaling Laws for Neural Language Models}
+(2020)}
+OpenAI's foundational scaling paper: bigger models + more data + more
+compute yield predictable, smooth improvements in loss. The paper that
+justified the gigascale race.
+
+\subsection*{S2. Hoffmann et al., \emph{Training Compute-Optimal Large
+Language Models} (``Chinchilla,'' NeurIPS 2022)}
+DeepMind's correction to Kaplan et al.: current models are undertrained
+relative to their size; the optimal recipe uses many more tokens per
+parameter. Rewrote the scaling playbook.
+
+\subsection*{S3. Wei et al., \emph{Emergent Abilities of Large Language Models}
+(TMLR 2022)}
+Showed that some capabilities ``jump'' sharply at a critical scale,
+rather than scaling smoothly. The paper behind the ``emergence'' headline.
+
+\subsection*{S4. Schaeffer, Miranda, Koyejo, \emph{Are Emergent Abilities a
+Mirage?} (NeurIPS 2023, Outstanding Paper)}
+Counter-result: many emergent jumps disappear when the metric is
+continuous rather than thresholded. The emergence is largely an artefact
+of measurement, not capability.
+
+\subsection*{S5. Chollet, \emph{On the Measure of Intelligence} (2019)}
+The strongest skeptical framework. Argues that scale-driven improvements
+are on \emph{skill}, not \emph{intelligence}, and proposes ARC-AGI as a
+benchmark designed to resist this confusion.
+
+\subsection*{S6. Yao et al., \emph{ReAct} (ICLR 2023)}
+The template for modern LLM agents: interleave reasoning steps with
+action/tool-use steps. The architectural ancestor of most current agent
+frameworks.
+
+\subsection*{S7. Shinn et al., \emph{Reflexion} (NeurIPS 2023)}
+Agents that learn from their own failures by generating verbal
+self-critique, without updating weights. The pattern that made
+``iterative'' agents work.
+
+\subsection*{S8. Park et al., \emph{Generative Agents} (UIST 2023, Best Paper)}
+A populated simulation of LLM-based agents forming memories, plans,
+relationships and collective behaviour. The paper that brought
+multi-agent LLM systems into mainstream view.
+
+\subsection*{S9. Jimenez et al., \emph{SWE-bench} (ICLR 2024)}
+The most credible ``real work'' benchmark for LLM agents: can the
+system fix real GitHub issues in real open-source projects? Progress
+on SWE-bench (and SWE-bench Verified) is the standard agent-progress
+meter.
+
+\subsection*{S10. Mialon et al., \emph{GAIA} (ICLR 2024)}
+A benchmark designed for general AI assistants, intentionally hard for
+current frontier models (even GPT-4 scored 15\% at launch on the
+hardest tier), easy for humans.
+
+\subsection*{S11. FAIR Diplomacy Team, \emph{CICERO} (\emph{Science} 2022)}
+Human-level play in Diplomacy by fusing language models with
+game-theoretic strategic reasoning. The first serious demonstration of
+language-plus-strategy AI.
+
+\subsection*{S12. Bommasani et al., \emph{On the Opportunities and Risks of
+Foundation Models} (Stanford CRFM, 2021)}
+The report that introduced and defined the term ``foundation model.''
+A reference document for how the field now talks about itself.
+
+\subsection*{S13. Hendrycks, Mazeika, Woodside, \emph{An Overview of
+Catastrophic AI Risks} (2023)}
+Structured taxonomy of AI risk classes: malicious use, AI race, systemic
+risks, and rogue AI. Complements the Bengio et al.\ Science paper.
+
+\subsection*{S14. Stanford AI Index Report 2024 (HAI)}
+The definitive annual reference. The chart-book for anyone briefing a
+board on the state of AI.
+
+\subsection*{S15. Epoch AI, \emph{Compute Trend Tracker} (2024--2026)}
+Data that grounds scaling arguments. The public record of training
+compute, model size, and training tokens across frontier AI systems.
+
+\subsection*{S16. UK AI Safety Institute, \emph{Approach to Evaluations} (2024)}
+The first government-grade evaluation methodology for frontier AI.
+Worth reading to see what an accountable pre-deployment-evaluation
+regime actually looks like.
+
+\subsection*{S17. Silver, Singh, Precup, Sutton, \emph{Reward is Enough}
+(\emph{AI Journal} 2021)}
+The provocative thesis that reward maximisation in a sufficiently rich
+environment is itself enough to produce general intelligence. Reading
+list candidate for the ambitious.
+
+\section*{How To Use This Bibliography}
+
+\begin{itemize}
+    \item \textbf{If you read nothing else:} Morris et al.\ (A1) and Bengio
+          et al.\ (A6). Five minutes and a tea.
+    \item \textbf{If you have an afternoon:} add AlphaGeometry (A3) for the
+          ``wait, what?'' moment, Grace et al.\ (A5) for forecasting, and
+          the Stanford AI Index (S14) for breadth.
+    \item \textbf{If you want to argue with confidence:} add Schaeffer
+          et al.\ (S4) and Chollet (S5) --- the two strongest sceptical
+          positions currently in the literature.
+    \item \textbf{If you want to understand what AI agents actually do:}
+          Yao et al.\ (S6), Shinn et al.\ (S7), Jimenez et al.\ (S9) and
+          the METR reports (A4).
+\end{itemize}
+
+\end{document}

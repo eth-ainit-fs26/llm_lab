@@ -1,0 +1,241 @@
+================================================================================
+  SECTION 5 --- COMPANION DOCUMENT
+  "How Close Are We to AGI? A Reality Check for Decision-Makers"
+  ETH Zurich Executive Education --- 90-minute lecture
+================================================================================
+
+--------------------------------------------------------------------------------
+1. SESSION OVERVIEW
+--------------------------------------------------------------------------------
+
+Title:       How Close Are We to AGI? A Reality Check for Decision-Makers
+Duration:    90 minutes (85 min content + 5 min Q&A)
+Audience:    Senior managers and business leaders, analytical backgrounds,
+             no machine-learning specialisation expected
+Format:      Lecture + live demos (interactive elements optional, TBD)
+
+Learning objectives. By the end of this session, participants will be able to:
+
+  (a) Use Morris et al.'s "Levels of AGI" framework to locate a given AI
+      system on a shared axis --- and to explain what that level means in
+      business terms.
+
+  (b) Cite and correctly summarise the evidence for rapid capability gains
+      (Bubeck "Sparks", AlphaGeometry, METR task-horizon trend) AND the
+      principal caveats to that evidence.
+
+  (c) Read an expert forecast (Grace et al. 2024) with appropriate
+      uncertainty --- understanding what the numbers mean and what they
+      do NOT mean.
+
+  (d) Recognise the international scientific consensus (Bengio, Hinton,
+      Russell et al., Science 2024) on the need for AI risk management,
+      and translate its recommendations into actions their organisation
+      can take.
+
+One-paragraph summary (for the programme brochure):
+
+    The conversation about artificial general intelligence has moved from
+    science fiction to boardroom. But what actually counts as AGI, and
+    how close are we? This 90-minute session gives senior leaders a
+    rigorous, reference-backed briefing on the state of the field. We
+    work through six foundational references --- from DeepMind's
+    taxonomy of AGI to METR's measurements of autonomous agent
+    capability, from a 2,778-researcher expert survey to a Science
+    consensus statement signed by Bengio, Hinton, Russell and others ---
+    and translate each one into implications for strategy and
+    governance. No prior technical background required; no hand-waving
+    delivered.
+
+--------------------------------------------------------------------------------
+2. LECTURE STRUCTURE AT A GLANCE
+--------------------------------------------------------------------------------
+
+   Act 1 (15 min) --- What Do We Mean By AGI?
+                      [Morris et al. 2024, "Levels of AGI"]
+
+   Act 2 (20 min) --- What Can The Best Systems Already Do?
+                      [Bubeck et al. 2023, "Sparks of AGI"]
+                      [Trinh et al. 2024, "AlphaGeometry" --- Nature]
+
+   Act 3 (20 min) --- From Chatbots to Agents: Measuring Autonomy
+                      [METR, "Measuring the ability of autonomous agents"]
+
+   Act 4 (15 min) --- When Will AGI Arrive?
+                      [Grace et al. 2024, "Thousands of AI Authors"]
+
+   Act 5 (15 min) --- Managing the Transition
+                      [Bengio, Hinton, Russell et al. 2024, Science]
+
+   Close  (5 min) --- Q&A and the one thing to take home
+
+--------------------------------------------------------------------------------
+3. CURATED READING LIST
+--------------------------------------------------------------------------------
+
+For each act, we provide a short menu: one accessible read, one technical
+paper, and where available a policy / perspective piece.
+
+--- Act 1: What IS AGI? ---
+
+  [Accessible]   Ezra Klein, "What Will AI Do With Us?", NYT podcast
+                 series with guests including Demis Hassabis and
+                 Dario Amodei (2024).
+  [Technical]    Morris et al., "Levels of AGI for Operationalizing
+                 Progress on the Path to AGI," arXiv:2311.02462.
+                 Published at ICML 2024 as Position paper.
+  [Perspective]  Chollet, "On the Measure of Intelligence,"
+                 arXiv:1911.01547 --- the skeptic's framework.
+
+--- Act 2: Sparks and Specialised Breakthroughs ---
+
+  [Accessible]  Cade Metz, "OpenAI Unveils a GPT-4 That's Big, Bold, and
+                Potentially Dangerous," NYT, 2023 --- mainstream framing.
+  [Technical]   Bubeck et al., "Sparks of Artificial General Intelligence:
+                Early Experiments with GPT-4," arXiv:2303.12712.
+  [Technical]   Trinh, Wu, Le, He, Luong, "Solving olympiad geometry
+                without human demonstrations," Nature 625, 476--482 (2024).
+  [Critique]    Schaeffer, Miranda, Koyejo, "Are Emergent Abilities of
+                Large Language Models a Mirage?" NeurIPS 2023 (Outstanding).
+
+--- Act 3: Agents and Autonomy ---
+
+  [Accessible]  METR blog: "Measuring AI Ability to Complete Long Tasks."
+                Written for a lay audience.
+  [Technical]   Yao et al., "ReAct: Synergizing Reasoning and Acting in
+                Language Models," ICLR 2023.
+  [Benchmark]   Jimenez et al., "SWE-bench: Can Language Models Resolve
+                Real-World GitHub Issues?" ICLR 2024.
+  [Benchmark]   Mialon et al., "GAIA: A Benchmark for General AI
+                Assistants," ICLR 2024.
+
+--- Act 4: When Will AGI Arrive? ---
+
+  [Accessible]  Scott Alexander, "The Extinction Tournament," --- coverage
+                of expert and superforecaster disagreement.
+  [Technical]   Grace, Stewart, Sandkuehler et al., "Thousands of AI
+                Authors on the Future of AI," arXiv:2401.02843.
+  [Data]        Epoch AI, compute-scaling tracker (epochai.org).
+  [Perspective] Chollet commentary on ARC-AGI prize, 2024.
+
+--- Act 5: Managing the Transition ---
+
+  [Accessible]  Commentary in Nature and NYT on the "Managing extreme
+                AI risks" consensus statement.
+  [Technical]   Bengio, Hinton, Russell et al., "Managing extreme AI
+                risks amid rapid progress," Science 384, 842--845 (2024).
+  [Policy]      UK AI Safety Institute, "Approach to Evaluations" (2024).
+                Stanford AI Index Report 2024 (policy chapter).
+  [Historical]  Bommasani et al., "On the Opportunities and Risks of
+                Foundation Models," Stanford CRFM 2021 --- the document
+                that defined the term "foundation model."
+
+--------------------------------------------------------------------------------
+4. FAQ FOR MANAGERS (anticipated questions with honest answers)
+--------------------------------------------------------------------------------
+
+Q1. "Is my job at risk?"
+
+   Honest answer: Almost certainly some PARTS of your job are. Routine
+   knowledge-work tasks with clear right answers --- drafting standard
+   documents, structuring data, writing boilerplate code --- are already
+   within agent capability. Tasks requiring novel judgement, physical
+   embodiment, or robust multi-day autonomy remain hard. The METR
+   task-horizon trend suggests multi-day autonomy will arrive within a
+   few years, but the trend is not guaranteed to continue.
+
+Q2. "Can I trust the benchmark numbers?"
+
+   Honest answer: Partially. Benchmarks like MMLU, HumanEval and even
+   SWE-bench are increasingly contaminated (the test questions leak into
+   training data). The more robust signals come from (a) benchmarks
+   refreshed or designed to resist leakage (GAIA, ARC-AGI, SWE-bench
+   Verified); (b) independent third-party evaluations (METR, UK AISI,
+   US AISI); (c) real-world task completions with verifiable outputs
+   (e.g., AlphaGeometry on unseen IMO problems).
+
+Q3. "Is this all just hype from companies that want to sell me AI?"
+
+   Honest answer: Partially. Corporate communications overstate AGI
+   proximity; many researchers understate it. The middle ground is
+   where the evidence is --- and that middle ground is moving fast.
+   Relying on top-venue peer review (Nature, Science, NeurIPS, ICLR)
+   and independent evaluators gives you a calibrated signal.
+
+Q4. "When exactly will AGI arrive?"
+
+   Honest answer: We don't know. The largest expert survey (Grace et
+   al. 2024, N=2778) gives a 50% aggregate estimate of 2047 for
+   High-Level Machine Intelligence --- but the spread across experts
+   is enormous, and the same survey shifted 13 years earlier between
+   2022 and 2023. Treat point estimates with skepticism; pay attention
+   to the fact that top researchers disagree by decades.
+
+Q5. "What should my company do starting Monday?"
+
+   Short version:
+     - Adopt a frontier model for pilot use in 1-2 well-scoped
+       internal workflows; instrument it to measure actual value.
+     - Track the METR task-horizon trend (publicly reported) as a
+       leading indicator for when multi-day agent autonomy arrives.
+     - Establish a small internal "AI evaluation" function that runs
+       periodic capability checks against your own business tasks ---
+       not against academic benchmarks.
+     - Include an AI-risk item in your standard enterprise-risk review
+       cycle; review Bengio et al. (Science 2024) recommendations.
+     - Do NOT delegate AGI-trajectory monitoring entirely to IT or
+       procurement. Keep it on the executive agenda.
+
+Q6. "I hear 'AGI doom' talk. Is this a serious scientific position?"
+
+   Honest answer: Yes, in the sense that Turing-Award and Nobel-Prize
+   winners (Bengio, Hinton) have publicly argued that advanced AI
+   poses existential-scale risks. It is also contested by equally
+   credentialed researchers (LeCun, Ng). The responsible managerial
+   posture is neither "ignore it" nor "panic", but: take out appropriate
+   insurance. Support governance infrastructure; invest in internal
+   evaluation capability; avoid irreversible commitments.
+
+--------------------------------------------------------------------------------
+5. DISCUSSION QUESTIONS (for the Q&A segment)
+--------------------------------------------------------------------------------
+
+Q-D1. Morris et al.'s framework puts today's frontier models at "Emerging
+      General AGI." Where would YOU locate them? Does the framework's
+      distinction between narrow and general match your intuitions when
+      you use these systems? Where does it break down?
+
+Q-D2. The METR task-horizon plot shows task length doubling every ~7
+      months. If that trend held for another 5 years, what's the first
+      professional role in YOUR industry that becomes fully automatable?
+      What would you need to see to update on this?
+
+Q-D3. Grace et al. find that 38% of surveyed AI researchers give at
+      least 10% probability to extremely bad outcomes. Does "this is a
+      minority view" change how seriously you should take it? Would
+      your answer be different if the question were about a novel
+      pharmaceutical, or a bridge-engineering standard?
+
+Q-D4. The Bengio-Hinton-Russell consensus paper calls for mandatory
+      pre-deployment capability evaluations. If you were EU or Swiss
+      regulator, what evidence would convince you this is necessary?
+      What would be the cost of getting it wrong in either direction?
+
+Q-D5. If AlphaGeometry-style synthetic training generalises to any
+      domain with a formal verifier, which parts of YOUR business have
+      (or could have) such a verifier? Which currently don't, but
+      could?
+
+--------------------------------------------------------------------------------
+6. THE ONE THING TO TAKE HOME (for the closing slide)
+--------------------------------------------------------------------------------
+
+    If you remember only one thing from this session, remember this:
+    the question is not whether AGI is possible, nor exactly when it
+    arrives. The question is whether your organisation has the
+    evaluation capability to tell --- month by month, workflow by
+    workflow --- what these systems can and cannot do for you. The
+    companies that build that evaluation capability in the next two
+    years will be the ones that manage the transition well.
+
+================================================================================

@@ -1,0 +1,617 @@
+% =============================================================================
+%  LECTURE NOTES --- SECTION 5
+%  "How Close Are We to AGI? A Reality Check for Decision-Makers"
+%  ETH Zurich Executive Education --- 90-minute lecture
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{tcolorbox}
+\usepackage{microtype}
+\usepackage[round]{natbib}
+
+\definecolor{accent}{HTML}{1B1F3B}
+\definecolor{accent2}{HTML}{00718B}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accent,
+  citecolor=accent2,
+  urlcolor=accent2,
+}
+
+\tcbuselibrary{skins, breakable}
+\newtcolorbox{keyinsight}[1][]{%
+  enhanced, breakable,
+  colback=accent!5, colframe=accent!70!black,
+  boxrule=0.4pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  title={\bfseries Key insight}, fonttitle=\bfseries,
+  coltitle=white, colbacktitle=accent,
+  #1
+}
+
+\title{\textbf{Lecture Notes: How Close Are We to AGI?}\\[0.3em]
+  \large A Reality Check for Decision-Makers}
+\author{ETH Zurich Executive Education}
+\date{2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section*{Preface: Who these notes are for}
+\addcontentsline{toc}{section}{Preface}
+% =============================================================================
+
+These notes accompany a 90-minute lecture for senior managers at ETH
+Zurich. The audience is analytically sharp, professionally accomplished,
+and --- by design --- \emph{not} specialised in machine learning. You
+will not be asked to read a gradient or inspect a loss curve. You
+\emph{will} be asked to read a research paper the way a good board
+member reads an audit: to see the shape of the argument, the quality of
+the evidence, and the size of the claim that is actually being made.
+
+The goal is not to tell you when Artificial General Intelligence (AGI)
+will arrive. Nobody credible knows. The goal is to give you a
+reference-backed briefing on where the field stands, grounded in six
+foundational papers, so that you can judge future claims for yourself
+and ask the right questions of the people who build, buy, or regulate
+these systems on your behalf.
+
+If you remember only one thing from the whole session, let it be this:
+\emph{the question is not whether AGI is coming; it is whether your
+organisation has the evaluation capability to tell, month by month,
+workflow by workflow, what these systems can and cannot do for you.}
+
+% =============================================================================
+\section{What Do We Mean by AGI?}\label{sec:act1}
+% =============================================================================
+
+\subsection{Why the definition matters --- commercially}
+
+The phrase ``artificial general intelligence'' appears in press
+releases, investor decks, and legal contracts. It is also, as recently
+as five years ago, a phrase most serious researchers avoided in public.
+Two things changed. First, GPT-4 was surprising enough that
+Microsoft Research felt compelled to publish a 155-page technical
+report titled \emph{Sparks of Artificial General Intelligence}
+\citep{bubeck2023sparks}. Second, Google DeepMind --- whose explicit
+corporate mission is to build AGI --- decided the community needed a
+shared vocabulary to argue over. The result was the paper that frames
+this whole section: \emph{Levels of AGI for Operationalizing Progress
+on the Path to AGI} \citep{morris2024levels}.
+
+For a manager, the definition matters for a concrete reason: procurement
+contracts, insurance policies, acceptable-use clauses, and regulatory
+thresholds are starting to invoke ``AGI'' or ``frontier AI'' as a
+trigger. If the term is fuzzy, the obligation is fuzzy. DeepMind's
+framework is useful precisely because it trades romance for
+measurability.
+
+\subsection{The Morris et al.\ framework}
+
+\citet{morris2024levels} observe that prior definitions of AGI ---
+``human-level intelligence,'' ``passing the Turing test,''
+``economically valuable work'' --- are either unfalsifiable, outdated,
+or both. They propose a taxonomy organised along two axes:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Performance:} how well the system performs relative to
+        humans, ranging from \emph{Level 0} (no AI) through
+        \emph{Emerging} (roughly an unskilled human), \emph{Competent}
+        (50th percentile), \emph{Expert} (90th), \emph{Virtuoso}
+        (99th), up to \emph{Superhuman} (outperforms all humans).
+  \item \textbf{Generality:} whether the system is \emph{narrow}
+        (bounded to a specific task or domain) or \emph{general}
+        (capable across a wide range of non-cognitive and cognitive
+        tasks).
+\end{itemize}
+
+That gives a \(5\times 2\) matrix. Historical milestones populate it.
+Deep Blue and AlphaFold sit in the narrow column, as virtuoso or
+superhuman on their particular task, but zero on generality. Siri and
+early chatbots were general but emerging at best. The authors argue
+that today's frontier large language models (they discuss GPT-4,
+Gemini, Claude) sit in the general column but only at the
+\emph{Emerging} level: they do many things that an unskilled adult
+could do, across a wide range of domains, but they do not reliably
+reach even competent human performance across the board. That is the
+paper's headline diagnosis, and it is worth stating clearly: \emph{by
+DeepMind's own framework, there is nothing at the `Competent General
+AGI' level yet; we are still at `Emerging General AGI'\/}.
+
+The framework also articulates six design principles that are worth
+reading even if you never look at the matrix again:
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item Focus on \emph{capabilities}, not on \emph{mechanisms}. What
+        the system can do is measurable; whether it does so via
+        ``real'' understanding is not.
+  \item Focus on \emph{generality and performance} separately.
+        Collapsing them hides where progress actually is.
+  \item Focus on \emph{cognitive} (and optionally metacognitive) tasks,
+        not physical embodiment. An AGI need not have a body.
+  \item Focus on \emph{potential}, not deployment. What the model could
+        do, not what it is currently permitted to do.
+  \item Use \emph{ecological validity}: measure on tasks that matter in
+        the real world, not just academic benchmarks.
+  \item Treat AGI as a \emph{path}, not a single destination. There
+        will be levels, and each level has its own governance question.
+\end{enumerate}
+
+\subsection{The counterweight: Chollet's critique}
+
+No briefing on this topic is honest without the other side. Fran\c{c}ois
+Chollet's \emph{On the Measure of Intelligence} \citep{chollet2019measure}
+argues that benchmark performance --- the raw material of the Morris
+taxonomy --- is a misleading indicator. Real intelligence, Chollet
+argues, is \emph{the efficiency with which a system acquires new skills
+in a previously unseen domain, using limited prior knowledge and
+limited experience}. By that measure, a system that scores highly on
+tasks statistically similar to its training data has demonstrated
+\emph{memorisation plus interpolation}, not intelligence. Chollet's
+ARC-AGI benchmark, designed to resist this kind of interpolation, was
+only substantially cracked by frontier models in late 2024 --- and even
+then at great computational expense.
+
+The responsible reading is not to pick a side. It is to hold both
+frames at once:
+
+\begin{keyinsight}
+Morris et al.\ tell you \emph{how to locate today's systems on a shared
+axis}. Chollet tells you \emph{how to test whether the location is
+real, or whether it reflects training-data overlap}. In commercial
+settings, you need both: the location to decide scope, and the
+resistance-to-interpolation test to decide trust.
+\end{keyinsight}
+
+\subsection{Managerial implications of Act 1}
+
+Three takeaways you can use on Monday morning:
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item When a vendor says ``our system is approaching AGI,'' the
+        correct first question is: \emph{on which axis?} Performance
+        or generality? Against what reference distribution? Without an
+        answer, the claim is marketing.
+  \item Today's frontier models are, by the most careful published
+        framework, at the \emph{Emerging General AGI} level. That is
+        both more and less than the public conversation suggests. More:
+        it is genuinely a new category of artefact. Less: it is not
+        yet competent across the board, and the gap between ``sometimes
+        surprising'' and ``reliably useful'' is where most enterprise
+        pilot projects still fail.
+  \item The path is continuous, not discrete. You will not receive a
+        press release announcing AGI. You will, if you are paying
+        attention, notice a series of small capability jumps in
+        workflows you already run.
+\end{enumerate}
+
+% =============================================================================
+\section{Sparks and Specialist Breakthroughs}\label{sec:act2}
+% =============================================================================
+
+\subsection{The paper that broke the taboo: \emph{Sparks}}
+
+In March 2023, a team of senior Microsoft Research scientists
+published \emph{Sparks of Artificial General Intelligence: Early
+experiments with GPT-4} \citep{bubeck2023sparks}. The paper is 155
+pages of qualitative probes: draw a unicorn in TikZ code without seeing
+an image, solve a novel maths olympiad problem, debug human-written
+code by inferring intent, write and then critique a stanza in the
+voice of a specified poet. The authors' conclusion, which caused the
+paper's shockwave, was that GPT-4 shows ``sparks of artificial general
+intelligence'' and that they ``could reasonably view it as an early
+(yet still incomplete) version of an AGI system.''
+
+For managers, three things about \emph{Sparks} matter more than the
+conclusion itself.
+
+\paragraph{The honest caveats inside the paper.} The authors note that
+they worked with an \emph{early, unaligned} version of GPT-4 that had
+not yet been restricted by post-training safety work. They also note
+that they could not inspect the training data, so they could not rule
+out contamination (i.e., the possibility that an apparently novel test
+question had in fact been seen in some form during training). They
+selected examples they found interesting --- explicit about the
+cherry-picking, but cherry-picking nonetheless. Their methodology is
+deliberately qualitative.
+
+\paragraph{The subsequent critiques.} The Schaeffer--Miranda--Koyejo
+paper \citep{schaeffer2023mirage}, which won a NeurIPS 2023 Outstanding
+Paper Award, showed that many ``emergent'' capabilities disappear when
+you choose a smoother metric. That critique does not demolish
+\emph{Sparks} --- most of the qualitative probes do not depend on a
+thresholded metric --- but it does warn that the \emph{shape} of
+capability growth is partly a measurement artefact.
+
+\paragraph{What \emph{Sparks} actually established.} Even under the
+most sceptical reading, the paper establishes something real: a single
+system, trained only on next-token prediction on text, could produce
+coherent and useful outputs across mathematics, coding, vision
+(through TikZ and descriptions), theory of mind, and cross-domain
+analogy, at a level that was not achievable by any previous system.
+That is a qualitative shift, not a marginal improvement.
+
+\subsection{AlphaGeometry: what a specialist system can do}
+
+Ten months later, in January 2024, a paper in \emph{Nature} showed the
+other face of the same revolution: not a generalist with emerging
+abilities, but a \emph{specialist} that decisively exceeds human
+experts in a narrow but intellectually demanding domain.
+\citet{trinh2024alphageometry} present AlphaGeometry, a neuro-symbolic
+system for solving International Mathematical Olympiad (IMO)-level
+Euclidean geometry problems.
+
+\paragraph{The architecture, in plain language.} Olympiad geometry
+problems typically require a creative insight --- for example,
+introducing a previously unmentioned point, line, or circle --- after
+which a symbolic deduction engine can grind out the rest. AlphaGeometry
+pairs a neural language model (trained to \emph{propose} such
+constructions) with a fast symbolic deduction engine (which
+\emph{verifies} and extends them). The neural component suggests; the
+symbolic component proves. Crucially, the verifier provides a hard
+ground-truth signal, so ``wrong'' proposals are filtered out
+automatically.
+
+\paragraph{The training data trick.} The most provocative aspect of
+the paper, for managers thinking about the future of training data, is
+\emph{how the neural component was trained}. Human geometry proofs are
+scarce and hard to formalise. The authors instead generated
+\emph{synthetically}: they sampled 100 million random geometric
+diagrams, ran the symbolic engine to discover what was true about each
+one, and turned the resulting (theorem, proof) pairs into training
+data. The model was therefore trained on \emph{zero} human-written
+proofs.
+
+\paragraph{The headline result.} On 30 recent IMO geometry problems,
+AlphaGeometry solved 25. The average human IMO gold medallist solves
+25.9 of the corresponding problems; a silver medallist, 22.9; a bronze
+medallist, 15.2. AlphaGeometry therefore sits at the gold-medal
+threshold on this particular problem class.
+
+\paragraph{The follow-up.} In July 2024, DeepMind's AlphaProof and
+AlphaGeometry-2 reached a silver-medal performance on the full IMO
+(across algebra, combinatorics, number theory, and geometry), getting
+28 out of a possible 42 points, one below the gold-medal threshold.
+
+\subsection{The pattern}
+
+Put \emph{Sparks} and AlphaGeometry side by side and the pattern
+becomes visible:
+
+\begin{keyinsight}
+\textbf{Whenever a domain has a fast, cheap, automatic verifier ---
+mathematics, code, games with clear win conditions, formal
+specifications --- systems can be trained against that verifier and
+reach world-expert performance, often without any human demonstrations.
+Whenever a domain lacks such a verifier --- persuasion, taste,
+contested judgement, open-ended research --- progress is slower and
+harder to measure.}
+\end{keyinsight}
+
+The managerial question that follows is uncomfortable and useful:
+\emph{which parts of your business have (or could have) a verifier?}
+Regulatory filings do. Unit tests do. Invoice reconciliation does.
+Board-level strategic judgement does not. The closer a workflow is to
+having a verifier, the sooner it will be automatable to expert level.
+
+% =============================================================================
+\section{From Chatbots to Agents: Measuring Autonomy}\label{sec:act3}
+% =============================================================================
+
+\subsection{What we mean by ``agent''}
+
+A chatbot answers a single question. An \emph{agent} takes a goal,
+decomposes it into sub-tasks, acts in an environment (files, web,
+shell, other APIs), observes the result, and iterates. The
+architectural lineage, if you want to drop the right names, starts
+with \emph{ReAct} \citep{yao2023react}, which interleaved reasoning
+traces with tool calls; continues with \emph{Reflexion}
+\citep{shinn2023reflexion}, which added verbal self-critique; and now
+includes vendor-deployed ``computer-use'' systems that drive a
+browser or a desktop the way a human would, with screenshots as input
+and mouse/keyboard events as output.
+
+For a manager, the important shift is not the architecture. It is
+that the unit of work has changed. The last generation of AI produced
+\emph{one-shot outputs}: a translation, a classification, a
+completion. The current generation produces \emph{trajectories}:
+sequences of actions towards a goal, taking minutes, then hours,
+potentially soon days. This is the transition from \emph{tools} to
+\emph{workers}, and the speed of that transition is measurable.
+
+\subsection{The METR task-horizon methodology}
+
+The organisation \emph{Model Evaluation and Threat Research} (METR),
+which has been running independent evaluations of frontier models
+since 2023, developed a measurement that is becoming the industry's
+reference \citep{metr2024horizon}.
+
+The methodology is simple enough to explain on a whiteboard. Take a
+portfolio of tasks from software engineering, research, and data
+analysis. Measure how long a \emph{skilled human professional} needs
+to complete each one. Then give each frontier model a chance to
+complete the same tasks end-to-end, and ask: \emph{at what human-time
+horizon does this model succeed at least 50\,\% of the time?} That
+number --- the \emph{50\,\% task horizon} --- has a nice property:
+it grows as the model gets more capable, but it does not saturate in
+the uninformative way that accuracy-on-a-fixed-benchmark does.
+
+The striking finding is this. Plotted on a log scale against release
+date, the 50\,\% task horizon of frontier models has been \emph{doubling
+roughly every seven months}. In 2022, the reference frontier system
+could reliably complete human-minutes of work end-to-end. By 2024, it
+could reliably complete human-tens-of-minutes. By 2026, the horizon is
+in the low hours. If the trend continues at the same doubling time, a
+task horizon of one working day arrives around 2027, and one working
+week around 2029.
+
+\subsection{How to read an extrapolation like this}
+
+This is the moment in the lecture where managerial instincts should
+fire in both directions at once.
+
+\paragraph{The trend is real and matters.} The measurement is done by
+an independent third party, on tasks that are not the tasks the models
+were trained for, with human baselines collected rigorously. It is
+not a vendor benchmark. The doubling time has been stable enough that
+it survives the introduction of reasoning models and agentic
+scaffolding.
+
+\paragraph{Extrapolation is a claim, not a measurement.} Every
+exponential trend in technology eventually bends. Hardware speed-ups
+slowed as Dennard scaling ended; semiconductor feature sizes did not
+continue to shrink on Moore's original cadence. The METR curve could
+bend for several reasons: compute cost, data exhaustion, engineering
+complexity of long-horizon reliability, or a fundamental capability
+ceiling we do not yet understand. Conversely, it could accelerate
+--- reasoning models, better tool use, and post-training improvements
+have all produced step-changes in the past eighteen months.
+
+\paragraph{What the plot is actually evidence for.} It is strong
+evidence that (a) agent capability is moving on a measurable trend,
+(b) we are not yet at any natural ceiling, and (c) the leading
+indicator you should watch is the trend itself, updated quarterly,
+not any single benchmark score. What it is \emph{not} evidence for is
+a specific date.
+
+\begin{keyinsight}
+Managers should treat the METR curve the way they treat a leading
+economic indicator --- informative about direction and magnitude, not
+a forecast with confidence intervals. Plan for the doubling to
+continue for roughly another eighteen months; re-plan if it bends.
+\end{keyinsight}
+
+\subsection{Adjacent evidence}
+
+Two other benchmarks reinforce the picture. \emph{SWE-bench}
+\citep{jimenez2024swebench} measures the ability of language models to
+resolve real GitHub issues from open-source repositories by editing
+multiple files --- a task that, two years ago, was far out of reach.
+Verified variants that eliminate ambiguous issues are now routinely
+solved by frontier systems above 50\,\%. \emph{GAIA}
+\citep{mialon2024gaia} targets general assistance tasks that require
+multimodal input, tool use, and reasoning; humans score about 92\,\%,
+and frontier systems have moved from under 15\,\% at release to above
+half by 2026. Both benchmarks are, by construction, more contamination-
+resistant than multiple-choice tests, and both show the same trend as
+the METR horizon: from unusable, through useful-with-supervision, to
+outcompeting the median human junior practitioner on the narrow
+task.
+
+% =============================================================================
+\section{When Will AGI Arrive?}\label{sec:act4}
+% =============================================================================
+
+\subsection{The largest expert survey ever conducted}
+
+\citet{grace2024thousands} report the results of a January 2023 survey
+of 2,778 researchers who had published in top AI venues (NeurIPS and
+ICML). The survey is, to date, the largest of its kind. It asks, in
+carefully designed ways, when various specific capabilities will
+arrive, when ``High-Level Machine Intelligence'' (HLMI) --- defined as
+machines capable of every task better and more cheaply than humans ---
+will arrive, and what the consequences might be.
+
+Three numbers from that survey are worth remembering.
+
+\paragraph{50\,\% by 2047.} The aggregated forecast gives a 50\,\%
+probability that HLMI exists by 2047. The 10\,\% probability date is
+2027; the 90\,\% is after 2100. The spread is enormous. Reasonable
+researchers disagree by fifty years.
+
+\paragraph{A 13-year shift in one year.} The same survey, run in 2022,
+produced a 50\,\% date of 2060. In one year, the aggregate moved
+thirteen years earlier. No methodology change of that magnitude
+occurred; the respondents updated.
+
+\paragraph{38\,\% give $\geq$10\,\% to extreme outcomes.} When asked
+about the probability that advanced AI leads to outcomes ``as bad as
+human extinction or the permanent disempowerment of humanity,'' 38\,\%
+of respondents gave a probability of at least 10\,\%. A further
+substantial fraction gave probabilities above 1\,\%. This is a
+minority position, but it is a large minority, and the respondents are
+the people who build these systems.
+
+\subsection{How to read an expert forecast}
+
+Three points for the manager in the room.
+
+\paragraph{The shift is the signal.} A 13-year jump in one year is not
+a cleaner forecast replacing a noisier one. It is \emph{the same
+researchers updating hard on new evidence.} When professionals
+collectively revise their probabilities that much that fast, the
+correct Bayesian response is not to fixate on the new point estimate
+but to widen your own uncertainty and shorten your review cycle.
+
+\paragraph{Aggregates hide the disagreement, and the disagreement is
+the news.} ``Fifty percent by 2047'' reads like a forecast. It is not.
+It is a weighted average over a community in which a serious minority
+expects HLMI before 2030 and another serious minority expects it after
+2100. Acting only on the mean is like setting your thermostat to the
+average of ``too hot'' and ``too cold'' and expecting to be
+comfortable.
+
+\paragraph{The 10\,\% tail is a decision-theoretic event.} A 10\,\%
+probability of an extremely bad outcome is the kind of number that,
+applied to a pharmaceutical trial or a bridge design standard, would
+stop the programme. If your first instinct on hearing ``only 10\,\%''
+is to discount it, notice that your instinct is domain-specific. The
+analogous manager in drug development would not discount it. The
+question worth sitting with is whether the domain analogy should hold.
+
+\subsection{The epistemically honest picture}
+
+\begin{keyinsight}
+We do not know when AGI arrives. We know that the people best
+positioned to guess disagree by fifty years, and that the community
+mean has moved thirteen years earlier in one year. The responsible
+posture is neither ``this is hype; ignore it'' nor ``we have ten years;
+panic'' but: \emph{build organisational capacity to update quickly when
+the next strong signal arrives.}
+\end{keyinsight}
+
+% =============================================================================
+\section{Managing the Transition}\label{sec:act5}
+% =============================================================================
+
+\subsection{The \emph{Science} consensus statement}
+
+In May 2024, \emph{Science} published \emph{Managing extreme AI risks
+amid rapid progress} \citep{bengio2024managing}. The signatories
+include Yoshua Bengio and Geoffrey Hinton (both Turing Award laureates,
+Hinton also a 2024 Nobel laureate in Physics), Stuart Russell, Andrew
+Yao, Dawn Song, Pieter Abbeel, Trevor Darrell, Yuval Noah Harari,
+Daniel Kahneman, and several dozen others. The paper is short, written
+for a policy audience, and explicit about what the authors are and are
+not claiming.
+
+They are not claiming that AGI is imminent on a specific timeline.
+They are claiming that (a) capabilities are advancing fast enough that
+waiting for clear evidence of risk is not a safe default; (b) the
+current research ecosystem allocates dramatically more effort to
+capability than to safety; and (c) governance is lagging the
+technology in ways that previous regulated industries did not tolerate.
+
+\subsection{The four governance asks, plainly stated}
+
+The paper makes four asks. They are worth stating in ordinary
+language, because they are the substance most likely to show up in
+rules and procurement standards within the next 24 months.
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Reorient R\&D towards safety.} Devote a serious
+        fraction (the paper suggests roughly a third) of frontier AI
+        research effort to safety and ethical use. Today the fraction
+        is small.
+  \item \textbf{Adaptive governance for frontier systems.} Require
+        pre-deployment capability evaluations, incident reporting, and
+        the ability to pause training or deployment in response to
+        risk findings.
+  \item \textbf{Commensurate risk-management practices.} Hold
+        developers of frontier systems to standards similar to those
+        applied in aviation, pharmaceuticals, and nuclear --- including
+        third-party audits and liability for harms.
+  \item \textbf{International coordination.} Avoid a race to the
+        bottom by aligning standards across major jurisdictions,
+        including mechanisms for verification of compliance.
+\end{enumerate}
+
+Your view on whether these asks are necessary, sufficient, or
+politically realistic is not the point. The point is that these are
+now the reference asks that regulators are converging on. The EU AI
+Act, the UK AI Safety Institute's evaluation programme
+\citep{aisiuk2024}, the Bletchley and Seoul declarations, and US
+executive action are all legible through this framework.
+
+\subsection{A manager's playbook}
+
+The honest short list --- the Monday-morning checklist --- is five
+items.
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Adopt a frontier model in one or two scoped workflows.}
+        Pilot with clear success metrics and a named internal owner.
+        Do not pilot AI as a general-purpose initiative; pilot it as
+        a named productivity intervention on a named workflow.
+  \item \textbf{Build an internal evaluation function.} A small team
+        (initially one person) whose job is to run periodic capability
+        checks against \emph{your} workflows, not academic benchmarks.
+        This is the single highest-leverage investment in this
+        decade.
+  \item \textbf{Track three external signals quarterly.} The METR
+        task-horizon update; the leading third-party agent benchmarks
+        (SWE-bench Verified, GAIA); and the UK AISI / US AISI public
+        findings. These together give you a calibrated, vendor-
+        independent view.
+  \item \textbf{Include AI risk in your standard enterprise risk
+        review cycle.} Treat it the way you would a major regulatory
+        change or a supply-chain dependency --- with an owner, a
+        register, and a named escalation path.
+  \item \textbf{Avoid irreversible commitments.} Multi-year exclusive
+        contracts, workflows that cannot be rolled back to a
+        human-in-the-loop version, and vendor lock-in on proprietary
+        evaluation data are all failures of optionality in a period of
+        rapid change.
+\end{enumerate}
+
+\subsection{What the honest executive posture looks like}
+
+Neither ``ignore it, this is hype'' nor ``panic, this is existential''
+is the responsible posture. Both are abdications of managerial
+judgement. The responsible posture is:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \emph{Take out appropriate insurance.} You do not need to
+        believe a bad outcome is likely to justify building the
+        capacity to detect and respond to one.
+  \item \emph{Invest in evaluation, not prediction.} You cannot time
+        the arrival of AGI. You can position your organisation to
+        notice when specific workflows flip from ``AI-assisted'' to
+        ``AI-autonomous.''
+  \item \emph{Keep AGI trajectory on the executive agenda.} Do not
+        delegate this entirely to IT or procurement. It is a
+        strategic question that will, within this decade, reshape
+        competitive dynamics in most knowledge-work industries.
+\end{itemize}
+
+% =============================================================================
+\section*{Closing: The One Thing To Remember}
+\addcontentsline{toc}{section}{Closing}
+% =============================================================================
+
+If you take away nothing else from this session, take away this:
+
+\begin{quote}
+\itshape The question is not whether AGI is coming. The question is
+whether your organisation has the evaluation capability to tell ---
+month by month, workflow by workflow --- what these systems can and
+cannot do for you. The companies that build that evaluation capability
+in the next two years will be the ones that manage the transition
+well. The companies that outsource the judgement to their vendors, or
+their regulators, or their consultants, will not.
+\end{quote}
+
+The evidence is mixed, the timelines are contested, and the people who
+build these systems disagree with each other by decades. But on one
+point they agree: the rate of change has accelerated, and the window
+for building institutional capacity to respond is now.
+
+% =============================================================================
+\bibliographystyle{plainnat}
+\bibliography{section5}
+% =============================================================================
+
+\end{document}

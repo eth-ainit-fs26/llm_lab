@@ -1,0 +1,1097 @@
+\documentclass[12pt,a4paper]{article}
+
+% ------------------------------- packages ----------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{breakable,skins}
+\usepackage{hyperref}
+\usepackage[nameinlink,capitalize]{cleveref}
+\usepackage{enumitem}
+
+% ------------------------------- theorems ----------------------------------
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\crefname{theorem}{Theorem}{Theorems}
+\crefname{lemma}{Lemma}{Lemmas}
+\crefname{corollary}{Corollary}{Corollaries}
+\crefname{definition}{Definition}{Definitions}
+\crefname{example}{Example}{Examples}
+\crefname{section}{Section}{Sections}
+\crefname{equation}{Equation}{Equations}
+
+% ------------------------------- intuition box -----------------------------
+\newtcolorbox{intuition}[1][]{
+  breakable,
+  enhanced,
+  colback=yellow!8,
+  colframe=orange!60!black,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={Intuition},
+  boxrule=0.6pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,
+  #1
+}
+
+% ------------------------------- title ------------------------------------
+\title{Prediction, Compression, and Intelligence:\\
+       Three Names for the Same Operation}
+\author{Section 3 --- Philosophy of Machine Minds\\
+        Executive Education Lecture Notes}
+\date{}
+
+\begin{document}
+\maketitle
+
+% =========================================================================
+\section*{Preface: how to read these notes}
+% =========================================================================
+
+These notes are written on two tracks at once, for two readers travelling
+together.  The \emph{student} --- typically a bachelor-STEM reader who
+wants the theorems, proofs, and definitions --- will find the main text
+body rigorous and self-contained.  The \emph{manager} --- a
+decision-maker who wants the conceptual story without the symbols ---
+will find every formal object wrapped in a shaded \textbf{Intuition}
+box written in plain English, with analogies, small numerical examples,
+and a ``why should a decision-maker care'' coda.  Each Intuition box
+cross-references the nearest definition or theorem via
+\cref{sec:why}\ldots so a curious manager can always drop down into
+the math, and a rigorous student can always drop up into the metaphor.
+Read strictly down the page and you get both tracks interleaved; read
+only the Intuition boxes and the section headings and you will still
+leave with the thesis: \emph{prediction, compression, and intelligence
+are, under precise definitions, the same operation, and that fact is
+the implicit business plan of every major foundation-model lab.}
+
+\tableofcontents
+\newpage
+
+% =========================================================================
+\section{Why this equivalence matters}
+\label{sec:why}
+% =========================================================================
+
+\begin{intuition}
+The claim we unpack in these notes, in one sentence: \emph{being good
+at predicting what comes next, being good at compressing a file, and
+being good at thinking are --- up to translation --- the same skill.}
+That sounds like a philosopher's trick.  It is not.  It is a chain of
+three mathematical results, each modest on its own, that lock together
+like gears.  Shannon showed prediction and compression are literally
+the same job in different units (\cref{thm:ce-code}).  Kolmogorov
+showed that ``the shortest description of a thing'' is a deep,
+coordinate-free notion of what the thing \emph{is}
+(\cref{def:kolmogorov,thm:invariance}).  Solomonoff and Hutter showed
+that an agent who bets according to ``shorter explanations are more
+likely'' is, in a precise sense, the smartest possible learner
+(\cref{thm:solomonoff,thm:aixi-opt}).
+
+Why should a decision-maker care?  Because your vendors are selling
+you products whose entire training objective is one single number:
+how surprised the model was by the next word of the internet.  If you
+believe the chain above, minimising that one number is not a narrow
+engineering goal --- it is a proxy for general intelligence.  That is
+either the most important business fact of the decade or a category
+error.  You cannot tell which without understanding the equivalence.
+Think of it as three currencies --- bits saved, dollars earned, IQ
+points --- and three exchange rates between them.  Once you see the
+rates, a lot of hype becomes legible, and a lot of legitimate
+excitement stops sounding like magic.
+\end{intuition}
+
+The central technical claim of this note is that three operations that
+are often treated as distinct --- predicting the next symbol in a
+sequence, compressing that sequence into a shorter description, and
+behaving intelligently in its presence --- are, under a precise set of
+definitions, the \emph{same operation} viewed from three angles.
+Shannon's source coding theorem \citep{shannon1948mathematical}
+identifies prediction with compression; Kolmogorov complexity
+\citep{kolmogorov1965three} makes the notion of ``shortest
+description'' independent of the choice of language; Solomonoff's
+universal prior \citep{solomonoff1964formal} promotes the Kolmogorov
+minimiser to a Bayesian predictor that converges to any computable
+source; and Hutter's AIXI \citep{hutter2005universal} upgrades that
+predictor into a reward-seeking agent whose optimality can be stated
+as a theorem.  The chain is not an analogy.  Every step in this note
+is a definition, a lemma, or a theorem.  The pedagogical payoff is
+that one can then ask sharp questions about large language models ---
+whether they count as compressors, whether better compression entails
+more general capability, and where the equivalence breaks --- without
+smuggling in metaphor.
+
+% =========================================================================
+\section{Prelude: Shannon and the cost of surprise}
+\label{sec:shannon-prelude}
+% =========================================================================
+
+\begin{intuition}
+Information is the cost of being surprised, and you are surprised
+exactly as much as an event was unlikely.  In Los Angeles, a
+forecaster who says ``sunny'' every day will be right most of the
+time and needs almost no words.  In Zurich, she needs rain, snow,
+F\"{o}hn, fog, and sun.  The \emph{average} number of yes/no questions
+she needs to convey a day's weather is the \emph{entropy}
+(\cref{def:entropy}), denoted $H(X)$.  Flip a fair coin: one yes/no
+question suffices, so $H = 1$~bit.  Flip a coin biased 7/8 heads:
+most of the time you guess heads and are done; on average you need
+only about half a bit per flip.  A 1-in-1024 event carries ten bits
+of ``wow''; a 50/50 event carries one bit of ``huh.''
+
+Shannon's source-coding theorem (\cref{thm:source-coding}), in plain
+English: you cannot, on average, describe a random source using fewer
+bits than its entropy; and you can get within one bit of entropy if
+you are clever.  Entropy is the floor; clever coding reaches it.
+
+Why a decision-maker should care: every storage bill, every bandwidth
+bill, every ``our model is more efficient'' vendor claim bottoms out
+against this floor.  If somebody tells you they compress English text
+to $0.3$ bits per character, they are either wrong, lying, or have
+discovered English has lower entropy than anyone thought --- which
+would itself be news.  Entropy also sets the floor on forecasting:
+no analyst, human or machine, can predict a genuinely high-entropy
+process (next week's lottery numbers) better than chance, no matter
+how much compute you throw at it.  Knowing where the entropy floor
+sits for \emph{your} data is the difference between a reasonable AI
+budget and a fantasy one.
+\end{intuition}
+
+Fix a finite \emph{alphabet} $\mathcal{A} = \{a_1, \dots, a_K\}$ and
+let $X$ be a discrete random variable on $\mathcal{A}$ with
+probability mass function $p(a) = \Pr[X = a]$.  All logarithms are
+base $2$ unless stated; values are measured in \emph{bits}.
+
+\begin{definition}[Self-information and Shannon entropy]
+\label{def:entropy}
+The \textbf{self-information} (or \emph{surprisal}) of the outcome
+$x \in \mathcal{A}$ under $p$ is
+\begin{equation}
+  I_p(x) \;=\; -\log_2 p(x),
+  \label{eq:self-info}
+\end{equation}
+with the convention $0 \cdot \log_2 0 = 0$.  The \textbf{Shannon
+entropy} of $X$ is the expected self-information,
+\begin{equation}
+  H(X) \;=\; \mathbb{E}\bigl[I_p(X)\bigr]
+       \;=\; -\sum_{k=1}^{K} p(a_k)\,\log_2 p(a_k).
+  \label{eq:entropy}
+\end{equation}
+\end{definition}
+
+A \textbf{code} for $\mathcal{A}$ is an injective map
+$C : \mathcal{A} \to \{0,1\}^*$ assigning a binary string $C(a)$ to
+each symbol.  We write $\ell(a) = |C(a)|$ for the code length.  $C$ is
+a \textbf{prefix code} (or \emph{instantaneous code}) if no codeword
+$C(a_i)$ is a proper prefix of any other codeword $C(a_j)$.
+
+\begin{lemma}[Kraft's inequality]
+\label{lem:kraft}
+For any prefix code $C$ on $\mathcal{A}$ with lengths $\ell(a_k)$,
+\begin{equation}
+  \sum_{k=1}^{K} 2^{-\ell(a_k)} \;\le\; 1.
+  \label{eq:kraft}
+\end{equation}
+Conversely, for any length assignment $\ell_1, \dots, \ell_K \in
+\mathbb{N}$ satisfying~\eqref{eq:kraft} there exists a prefix code
+with those lengths.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+Identify each codeword with a leaf in the infinite binary tree.  A
+prefix condition forbids any codeword from lying on the path to
+another, so distinct codewords correspond to disjoint subtrees.  The
+subtree rooted at a node of depth $\ell$ contains a $2^{-\ell}$
+fraction of the infinite leaves, and disjointness gives the bound.
+The converse is an explicit construction: sort $\ell_k$ in increasing
+order and assign the lexicographically smallest available
+length-$\ell_k$ string at each step.
+\end{proof}
+
+\begin{lemma}[Gibbs' inequality]
+\label{lem:gibbs}
+For any two probability mass functions $p, q$ on $\mathcal{A}$,
+\begin{equation}
+  -\sum_{k} p(a_k) \log_2 q(a_k)
+    \;\ge\; -\sum_{k} p(a_k) \log_2 p(a_k),
+  \label{eq:gibbs}
+\end{equation}
+with equality if and only if $p = q$.
+\end{lemma}
+
+\begin{proof}
+Using $\ln x \le x - 1$ (with equality iff $x = 1$) and
+$\log_2 x = \ln x / \ln 2$,
+\[
+  \sum_k p(a_k) \log_2 \frac{q(a_k)}{p(a_k)}
+  \;\le\; \frac{1}{\ln 2}\sum_k p(a_k)\!\left(\frac{q(a_k)}{p(a_k)} - 1\right)
+  \;=\; \frac{1}{\ln 2}\Bigl(\sum_k q(a_k) - 1\Bigr) \;\le\; 0,
+\]
+because $\sum_k q(a_k) \le 1$.  Rearranging gives~\eqref{eq:gibbs};
+the equality conditions of $\ln x \le x - 1$ and $\sum q = 1$ together
+force $p = q$.
+\end{proof}
+
+\begin{theorem}[Shannon source coding inequality]
+\label{thm:source-coding}
+Let $C$ be any uniquely decodable (in particular, any prefix) code for
+$\mathcal{A}$ and let $L = \mathbb{E}[\ell(X)] = \sum_k p(a_k)\ell(a_k)$
+be its expected code length.  Then
+\begin{equation}
+  L \;\ge\; H(X).
+  \label{eq:source-coding}
+\end{equation}
+Moreover, there exists a prefix code (e.g.\ the Shannon--Fano code
+with $\ell(a_k) = \lceil -\log_2 p(a_k)\rceil$) such that
+\begin{equation}
+  L \;<\; H(X) + 1.
+  \label{eq:source-coding-achiev}
+\end{equation}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Let $q(a_k) = 2^{-\ell(a_k)} / Z$, where
+$Z = \sum_k 2^{-\ell(a_k)} \le 1$ by \cref{lem:kraft}, so $\tilde q =
+q$ is a bona fide probability vector after normalisation.  By
+\cref{lem:gibbs}, the cross-entropy $-\sum_k p(a_k) \log_2 \tilde
+q(a_k) \ge H(X)$.  Because $-\log_2 \tilde q(a_k) = \ell(a_k) + \log_2
+Z \le \ell(a_k)$ (since $Z \le 1$ makes $\log_2 Z \le 0$), we get
+$L \ge -\sum_k p(a_k)\log_2 \tilde q(a_k) \ge H(X)$.  For
+\eqref{eq:source-coding-achiev}, the lengths
+$\lceil -\log_2 p(a_k)\rceil$ satisfy Kraft~\eqref{eq:kraft}, and each
+ceiling adds at most $1$ to the expected length.  See
+\citet[Ch.~5]{coverthomas2006} for the full treatment.
+\end{proof}
+
+\begin{example}[Entropy of a 4-symbol alphabet]
+\label{ex:h4}
+Let $\mathcal{A} = \{a, b, c, d\}$ with $p(a) = \tfrac{1}{2}$,
+$p(b) = \tfrac{1}{4}$, $p(c) = p(d) = \tfrac{1}{8}$.  Then
+\begin{align*}
+  H(X) &= -\tfrac{1}{2}\log_2\tfrac{1}{2}
+         - \tfrac{1}{4}\log_2\tfrac{1}{4}
+         - 2\cdot\tfrac{1}{8}\log_2\tfrac{1}{8} \\
+       &= \tfrac{1}{2}\cdot 1 + \tfrac{1}{4}\cdot 2 + \tfrac{1}{4}\cdot 3
+        \;=\; \tfrac{7}{4} \text{ bits}.
+\end{align*}
+A prefix code achieving $L = H(X) = 1.75$ exactly is
+$C(a) = 0,\ C(b) = 10,\ C(c) = 110,\ C(d) = 111$; its lengths
+$(1,2,3,3)$ satisfy Kraft with equality and match
+$-\log_2 p(a_k)$ symbol by symbol.
+\end{example}
+
+% =========================================================================
+\section{Prediction \texorpdfstring{$\Leftrightarrow$}{<=>} Compression
+         (Shannon's half of the bridge)}
+\label{sec:pred-comp}
+% =========================================================================
+
+\begin{intuition}
+A predictor that assigns probabilities to the next word is, mechanically,
+a compressor; its error rate and its compression rate are the same number
+in different clothes (see \cref{thm:ce-code} and \cref{cor:ppl}).
+
+\textbf{The two-consultants analogy.}  Two consultants write up the
+same quarterly results.  The first \emph{understands} the business: she
+nails the narrative in a crisp one-pager.  The second misreads the
+business: he rambles for ten pages to cover the same facts, because
+every paragraph has to hedge against the surprises his wrong mental
+model keeps generating.  Both describe reality perfectly; only one
+compresses it.  The extra pages are exactly the price of his wrong
+model.  That price has a name: \emph{cross-entropy}, written $H(p,q)$
+in \cref{def:cross-ent}.  It is always at least $H(p)$, and the gap is
+the tax you pay for being wrong.
+
+\textbf{A tiny worked example.}  Suppose tomorrow's stock move is up
+$90\%$ of the time, down $10\%$.  The true entropy is small, about
+$0.47$ bits per day.  If your model thinks it's 50/50, your average
+description length becomes $1$ bit per day.  The $0.53$-bit gap is
+pure model-error tax; across a million days, that is $530{,}000$
+extra bits you burned because your model was wrong.
+
+\textbf{Perplexity and bits per token.}  LLM papers report
+``perplexity 8'' or ``$2.1$ bits per token.''  These are the same
+number: $\log_2(\mathrm{PPL}) = $ bits per token = cross-entropy
+(\cref{cor:ppl}).  Perplexity $8$ means the model behaves as if at
+each word it were choosing uniformly among $8$ plausible options.
+Lower is better.
+
+Why a decision-maker should care: the training objective of every
+major LLM \emph{is} cross-entropy on text.  When a vendor says ``our
+model scored $0.1$ lower cross-entropy,'' they are saying ``our model
+compresses the world $0.1$ bits better per word,'' which over
+trillions of words is a lot of real modelling skill.  Two models with
+identical cross-entropy are, at the level Shannon cares about, the
+same model.  This gives you a vendor-agnostic yardstick --- and a
+cheap test for benchmark theatre: if a new model does not improve
+cross-entropy but wins on a specific test, ask whether the test was
+in the training set.
+\end{intuition}
+
+Sequence models predict \emph{conditionally}.  Fix a stochastic
+process $(X_t)_{t \ge 1}$ on $\mathcal{A}$ and write
+$X_{<t} = (X_1, \dots, X_{t-1})$ with $X_{<1} = \emptyset$.
+
+\begin{definition}[Cross-entropy and conditional cross-entropy]
+\label{def:cross-ent}
+Let $p$ be the true distribution of $(X_1, \dots, X_T)$ and let $q$ be
+a model distribution (factoring as
+$q(x_{1:T}) = \prod_{t=1}^{T} q(x_t \mid x_{<t})$).  The
+\textbf{cross-entropy} of $q$ against $p$ over a single symbol with
+history is
+\begin{equation}
+  H_t(p, q)
+  \;=\; \mathbb{E}_{x_{<t}\sim p}\!\left[
+    -\sum_{a\in\mathcal{A}} p(a \mid x_{<t})\,\log_2 q(a \mid x_{<t})
+  \right],
+  \label{eq:cross-ent}
+\end{equation}
+and the \textbf{average cross-entropy per token} is
+$\overline{H}(p,q) = \tfrac{1}{T}\sum_{t=1}^{T} H_t(p,q)$.
+\end{definition}
+
+\begin{theorem}[Cross-entropy equals expected code length]
+\label{thm:ce-code}
+Fix $T$ and a model $q$.  Any prefix code that uses
+$\ell(x_t \mid x_{<t}) = \lceil -\log_2 q(x_t \mid x_{<t})\rceil$
+bits to encode $x_t$ given $x_{<t}$ satisfies
+\begin{equation}
+  \mathbb{E}_{x_{1:T}\sim p}\!\left[\tfrac{1}{T}\!\sum_{t=1}^{T}\ell(x_t \mid x_{<t})\right]
+  \;=\; \overline{H}(p, q) + O(1/T),
+  \label{eq:ce-length}
+\end{equation}
+and arithmetic coding attains~\eqref{eq:ce-length} with $O(1/T)$
+overhead.  Moreover,
+\begin{equation}
+  \overline{H}(p, q)
+  \;=\; \overline{H}(p) + \overline{D}_{\mathrm{KL}}(p \,\|\, q),
+  \label{eq:ce-kl}
+\end{equation}
+where $\overline{H}(p) = \tfrac{1}{T}\sum_t H(X_t \mid X_{<t})$ is the
+true conditional entropy rate and
+$\overline{D}_{\mathrm{KL}}(p\|q) \ge 0$ is the average conditional
+Kullback--Leibler divergence.
+\end{theorem}
+
+\begin{proof}[Proof of~\eqref{eq:ce-kl}]
+For each $t$ and each history $x_{<t}$,
+\[
+  -\sum_{a} p(a\!\mid\! x_{<t})\log_2 q(a\!\mid\! x_{<t})
+  \;=\;
+  -\sum_{a} p(a\!\mid\! x_{<t})\log_2 p(a\!\mid\! x_{<t})
+  + \sum_a p(a\!\mid\! x_{<t})\log_2\frac{p(a\!\mid\! x_{<t})}{q(a\!\mid\! x_{<t})}.
+\]
+The first term on the right is $H(X_t \mid X_{<t} = x_{<t})$; the
+second is
+$D_{\mathrm{KL}}(p(\cdot\mid x_{<t})\,\|\,q(\cdot\mid x_{<t}))$.
+Taking expectation over $x_{<t} \sim p$ and averaging over $t$ yields
+\eqref{eq:ce-kl}.  Non-negativity of the KL term is exactly
+\cref{lem:gibbs}.  Statement~\eqref{eq:ce-length} follows by plugging
+$\ell = \lceil -\log_2 q\rceil$ into \cref{thm:source-coding} on each
+conditional distribution and absorbing the at-most-$1$-bit rounding
+into the $O(1/T)$ overhead; arithmetic coding eliminates even the
+integer ceilings up to a constant
+\citep[Ch.~5]{coverthomas2006}.
+\end{proof}
+
+\begin{corollary}[Perplexity vs.\ bits per token]
+\label{cor:ppl}
+The \textbf{perplexity} of $q$ on $p$ is
+$\mathrm{PPL}(q) = 2^{\overline{H}(p,q)}$, so
+\begin{equation}
+  \log_2 \mathrm{PPL}(q) \;=\; \overline{H}(p,q)
+  \;=\; \text{(bits per token used by arithmetic coding with model }q\text{)}.
+  \label{eq:ppl-bpt}
+\end{equation}
+\end{corollary}
+
+\Cref{thm:ce-code} is the entire Shannon side of the bridge:
+\emph{minimising the cross-entropy training objective is literally
+minimising the expected compressed length}.  A next-token predictor
+with cross-entropy $\overline{H}(p,q)$ bits per symbol corresponds,
+via arithmetic coding, to a compressor that uses $\overline{H}(p,q)$
+bits per symbol.  Better predictions $\Leftrightarrow$ shorter codes.
+
+\begin{example}[Cross-entropy on a 3-token sequence; nats vs.\ bits]
+\label{ex:ce3}
+Let $\mathcal{A} = \{A,B,C\}$ and suppose the true conditional
+distributions at positions $t=1,2,3$ have already been conditioned on
+the observed prefix, giving the sequence of true posterior masses on
+the realised tokens $p_1 = 0.8,\ p_2 = 0.5,\ p_3 = 0.1$.  Consider
+two models.  Model $q^{(1)}$ assigns $q_1 = 0.8, q_2 = 0.5,
+q_3 = 0.1$ (matches truth on the realised tokens); model $q^{(2)}$
+assigns $q_1 = 0.1, q_2 = 0.1, q_3 = 0.8$ (systematically wrong).
+
+For model $q^{(1)}$, the per-token code lengths in bits are
+$-\log_2 0.8 \approx 0.3219$, $-\log_2 0.5 = 1$,
+$-\log_2 0.1 \approx 3.3219$, summing to approximately $4.644$~bits.
+In nats, multiply by $\ln 2 \approx 0.6931$: $4.644 \cdot \ln 2
+\approx 3.219$~nats, matching $-\ln(0.8 \cdot 0.5 \cdot 0.1) =
+-\ln 0.04 \approx 3.219$ directly.
+
+For model $q^{(2)}$, the lengths are $-\log_2 0.1 \approx 3.3219$,
+$-\log_2 0.1 \approx 3.3219$, $-\log_2 0.8 \approx 0.3219$, totalling
+$\approx 6.966$~bits ($\approx 4.828$~nats, consistent with
+$-\ln(0.008) \approx 4.828$).  The wrong model spends $2.32$ extra
+bits, the Kullback--Leibler excess predicted by~\eqref{eq:ce-kl}.
+Conversion rule: $1\text{ nat} = \log_2 e \text{ bits} \approx
+1.4427$~bits and conversely $1\text{ bit} = \ln 2 \text{ nats}$.
+\end{example}
+
+% =========================================================================
+\section{Kolmogorov complexity}
+\label{sec:kolmogorov}
+% =========================================================================
+
+\begin{intuition}
+The complexity of an object is the length of the shortest computer
+program that prints it --- and nothing shorter (see
+\cref{def:kolmogorov}).
+
+\textbf{The recipe-over-the-phone analogy.}  You are a chef.  A
+colleague in another city must reproduce your dish exactly.  You read
+her the shortest instructions that do the job.  ``Boil water'' takes
+two words.  A souffl\'{e} takes a page.  A completely random pattern
+of $10{,}000$ sprinkles has no shorter description than itself: you
+read out every position.  Such an object is \emph{Kolmogorov random};
+it has no exploitable structure.  Everything else --- the digits of
+$\pi$, the works of Shakespeare, your customer database --- has a
+recipe shorter than the raw data.
+
+\textbf{A tiny worked example.}  The string
+\texttt{01010101\ldots} (a million long) has a $\sim 30$-character
+recipe: \texttt{print "01" 500000 times}.  A million genuine coin
+flips has no such shortcut; its recipe is roughly a million
+characters.  Same disk size, wildly different Kolmogorov complexity.
+Complexity measures \emph{structure}, not \emph{size}.
+
+\textbf{Invariance and uncomputability.}  Different programming
+languages differ in recipe length by at most a constant --- the size
+of a translator (\cref{thm:invariance}).  So $K(x)$ is a property of
+the thing, not your toolkit.  But there is no algorithm that, given
+$x$, hands you its shortest program (\cref{thm:uncomputable}); if
+there were, it would solve the halting problem.  $K(x)$ is a perfectly
+well-defined number you can never compute exactly.
+
+Why a decision-maker should care: $K$ is the Platonic ideal every
+real compressor (zip, JPEG, an LLM) approximates from above.  There is
+a \emph{true} information content in your company's data, vendor-
+independent.  Random/encrypted data cannot be compressed --- if a
+vendor claims otherwise, they are selling snake oil.  And when we say
+an LLM ``understands'' a corpus, one precise meaning is: its weights
+are a short program reproducing the corpus's statistics --- the model
+approaching $K$ from above.
+\end{intuition}
+
+Shannon's framework is probabilistic: entropy is a property of a
+distribution, not of an individual string.  Kolmogorov's move
+\citep{kolmogorov1965three} was to attach a complexity measure to a
+\emph{single} object by asking for its shortest description in a fixed
+universal language.
+
+Fix once and for all a \textbf{universal Turing machine} $U$ --- a
+machine that, given as input a description $\langle M, w\rangle$ of
+any Turing machine $M$ and input $w$, simulates $M$ on $w$.
+
+\begin{definition}[Kolmogorov complexity]
+\label{def:kolmogorov}
+The \textbf{Kolmogorov complexity} of a finite binary string
+$x \in \{0,1\}^*$, relative to $U$, is
+\begin{equation}
+  K_U(x)
+  \;=\; \min\bigl\{\, |\pi| \,:\, \pi \in \{0,1\}^*,\ U(\pi) = x \,\bigr\},
+  \label{eq:kolmogorov}
+\end{equation}
+where $|\pi|$ is the bit-length of the program $\pi$, and $U(\pi) = x$
+means $U$ on input $\pi$ halts with output $x$.
+\end{definition}
+
+\begin{theorem}[Invariance theorem]
+\label{thm:invariance}
+If $U_1$ and $U_2$ are two universal Turing machines, then there
+exists a constant $c_{U_1,U_2}$, depending on $U_1$ and $U_2$ but not
+on $x$, such that
+\begin{equation}
+  \bigl| K_{U_1}(x) - K_{U_2}(x) \bigr| \;\le\; c_{U_1,U_2}
+  \quad \text{for every } x \in \{0,1\}^*.
+  \label{eq:invariance}
+\end{equation}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Because $U_1$ is universal, there is a fixed-length binary program
+$s_{2\to 1}$ that, when prepended to any $U_2$-program $\pi$, causes
+$U_1$ to simulate $U_2(\pi)$.  Thus every $U_2$-program $\pi$ of
+length $|\pi|$ yields a $U_1$-program of length
+$|s_{2\to 1}| + |\pi|$ with the same output, giving $K_{U_1}(x) \le
+K_{U_2}(x) + |s_{2\to 1}|$.  Symmetrically with $s_{1\to 2}$.  Taking
+$c_{U_1,U_2} = \max(|s_{1\to 2}|, |s_{2\to 1}|)$
+gives~\eqref{eq:invariance}.
+\end{proof}
+
+By convention we henceforth write $K(x)$ and treat the universal
+simulator as the additive constant.
+
+\begin{theorem}[Uncomputability of $K$]
+\label{thm:uncomputable}
+There is no total computable function $f : \{0,1\}^* \to \mathbb{N}$
+such that $f(x) = K(x)$ for all $x$.
+\end{theorem}
+
+\begin{proof}[Proof (Berry-paradox style)]
+Suppose for contradiction such an $f$ exists.  Define the program
+$P_m$, parameterised by an integer $m \in \mathbb{N}$, that does the
+following: enumerate $\{0,1\}^*$ in shortlex order and, for each $x$,
+compute $f(x)$ and output the first $x$ such that $f(x) > m$; then
+halt.  Strings of complexity greater than $m$ exist (there are only
+$2^m - 1$ programs of length less than $m$, but infinitely many
+strings), so $P_m$ halts and outputs some string $x_m^\star$ with
+$K(x_m^\star) > m$.
+
+The program $P_m$ has a fixed body of bit-length $B$ (independent of
+$m$) plus a binary encoding of $m$ of at most
+$\lceil \log_2(m+1)\rceil + O(1)$ bits (e.g.\ Elias delta).  So
+$|P_m| \le B + \log_2 m + O(1)$, giving
+\begin{equation}
+  K(x_m^\star) \;\le\; |P_m| \;\le\; B + \log_2 m + O(1).
+  \label{eq:berry-upper}
+\end{equation}
+Combined with $K(x_m^\star) > m$,
+\begin{equation}
+  m \;<\; B + \log_2 m + O(1),
+  \label{eq:berry-contra}
+\end{equation}
+which fails for every sufficiently large $m$ (since $m - \log_2 m \to
+\infty$), a contradiction.
+\end{proof}
+
+The upshot of \cref{thm:uncomputable} is that every practical
+compressor --- gzip, PNG, FLAC, and indeed every neural language
+model --- produces an upper bound on $K(x)$, never its exact value.
+
+% =========================================================================
+\section{Solomonoff induction}
+\label{sec:solomonoff}
+% =========================================================================
+
+\begin{intuition}
+To predict the future, average the predictions of every possible
+theory, giving shorter theories exponentially more weight
+(\cref{def:M,thm:solomonoff}).
+
+\textbf{The panel-of-theorists analogy.}  Imagine a town-hall where
+every possible theory of the world has a theorist.  Microphone volume
+is set by theory length: a theory of length $L$ bits gets weight
+$2^{-L}$.  A theory you can state in 10 words gets a microphone
+$1{,}000$ times louder than one needing 20 words.  Each theorist
+still consistent with the data shouts her prediction.  The weighted
+average \emph{is} the Solomonoff prediction $M$.  Quiet baroque
+theorists are drowned out; loud simple ones dominate --- until data
+eliminates them, at which point the next-simplest survivors take
+over.  This is Occam's razor, precisely quantified.
+
+\textbf{A tiny worked example.}  You see $2, 4, 6, 8$.  What's next?
+The theorist ``add 2'' has a very short program and shouts
+``$10$'' at high volume.  The theorist ``the sequence is
+$2,4,6,8,47$, then random'' has a longer program and shouts ``$47$''
+much more quietly.  Weighted vote: overwhelmingly ``$10$.''  If the
+next number really is $47$, all the ``add 2'' theorists are silenced
+forever, and the surviving theorists with the shortest explanation of
+$2,4,6,8,47$ take over.  The machine self-corrects as evidence
+arrives.  A toy two-hypothesis universe is worked out in
+\cref{ex:toy-solomonoff}.
+
+\textbf{Convergence.}  If the true process is computable, Solomonoff's
+predictor converges to it: KL error goes to zero
+(\cref{thm:solomonoff}).  The intuition: the true theory is somewhere
+in the panel, and every wrong theorist loses microphone share each
+time she makes a wrong prediction.  Eventually the truth dominates.
+
+Why a decision-maker should care: Solomonoff induction is the gold
+standard of ``learning from data.''  Every ML method is, badly and
+efficiently, trying to imitate it.  ``Bayesian model averaging,''
+``ensemble methods,'' ``regularise for simplicity'' --- all are
+engineering approximations of this ideal.  It also explains why
+overfitting is bad in a principled way: an overfit model is a
+baroque theorist with a long description, and Solomonoff would have
+weighted her near-zero from the start.  The question ``which model is
+best?'' has a right answer: whichever predicts held-out data with the
+fewest bits of surprise.
+\end{intuition}
+
+Kolmogorov complexity selects a single shortest program.  Solomonoff's
+prior \citep{solomonoff1964formal} performs a \emph{Bayesian average}
+over all programs, weighted by their lengths.  Fix a
+\emph{prefix-free} universal Turing machine $U$: the set of halting
+inputs forms a prefix code, so
+$\sum_{\pi : U(\pi)\downarrow} 2^{-|\pi|} \le 1$ by Kraft's inequality.
+
+\begin{definition}[Universal prior $M$]
+\label{def:M}
+For a finite binary string $x \in \{0,1\}^*$, the \textbf{universal
+(Solomonoff) prior} is
+\begin{equation}
+  M(x) \;=\; \sum_{\pi \,:\, U(\pi)\, =\, x *} 2^{-|\pi|},
+  \label{eq:M}
+\end{equation}
+where the sum runs over all programs $\pi$ such that $U(\pi)$ halts
+and outputs a string whose prefix is $x$ (denoted $x*$).
+Equivalently, $M(x)$ is the probability that $U$ fed with a uniformly
+random infinite bitstream prints $x$ as its first $|x|$ output bits.
+\end{definition}
+
+The Solomonoff predictive posterior is
+\begin{equation}
+  M(x_{t+1} \mid x_{1:t}) \;=\; \frac{M(x_{1:t}\,x_{t+1})}{M(x_{1:t})},
+  \label{eq:M-posterior}
+\end{equation}
+defined whenever $M(x_{1:t}) > 0$.
+
+\begin{theorem}[Solomonoff's convergence theorem]
+\label{thm:solomonoff}
+Let $\mu$ be any computable probability measure on $\{0,1\}^\infty$.
+Then there is a constant
+\begin{equation}
+  c_\mu \;=\; 2^{-K(\mu) + O(1)}
+  \label{eq:cmu}
+\end{equation}
+such that, for all finite prefixes $x$,
+\begin{equation}
+  M(x) \;\ge\; c_\mu \cdot \mu(x).
+  \label{eq:dominance}
+\end{equation}
+Consequently, if $X_{1:\infty} \sim \mu$, the cumulative expected
+KL divergence between the Solomonoff predictor and $\mu$ is bounded
+uniformly:
+\begin{equation}
+  \sum_{t=1}^{\infty}
+    \mathbb{E}_{\mu}\!\left[
+      D_{\mathrm{KL}}\!\bigl(\mu(\cdot \mid X_{<t}) \,\|\, M(\cdot \mid X_{<t})\bigr)
+    \right]
+  \;\le\; K(\mu)\ln 2 + O(1).
+  \label{eq:sol-bound}
+\end{equation}
+In particular,
+$D_{\mathrm{KL}}(\mu(\cdot \mid X_{<t}) \| M(\cdot \mid X_{<t})) \to 0$
+in $\mu$-expectation as $t \to \infty$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Because $\mu$ is computable, it has a description as a program
+$\pi_\mu$ of length $|\pi_\mu| = K(\mu) + O(1)$.  Fix any family of
+programs that, given $\pi_\mu$ as subroutine, simulates a $\mu$-sample
+to within arbitrarily many bits; summing $2^{-|\pi|}$ over that
+family and restricting to those whose output begins with $x$ shows
+$M(x) \ge 2^{-K(\mu) - O(1)}\,\mu(x)$, which is
+\eqref{eq:dominance} with $c_\mu$ as in~\eqref{eq:cmu}.  Taking
+logarithms and applying a telescoping chain-rule argument to the KL
+divergence then yields~\eqref{eq:sol-bound}.  The correct program
+$\pi_\mu$ has prior mass exactly $2^{-K(\mu)}$; the finite KL budget
+is the information-theoretic price of identifying it.  For the full
+proof see \citet[Ch.~5]{livitanyi2019}.
+\end{proof}
+
+\begin{example}[Toy Solomonoff update on a two-program universe]
+\label{ex:toy-solomonoff}
+Restrict the universe of programs to two deterministic generators:
+$\pi_0 : \text{always output }0$ (bit-length $|\pi_0| = 2$) and
+$\pi_1 : \text{output the cycle } 01010101\ldots$ (bit-length
+$|\pi_1| = 3$).  Under the Solomonoff-style weighting
+$w(\pi) = 2^{-|\pi|}$, the prior over the two hypotheses is
+\[
+  P(\pi_0) \;=\; \frac{2^{-2}}{2^{-2} + 2^{-3}} \;=\; \frac{2}{3},
+  \qquad
+  P(\pi_1) \;=\; \frac{2^{-3}}{2^{-2} + 2^{-3}} \;=\; \frac{1}{3}.
+\]
+Observe the prefix $x_{1:4} = 0101$.  Likelihoods:
+$\Pr(0101 \mid \pi_0) = 0$ (the all-zeros generator cannot produce a
+$1$); $\Pr(0101 \mid \pi_1) = 1$.  Bayes' rule gives
+$P(\pi_0 \mid 0101) = 0$, $P(\pi_1 \mid 0101) = 1$.  So the Solomonoff
+predictor assigns $M(x_5 = 0 \mid 0101) = 1$, $M(x_5 = 1 \mid 0101) =
+0$.  Two features: the shorter program $\pi_0$ was \emph{not}
+favoured after data --- simplicity is a prior preference overridden
+by evidence --- and a single contradicting bit collapses an
+exponentially-weighted prior to a point mass, which is the mechanism
+by which Solomonoff induction converges so fast on deterministic
+sources.
+\end{example}
+
+% =========================================================================
+\section{AIXI: intelligence as optimal compression-driven prediction}
+\label{sec:aixi}
+% =========================================================================
+
+\begin{intuition}
+The theoretically optimal agent is the one that, before each action,
+asks the Solomonoff panel what is likely to happen, and picks the
+action whose expected future reward is highest
+(\cref{def:aixi,thm:aixi-opt}).
+
+\textbf{The chessplayer-with-infinite-advisors analogy.}  Before every
+move, our player consults every possible theory of chess --- rulebooks,
+strategies, crank manifestos --- weighted by simplicity.  For each
+candidate move she asks: ``If I play this, what happens over the next
+thousand moves, and how much will I enjoy it?''  She takes the
+weighted average and plays the best expected future.  That is
+\emph{AIXI}.  Hutter proves it is, in a specific technical sense, the
+most intelligent agent possible.
+
+\textbf{A tiny worked example.}  A two-armed bandit: Arm A paid out
+once in three pulls; Arm B paid out zero times in one pull.  The
+simplest theories favour A; slightly more complex theories say B was
+just unlucky.  Weight theories by simplicity, compute expected reward
+from each arm over the next $100$ pulls, pick the winner.  You will
+usually pull A but occasionally explore B --- not because someone
+programmed exploration, but because the simplicity-weighted average
+\emph{naturally} keeps B alive.  AIXI does this for every decision,
+everywhere.
+
+\textbf{Why Hutter calls it ``universal intelligence.''}  AIXI does
+not need to know the game, the physics, or the rules.  Drop it into
+any computable environment and it will eventually learn the
+environment and play optimally.  Its only prior is Occam's razor.
+
+\textbf{The catch.}  AIXI is uncomputable; it requires running every
+possible program.  Bounded approximations (AIXItl, MC-AIXI) exist but
+are toys.  AIXI is to intelligence what the ideal gas law is to a
+real gas --- a north star, not a product.
+
+Why a decision-maker should care: AIXI is a crisp, non-hand-wavy
+definition of ``what would a perfectly general AI do?''  When someone
+claims their system is ``a step toward AGI,'' ask: is it a step
+toward better approximating AIXI?  Is it building better world-models
+and planning against them?  If yes, the claim is in the right
+ballpark.  If it is pattern-matching in a narrow domain with no
+planning layer, the claim is marketing.  And no real system \emph{is}
+AIXI, so any product advertised as ``universal intelligence'' is
+abusing the term.
+\end{intuition}
+
+Hutter's AIXI framework \citep{hutter2005universal} extends Solomonoff
+induction from passive sequence prediction to sequential
+decision-making.  The agent interacts with an environment over
+discrete time steps.  At step $t$ the agent chooses an action $a_t
+\in \mathcal{A}_{\mathrm{act}}$, and the environment returns a
+percept $e_t = (o_t, r_t)$ consisting of an observation $o_t \in
+\mathcal{O}$ and a reward $r_t \in [0, r_{\max}] \subset \mathbb{R}$.
+Write the interaction history as
+$h_{<t} = (a_1, e_1, a_2, e_2, \dots, a_{t-1}, e_{t-1})$.
+
+An \textbf{environment} is a conditional probability measure
+$\nu(e_{1:m} \mid a_{1:m})$ over percept sequences given action
+sequences.  The \textbf{universal mixture environment} is
+\begin{equation}
+  \xi(e_{1:m} \mid a_{1:m})
+  \;=\; \sum_{\nu \in \mathcal{M}} 2^{-K(\nu)}\,\nu(e_{1:m} \mid a_{1:m}),
+  \label{eq:xi}
+\end{equation}
+where $\mathcal{M}$ is the class of all lower-semicomputable
+(``chronological'') environments and $K(\nu)$ is the Kolmogorov
+complexity of a prefix program for $\nu$.
+
+\begin{definition}[AIXI]
+\label{def:aixi}
+Fix a finite planning horizon $m$ and a discount.  The \textbf{AIXI
+action} at history $h_{<t}$ is
+\begin{equation}
+  a_t^{\text{AIXI}}
+  \;=\; \arg\max_{a_t}
+        \sum_{e_t}\!\max_{a_{t+1}}\sum_{e_{t+1}}\!\cdots\!\max_{a_m}\sum_{e_m}
+        \Bigl(\sum_{k=t}^{m} r_k\Bigr)\,
+        \xi\bigl(e_{t:m} \,\big|\, h_{<t}, a_{t:m}\bigr).
+  \label{eq:aixi-rule}
+\end{equation}
+\end{definition}
+
+In words: AIXI plans by expectimax over all possible futures, weighted
+by the Solomonoff-type universal mixture~\eqref{eq:xi}.  The
+$2^{-K(\nu)}$ weighting is what ties the definition of intelligence
+back to compression: hypothesised environments with short descriptions
+receive exponentially more weight, and an AIXI-optimal agent
+simultaneously (i) compresses its environment optimally and (ii) acts
+to maximise reward under that compressed model.
+
+\begin{theorem}[Universal optimality of AIXI, informal]
+\label{thm:aixi-opt}
+Within the class of lower-semicomputable environments, AIXI is
+\emph{Pareto optimal}: no agent $\pi'$ achieves strictly greater
+expected total reward than AIXI in every environment $\nu \in
+\mathcal{M}$.  Moreover, for any computable $\nu$ the AIXI predictor
+converges to the true environment's predictions in the sense of
+\eqref{eq:sol-bound} with $M$ replaced by~$\xi$.
+\end{theorem}
+
+For the precise statement and proof see
+\citet[Ch.~5]{hutter2005universal}.  The significance of
+\cref{thm:aixi-opt} is that ``intelligence'' has, within this
+framework, been reduced to a single ingredient (the universal
+prior~\eqref{eq:xi}) plus bookkeeping (the expectimax expansion).
+Remove the Solomonoff prior and the agent collapses to uninformed
+search; keep it, and the agent becomes universally optimal.
+
+% =========================================================================
+\section{What this buys us for LLMs}
+\label{sec:llms}
+% =========================================================================
+
+\begin{intuition}
+An LLM trained to predict the next word is, mechanically and provably,
+a compressor of its training data --- which, per the chain above,
+puts it somewhere on the intelligence spectrum
+(\cref{eq:chain,thm:ce-code,thm:solomonoff}).
+
+\textbf{The Hutter Prize as a concrete hinge.}  Marcus Hutter put up
+real prize money for whoever can compress 1~GB of Wikipedia the most.
+The current leaderboard is dominated by neural compressors.  Training
+an LLM on Wikipedia to minimise cross-entropy \emph{is} compressing
+Wikipedia; the model weights plus arithmetic-coded residuals are the
+compressed file.  Better prediction $=$ smaller file $=$ (by
+\cref{thm:ce-code}) better distributional model $=$ (by
+\cref{thm:solomonoff}) closer to the true generating process $=$
+(per Hutter) more intelligence.
+
+\textbf{Scaling laws.}  Plot model size against cross-entropy loss on
+held-out text: you get a strikingly clean curve.  Double the data,
+double the parameters, loss drops predictably.  The curve has been
+stable across four orders of magnitude
+\citep{kaplan2020scaling}.  Cross-entropy --- our bits-per-token
+yardstick --- is a smooth function of investment.  You can buy
+intelligence by the bit.  Not efficiently, not forever, and with
+diminishing returns --- but predictably.
+
+\textbf{A tiny worked example.}  GPT-2 hit roughly $1.2$ bits per
+English character on a standard benchmark; GPT-4-class models are
+closer to $0.7$.  That looks like a modest drop.  But English text is
+about $1.3$ bits of true entropy per character (Shannon's 1950s
+estimate).  So GPT-2 was $\sim 92\%$ of the way to the floor; GPT-4
+is $\sim 98\%$.  Small in bits, enormous in dollars --- the last bit
+contains the reasoning, the rare facts, the nuanced world-models.
+
+\textbf{Emergent capabilities, cautious framing.}  If the training
+objective is a compression proxy and compression is provably linked
+to a universal notion of intelligence, then LLMs doing arithmetic,
+translation, and code --- capabilities nobody explicitly trained for
+--- is not a bug.  It is the theory predicting itself.  To compress
+text well, you must model the world the text is about.
+
+Why a decision-maker should care, three upshots.  First, you now have
+a real yardstick --- cross-entropy on your own domain data --- to
+compare vendors.  Second, you understand why ``just predict the next
+word'' produces general-looking behaviour; it is not marketing, it is
+a theorem wearing a T-shirt.  Third, you can reason about the
+ceiling: as models approach the true entropy of text, progress on
+pure language tasks must slow, and the frontier moves to multimodal
+data, embodied interaction, and reasoning architectures.  Plan
+capital allocation accordingly.
+\end{intuition}
+
+Concretely, a large language model parameterises a conditional
+distribution $q_\theta(x_t \mid x_{<t})$ and is trained by minimising
+the negative log-likelihood
+\begin{equation}
+  \mathcal{L}(\theta)
+  \;=\; -\frac{1}{T}\sum_{t=1}^{T} \log_2 q_\theta(x_t \mid x_{<t}).
+  \label{eq:llm-loss}
+\end{equation}
+By \cref{thm:ce-code}, $\mathcal{L}(\theta)$ is the expected
+arithmetic-coding length per token: minimising cross-entropy \emph{is}
+minimising compressed size.  Equivalently, by \cref{cor:ppl}, lowering
+perplexity lowers bits-per-token by the same amount.
+
+\citet{kaplan2020scaling} showed that $\mathcal{L}(\theta)$ follows
+clean power laws in model size $N$, dataset size $D$, and compute $C$,
+of the form $\mathcal{L} \approx (N_c / N)^{\alpha_N}$.  Viewed
+through~\eqref{eq:llm-loss}, each such power-law decrement is a
+\emph{bit-per-token compression improvement}.  The operational
+content of \cref{thm:solomonoff} in this setting is that, to the
+extent that the data-generating process is computable, any predictor
+whose bits-per-token approaches the conditional entropy rate
+$\overline{H}(p)$ is implicitly approximating the $\mu$-posterior of
+the universal prior $M$.
+
+\citet{deletang2024language} operationalised this equivalence by
+wiring a large language model into an arithmetic coder and
+compressing raw bytes of image and audio data.  They reported
+compression ratios lower than domain-specific specialist compressors
+(e.g.\ PNG, FLAC) on out-of-domain modalities, despite the model
+having been trained solely on text.  From the vantage point of
+\cref{thm:ce-code,thm:solomonoff}, the experiment is a consistency
+check: a predictor that approximates a universal prior should, by
+\eqref{eq:dominance}, compress any computable source to within an
+additive $K(\mu)$ of its true entropy, and text exposure is enough
+to learn a useful approximation of that prior.
+
+The \textbf{Hutter Prize} \citep{hutter2005universal} formalises the
+economic version of the claim: a cash prize for improving the
+lossless compression ratio on a fixed text corpus.  Within the
+equivalence framework, every winning submission is, by definition, a
+model whose cross-entropy on the corpus is lower --- which, by
+\cref{cor:ppl}, is a more accurate next-symbol predictor.
+
+Collecting the theorems of
+\crefrange{sec:pred-comp}{sec:aixi} we obtain the \emph{working
+equivalence}:
+\begin{equation}
+  \underbrace{\text{low cross-entropy}}_{\text{good predictor}}
+  \;\Longleftrightarrow\;
+  \underbrace{\text{short arithmetic code}}_{\text{good compressor}}
+  \;\Longleftrightarrow\;
+  \underbrace{\text{approx.\ of universal prior}}_{\substack{\text{Solomonoff/AIXI}\\\text{sense of intelligence}}}
+  \label{eq:chain}
+\end{equation}
+The double arrows are theorems within Shannon's framework
+(\cref{thm:ce-code}) and asymptotic theorems modulo computability
+(\cref{thm:solomonoff}).
+
+% =========================================================================
+\section{Caveats and what the equivalence does not say}
+\label{sec:caveats}
+% =========================================================================
+
+\begin{intuition}
+The equivalence is real but narrow: it tells you that good prediction
+entails good \emph{modelling}, not that good prediction entails
+understanding, agency, or safety.  It promises statistical competence.
+It does not promise causal reasoning, counterfactual simulation, or
+moral judgement.  Those may emerge --- the theory leaves the door
+open --- but they are not guaranteed by the objective.
+
+\textbf{Uncomputability is not cosmetic.}  $K(x)$ and AIXI are
+unreachable (\cref{thm:uncomputable}).  Every real compressor and
+every real agent is a finite approximation.  Saying an LLM is
+``approximating AIXI'' is like saying your car is ``approximating the
+speed of light'' --- technically true in the limit, totally misleading
+in practice.
+
+\textbf{Compression $\ne$ understanding.}  A Blockbuster employee who
+memorised every movie in the store had compressed a lot of data.  Did
+he understand cinema?  Maybe, maybe not.  A lossless compressor has
+captured statistics; that is \emph{some} kind of understanding, but
+not necessarily the kind a manager means when she asks ``does the
+model understand our business?''
+
+\textbf{Embodiment.}  A text-only system has only ever been surprised
+by text.  It has no ground-truth feedback from physical reality.
+Solomonoff's framework accepts any computable environment, but LLMs
+have the text channel and lack the body-in-a-world channel.  Agentic,
+tool-using, multimodal systems are early attempts to close that gap.
+
+\textbf{Benchmarks are not the floor.}  A model with low cross-entropy
+on a benchmark may just have memorised the benchmark.  Data
+contamination is rampant.  The equivalence only holds when the test
+distribution is genuinely held out.
+
+Why a decision-maker should care: use the equivalence as a
+\emph{lower bound}, not an upper bound.  When a vendor says ``lowest
+perplexity,'' accept that as real evidence of genuine modelling skill
+--- and then ask the second question: skill at what, tested on what,
+does it translate to your domain?  The equivalence tells you the knob
+exists.  It does not tell you that turning the knob solves your
+problem.  Confusing ``next-token prediction'' with ``just autocomplete''
+misses a deep result; confusing ``next-token prediction'' with
+``general intelligence'' overclaims a narrow one.  Both errors are
+expensive.  Staying in the middle --- taking the equivalence seriously
+but not theologically --- is the managerial win.
+\end{intuition}
+
+Several limitations of the chain~\eqref{eq:chain} deserve formal
+acknowledgement.
+
+\paragraph{(C1) Uncomputability.}
+By \cref{thm:uncomputable}, $K(x)$ is not computable; by a related
+argument so is $M(x)$.  The entire right-hand side of~\eqref{eq:chain}
+therefore names a mathematical ideal, not an algorithm.  Every real
+compressor produces an upper bound $\tilde K(x) \ge K(x)$, and
+equality is in principle unattainable.  ``Approximates the universal
+prior'' must be taken as an asymptotic statement about cross-entropy,
+not as a literal claim that the model is computing~$M$.
+
+\paragraph{(C2) The additive constant.}
+\Cref{thm:invariance} only guarantees machine-independence up to an
+additive constant $c_{U_1, U_2}$.  For short strings this constant
+can dominate $K(x)$ itself; Kolmogorov complexity is only meaningful
+asymptotically.  Analogously, the $K(\mu)$ term in~\eqref{eq:sol-bound}
+is a finite one-time information cost: it does not shrink with data.
+
+\paragraph{(C3) Practical compressors vs.\ $K$.}
+A compressor $C$ is \emph{universal} in Shannon's sense if its code
+length $L_C(x_{1:T})/T$ converges to the entropy rate of any
+stationary ergodic source.  It is \emph{not} in general universal in
+Solomonoff's sense: it need not dominate all computable measures.  The
+gap between Lempel--Ziv (Shannon-universal) and Solomonoff (universal
+over all computable measures) is a full logical level of universality,
+and neural compressors live somewhere in between.
+
+\paragraph{(C4) Necessary vs.\ sufficient.}
+\Cref{thm:solomonoff,thm:aixi-opt} establish that optimal prediction
+and agency \emph{entail} optimal compression.  They do \emph{not}
+establish that every improvement in compression corresponds to an
+improvement in every intuitive sense of ``understanding.''  In
+particular, the framework is silent on phenomenal consciousness,
+grounding, and embodiment, and it takes the reward signal and the
+action--percept loop as primitives rather than explaining their
+origin.
+
+\paragraph{(C5) Compression $\ne$ understanding (as internal structure).}
+A compressor is characterised by its length function, not by its
+internal representations.  Two compressors with identical code
+lengths may use entirely different internal mechanisms, only one of
+which we would intuitively call ``understanding.''
+Equation~\eqref{eq:chain} reduces ``intelligence'' to an extensional
+(input--output) property; any argument that understanding is
+intensional (about how the function is computed) is not touched by
+the chain.
+
+\paragraph{Summary.}
+The equivalence~\eqref{eq:chain} is a genuine theorem modulo
+\crefrange{def:entropy}{def:aixi} and the computability-based caveats
+(C1)--(C3).  What it licences is a precise sense in which lowering
+cross-entropy on a sufficiently rich corpus moves a predictor along a
+single axis shared with compression and with Hutter-style universal
+agency.  What it does \emph{not} licence is the stronger claim that
+this axis exhausts what we mean by understanding.
+
+% =========================================================================
+\section*{Further reading}
+\addcontentsline{toc}{section}{Further reading}
+% =========================================================================
+
+\begin{description}[leftmargin=1em,style=nextline]
+  \item[Information theory, foundations.] \citet{shannon1948mathematical}
+    is the founding paper and still the clearest exposition of the
+    source-coding setup.  \citet{coverthomas2006} is the modern textbook
+    reference; chapters 2--5 cover everything in
+    \cref{sec:shannon-prelude,sec:pred-comp}.
+  \item[Kolmogorov complexity and Solomonoff induction.]
+    \citet{kolmogorov1965three} introduces the three approaches to
+    defining information; \citet{solomonoff1964formal} introduces the
+    universal prior.  \citet{livitanyi2019} is the definitive modern
+    textbook, with full proofs of \cref{thm:invariance,thm:uncomputable,thm:solomonoff}.
+  \item[Universal agency.] \citet{hutter2005universal} is the original
+    AIXI monograph, including proofs of \cref{thm:aixi-opt} and
+    related optimality results.
+  \item[LLMs as compressors, empirical.]
+    \citet{kaplan2020scaling} gives the scaling-law curves discussed
+    in \cref{sec:llms}.  \citet{deletang2024language} demonstrates
+    experimentally that a text-trained large language model, used as
+    the model inside an arithmetic coder, compresses out-of-domain
+    byte streams (images, audio) competitively.
+\end{description}
+
+\bibliography{../section3}
+
+\end{document}

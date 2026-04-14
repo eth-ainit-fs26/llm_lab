@@ -1,8 +1,13 @@
-# CLLAUDE — session handoff notes
+# CLAUDE.md — persistent reference for future Claude sessions
 
-**Branch:** `claude/agentic-ai-research-agents-nZnmj`
-**Last session:** 2026-04-12 (local Claude Code, laptop)
-**Last commit on branch:** `42f1fae` — "Add Section 5 lecture notes and Beamer slide deck"
+This file is a living reference for any Claude instance working on this
+repo. It captures conventions, build landmines, and repo layout that are
+not obvious from the source tree alone. Update it as you learn things a
+future session would benefit from knowing.
+
+**Last meaningful update:** 2026-04-13
+**Active branch at time of last update:** `claude/agentic-ai-research-agents-nZnmj`
+**Latest commit on that branch:** `42f1fae` — "Add Section 5 lecture notes and Beamer slide deck"
 
 ---
 

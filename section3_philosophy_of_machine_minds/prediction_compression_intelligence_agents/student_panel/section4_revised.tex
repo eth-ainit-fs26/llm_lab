@@ -1,0 +1,292 @@
+% === Revised Section 4: Kolmogorov complexity ===
+
+% NEW PREAMBLE ADDITIONS NEEDED:
+% \usepackage[most]{tcolorbox}  % already loaded in the main file
+% \tcbuselibrary{breakable,skins}  % already loaded in the main file
+%
+% \newtcolorbox{activity}[1][]{
+%   breakable,
+%   enhanced,
+%   colback=blue!5,
+%   colframe=blue!55!black,
+%   coltitle=white,
+%   fonttitle=\bfseries,
+%   title={Activity},
+%   boxrule=0.6pt,
+%   left=6pt,right=6pt,top=4pt,bottom=4pt,
+%   #1
+% }
+
+\section{Kolmogorov complexity}
+\label{sec:kolmogorov}
+
+\begin{intuition}
+\textbf{One-line answer.}  The Kolmogorov complexity $K(x)$ of an
+object $x$ is the length, in bits, of the shortest computer program
+that prints $x$ and stops (\cref{def:kolmogorov}).  It is the
+vendor-independent floor on how far $x$ can ever be compressed.
+
+\textbf{Twin USB sticks.}  Imagine two 8\,GB USB sticks on your desk.
+One is full of family JPGs; the other is full of bytes drawn from
+\texttt{/dev/urandom}.  Both weigh the same; both read the same number
+of bits off the bus.  Zip the first and you get roughly
+$6$--$7\,\text{GB}$; zip the second and you get back almost exactly
+$8\,\text{GB}$ --- sometimes \emph{larger}, once zip's header is added.
+The difference is not in the hardware.  It is a property of the
+\emph{contents}: the photos have structure a short program can
+exploit, the random bytes do not.  Kolmogorov complexity is the
+mathematical name for that difference.
+
+\textbf{The recipe-over-the-phone picture.}  You are a chef.  A
+colleague in another city must reproduce your dish exactly.  You
+dictate the shortest instructions that do the job.  ``Boil water''
+takes two words.  A souffl\'e takes a page.  A pattern of $10{,}000$
+genuinely random sprinkles on a cake has no shorter description than
+itself: you read out every position.  Such an object is
+\emph{Kolmogorov random}; it has no exploitable structure.  Everything
+else --- the digits of $\pi$, the works of Shakespeare, your customer
+database --- has a recipe shorter than the raw data.
+
+\textbf{A tiny worked example.}  The string \texttt{01010101\ldots} (a
+million characters long) has an $\approx 30$-character recipe:
+\texttt{print "01" 500000 times}.  A million genuine coin flips has no
+such shortcut; its recipe is, to within a small constant, a million
+characters.  Same disk size, wildly different Kolmogorov complexity.
+\emph{Complexity measures structure, not size.}
+
+\textbf{Invariance and uncomputability, previewed.}  Two different
+programming languages disagree about the length of a recipe by at most
+the size of a translator between them (\cref{thm:invariance}).  So
+$K(x)$ is a property of the object, not your toolkit.  But no
+algorithm, given $x$, can hand you its shortest program
+(\cref{thm:uncomputable}); if one existed, it would decide the halting
+problem.  $K(x)$ is a perfectly well-defined number that you can bound
+from above --- by running zip, by training a model --- but never
+compute exactly.
+
+\textbf{Why a decision-maker should care.}  Your company's data has a
+\emph{true}, vendor-independent information content.  No one can quote
+it to you exactly; anyone who claims to has sold you the Brooklyn
+Bridge.  But every real compressor --- zip, JPEG, your LLM --- gives
+you an upper bound, and upper bounds are enough to tell snake oil from
+signal.
+\end{intuition}
+
+\begin{intuition}[title={The compression sniff test}]
+If a vendor claims to losslessly compress genuinely random or properly
+encrypted data, they are selling snake oil --- Shannon closed that
+door in 1948.  A truly random source has entropy equal to its raw
+bit-length; no code can do better on average
+(\cref{thm:source-coding}).  ``We compress encrypted traffic by
+40\,\%'' is either marketing about a non-random \emph{side channel}
+(timestamps, packet sizes, TLS record framing) --- which may be
+legitimate --- or a claim that should not appear in a contract you
+sign.  Activity~\ref{act:bingo} gives you a bingo card for the next
+vendor demo.
+\end{intuition}
+
+\begin{activity}[title={Activity 1 --- Shortest-recipe game}]
+\label{act:recipe}
+\textbf{Setup (10 minutes, pairs).}  Each pair receives the four
+strings below.  Write, in the pseudocode of your choice, the shortest
+program you can that prints each exactly.  Score: total characters
+summed across the four programs.  Lowest score wins.
+
+\begin{enumerate}[label=(\alph*),leftmargin=*]
+  \item \texttt{01} repeated $500$ times (total length $1000$).
+  \item The first $100$ decimal digits of $\pi$.
+  \item The filename \texttt{IMG\_0423.JPG}.
+  \item $100$ bytes freshly drawn from \texttt{/dev/urandom},
+        printed as a $200$-character hex string (distributed on paper).
+\end{enumerate}
+
+\textbf{Debrief.}  Strings (a), (b), (c) collapse to tiny programs: a
+loop, a formula, and a literal constant shorter than the output.
+String (d) does not collapse: the shortest program anyone in the room
+produces is essentially \texttt{print "<the 200 hex chars>"}.  You
+have just re-derived, by hand, the distinction between
+Kolmogorov-compressible and Kolmogorov-random objects.
+\end{activity}
+
+Shannon's framework is probabilistic: entropy is a property of a
+distribution, not of an individual string.  Kolmogorov's move
+\citep{kolmogorov1965three} was to attach a complexity measure to a
+\emph{single} object by asking for the length of its shortest
+description in a fixed universal language.
+
+Fix once and for all a \textbf{universal Turing machine} $U$ --- a
+machine that, given as input a description $\langle M, w\rangle$ of
+any Turing machine $M$ and input $w$, simulates $M$ on $w$.
+
+\begin{definition}[Kolmogorov complexity]
+\label{def:kolmogorov}
+The \textbf{Kolmogorov complexity} of a finite binary string
+$x \in \{0,1\}^*$, relative to $U$, is
+\begin{equation}
+  K_U(x)
+  \;=\; \min\bigl\{\, |\pi| \,:\, \pi \in \{0,1\}^*,\ U(\pi) = x \,\bigr\},
+  \label{eq:kolmogorov}
+\end{equation}
+where $|\pi|$ is the bit-length of the program $\pi$ and $U(\pi) = x$
+means $U$ on input $\pi$ halts with output $x$.
+\end{definition}
+
+\begin{activity}[title={Activity 2 --- The gzip-vs-$K$ scoreboard}]
+\label{act:scoreboard}
+\textbf{Setup (5 minutes, demo or take-home).}  For each of the four
+strings from Activity~\ref{act:recipe}, measure three numbers:
+
+\begin{enumerate}[label=(\roman*),leftmargin=*]
+  \item \textbf{Raw size} --- the bit-length of the string itself.
+  \item \textbf{\texttt{gzip -9} size} --- bit-length of the
+        compressed file (subtract the $\sim\!80$-bit gzip header for
+        tiny inputs, or just note it).
+  \item \textbf{Shortest-recipe bound} --- the bit-length of the
+        winning program from Activity~\ref{act:recipe}, converted to
+        bits at $8$\,bit/character.
+\end{enumerate}
+
+Plot the three as a bar chart per string.  You will see: for (a)--(c)
+the recipe bound sits far below gzip; for (d) all three bars are
+essentially the same height.  The ``recipe bound'' is itself only an
+upper bound on $K(x)$ --- the true $K(x)$ is uncomputable
+(\cref{thm:uncomputable}) --- but seeing gzip dominated by a
+one-line Python program is the fastest way to feel in your bones that
+$K$ lives far below any off-the-shelf compressor.
+\end{activity}
+
+\begin{theorem}[Invariance theorem]
+\label{thm:invariance}
+If $U_1$ and $U_2$ are two universal Turing machines, then there
+exists a constant $c_{U_1,U_2}$\footnote{The constant $c_{U_1,U_2}$
+is finite and does not grow with $|x|$.  Concretely: the smallest
+self-contained CPython interpreter in C is a few hundred kilobytes of
+source, and a minimal C compiler written in Python is comparable; so
+for the pair (Python, C), $c_{U_1,U_2}$ is on the order of
+$10^6$--$10^7$ bits.  For a megabyte-scale corpus ($\sim\!10^7$ bits)
+this is already a non-trivial fraction; for a one-gigabyte ERP export
+($\sim\!10^{10}$ bits) it is numerically negligible, and
+``machine-independent up to an additive constant'' is a property you
+can plan around.  For objects \emph{smaller} than the constant --- a
+one-sentence log entry, a password --- it is not, and quoting ``the''
+Kolmogorov complexity of such an object is meaningless without fixing
+$U$.}, depending on $U_1$ and $U_2$ but not on $x$, such that
+\begin{equation}
+  \bigl| K_{U_1}(x) - K_{U_2}(x) \bigr| \;\le\; c_{U_1,U_2}
+  \quad \text{for every } x \in \{0,1\}^*.
+  \label{eq:invariance}
+\end{equation}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Because $U_1$ is universal, there is a fixed-length binary program
+$s_{2\to 1}$ --- an interpreter for $U_2$ written for $U_1$ --- that,
+when prepended to any $U_2$-program $\pi$, causes $U_1$ to simulate
+$U_2(\pi)$.  Thus every $U_2$-program $\pi$ of length $|\pi|$ yields a
+$U_1$-program of length $|s_{2\to 1}| + |\pi|$ with the same output,
+giving $K_{U_1}(x) \le K_{U_2}(x) + |s_{2\to 1}|$.  Symmetrically with
+$s_{1\to 2}$.  Taking $c_{U_1,U_2} = \max(|s_{1\to 2}|, |s_{2\to 1}|)$
+gives~\eqref{eq:invariance}.
+\end{proof}
+
+By convention we henceforth write $K(x)$ and treat the universal
+simulator as the additive constant.
+
+\begin{intuition}[title={The Berry paradox, dramatised}]
+Consider the English phrase
+\begin{quote}
+``the smallest positive integer not nameable in fewer than twenty
+English words.''
+\end{quote}
+That phrase contains nineteen words.  So if the integer it picks out
+exists, we have just named it in nineteen words, contradicting the
+very property we used to pick it.  The paradox is resolved by noting
+that ``nameable in English'' is too slippery to be a mathematical
+predicate.  But if we replace ``nameable in English'' with ``printed
+by a program of length $\le m$'', the slipperiness vanishes --- and
+the same self-referential trick becomes a clean proof that $K$ cannot
+be computed.  That is the content of \cref{thm:uncomputable}.
+\end{intuition}
+
+\begin{theorem}[Uncomputability of $K$]
+\label{thm:uncomputable}
+There is no total computable function $f : \{0,1\}^* \to \mathbb{N}$
+such that $f(x) = K(x)$ for all $x$.
+\end{theorem}
+
+\begin{proof}[Proof (Berry-paradox style)]
+Suppose for contradiction such an $f$ exists.  Define the program
+$P_m$, parameterised by an integer $m \in \mathbb{N}$, that does the
+following: enumerate $\{0,1\}^*$ in shortlex order and, for each $x$,
+compute $f(x)$ and output the first $x$ such that $f(x) > m$; then
+halt.  Strings of complexity greater than $m$ exist (there are only
+$2^m - 1$ programs of length less than $m$, but infinitely many
+strings), so $P_m$ halts and outputs some $x_m^\star$ with
+$K(x_m^\star) > m$.
+
+The program $P_m$ has a fixed body of bit-length $B$ (independent of
+$m$), plus a binary encoding of $m$ of at most
+$\lceil \log_2(m+1) \rceil + O(1)$ bits (e.g.\ Elias delta coding).
+So $|P_m| \le B + \log_2 m + O(1)$, giving
+\begin{equation}
+  K(x_m^\star) \;\le\; |P_m| \;\le\; B + \log_2 m + O(1).
+  \label{eq:berry-upper}
+\end{equation}
+Combined with $K(x_m^\star) > m$,
+\begin{equation}
+  m \;<\; B + \log_2 m + O(1),
+  \label{eq:berry-contra}
+\end{equation}
+which fails for every sufficiently large $m$ (since $m - \log_2 m
+\to \infty$) --- a contradiction.
+\end{proof}
+
+\begin{activity}[title={Activity 3 --- Snake-oil bingo}]
+\label{act:bingo}
+\textbf{Setup (5 minutes, individual then plenary).}  Below is a
+$3\times 3$ card of claims collected from real compression- and
+AI-vendor pitches.  Mark each cell \textbf{S} (violates Shannon /
+Kolmogorov --- snake oil), \textbf{L} (legitimate, exploits a
+non-random side channel), or \textbf{?} (need to ask the vendor a
+clarifying question).
+
+\begin{center}
+\small
+\begin{tabular}{|p{0.3\linewidth}|p{0.3\linewidth}|p{0.3\linewidth}|}
+\hline
+``Lossless 10:1 on AES-256 ciphertext.'' &
+``40\,\% reduction on TLS traffic via header deduplication.'' &
+``Patented sub-Shannon entropy coding.'' \\
+\hline
+``AI-powered compression of already-compressed JPEGs.'' &
+``Adaptive model shrinks your logs by 8$\times$.'' &
+``Zero-loss reduction of random-number tables.'' \\
+\hline
+``Our LLM produces an $n$-bit summary of an $n^2$-bit corpus.'' &
+``Universal compressor --- works on any input.'' &
+``Dictionary coding of repetitive Kafka topics, typical 70\,\%.'' \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Debrief.}  Cells about ciphertext, already-compressed JPEGs,
+random tables, and ``universal'' compressors are S.  Header
+deduplication on TLS and dictionary coding on repetitive topics are L.
+``AI-powered'' and ``sub-Shannon'' are ? until the vendor tells you
+what distribution they are assuming.  The LLM summary cell is L
+\emph{only} if lossy.
+\end{activity}
+
+\medskip
+
+The upshot of \cref{thm:uncomputable} is operational: every practical
+compressor --- gzip, PNG, FLAC, and indeed every neural language model
+--- produces an \emph{upper bound} on $K(x)$, never its exact value.
+What a decision-maker does with this on Monday morning: (i) treat
+every compression ratio a vendor quotes as a claim about \emph{your}
+data's distribution, not about the compressor's cleverness; (ii)
+demand that ratios be reported on a held-out sample from your own
+corpus, not the vendor's demo set; (iii) recognise that the gap
+between your best available compressor and the true $K$ is where
+better models --- and, in \cref{sec:solomonoff}, better
+\emph{predictors} --- still have room to win.

@@ -1,0 +1,299 @@
+% === Revised Preface + Section 1 ===
+%
+% NEW PREAMBLE ADDITIONS NEEDED (lift these into the main preamble):
+%
+% \usepackage{tikz}
+% \usetikzlibrary{positioning,arrows.meta,calc}
+% \usepackage{booktabs}
+% \usepackage{listings}
+%
+% % --- activity tcolorbox (green accent, distinct from orange "intuition") ---
+% \newtcolorbox{activity}[1][]{
+%   breakable,
+%   enhanced,
+%   colback=green!5,
+%   colframe=green!45!black,
+%   coltitle=white,
+%   fonttitle=\bfseries,
+%   title={Activity},
+%   boxrule=0.6pt,
+%   left=6pt,right=6pt,top=4pt,bottom=4pt,
+%   #1
+% }
+%
+% % --- "how to read" micro-box (grey, minimal) ---
+% \newtcolorbox{howtoread}{
+%   enhanced,
+%   colback=gray!8,
+%   colframe=gray!50,
+%   boxrule=0.4pt,
+%   left=6pt,right=6pt,top=3pt,bottom=3pt,
+%   sharp corners,
+%   fontupper=\small,
+% }
+%
+% ---------------------------------------------------------------------------
+
+% =========================================================================
+\section*{Preface: how to read these notes}
+% =========================================================================
+
+\begin{howtoread}
+\textbf{Two readers, one document.}
+Orange \textbf{Intuition} boxes are the \emph{manager track}: plain
+English, small numbers, one takeaway each. The running body is the
+\emph{student track}: definitions, lemmas, proofs. Green
+\textbf{Activity} boxes are for either reader --- they finish in under
+ten minutes and produce a number you can argue about.
+If you only read the orange boxes and the section headings, you will
+still leave with the thesis.
+\end{howtoread}
+
+\paragraph{The thesis in one sentence.}
+\emph{Predicting the next symbol well, compressing a file well, and
+acting intelligently are --- under precise definitions given later ---
+the same operation measured in different units.}
+That is either the most important business fact of the decade, or a
+confusion between three different things that happen to share a name.
+By the end of these notes you will know which, and you will know what
+observation would prove you wrong.
+
+\tableofcontents
+\newpage
+
+% =========================================================================
+\section{Why this equivalence matters}
+\label{sec:why}
+% =========================================================================
+
+\subsection*{A story to hold in your head}
+
+Three friends meet at a bar. The first is a stenographer: her job is
+to guess, letter by letter, what the speaker will say next, and she
+is eerily good at it. The second runs a file-compression startup: his
+software turns a 1~GB text dump into a 150~MB archive without losing
+a byte. The third is a chess player who has never read a book on
+chess but wins anyway, because she has an uncanny sense of which move
+a strong opponent would play.
+
+Over the course of these notes we will prove that the three friends
+are, in a precise mathematical sense, the same person. Shannon will
+show the stenographer and the compressor are literally doing the same
+job in different units. Kolmogorov will show that ``the shortest
+description of a thing'' does not depend on which language you
+describe it in. Solomonoff and Hutter (the latter an ETH alum, the
+former a little-known American polymath --- we will introduce both
+properly later) will show that a gambler who always bets on the
+shortest explanation is, in a sense we will make exact, the smartest
+possible learner. That is the whole plot.
+
+\begin{intuition}
+\textbf{One sentence.} Being good at predicting what comes next,
+being good at compressing a file, and being good at thinking are ---
+up to a translation we will spell out --- the same skill.
+
+\smallskip
+\textbf{Why a decision-maker should care.} Your vendors are selling
+products whose entire training objective is one number: the average
+surprise of the model when it sees the next word of the internet.
+If the equivalence holds, minimising that one number is a proxy for
+general intelligence. If it does not hold, you are buying a very
+expensive autocomplete. You cannot tell which without seeing the
+equivalence and its cracks.
+
+\smallskip
+\textbf{The falsifiable version.} If the equivalence is real, then
+across language models of similar size, \emph{lower bits-per-
+character on held-out English text should track higher scores on
+reasoning benchmarks} (MMLU, BIG-Bench, GSM8K). If two models have
+the same held-out bits-per-character but wildly different benchmark
+scores, the equivalence is leaky and we should say where. This is
+not a rhetorical flourish --- it is the empirical hook the rest of
+the document hangs on.
+\end{intuition}
+
+\subsection*{A worked number to anchor the rest}
+
+Before the definitions, here is the number to remember.
+Uncompressed English Wikipedia is about 19~GB. The classical utility
+\texttt{gzip} shrinks it to roughly 5~GB (a compression ratio of
+about 3.8). A modestly tuned 7-billion-parameter language model, used
+as a compressor through arithmetic coding, shrinks the same file to
+under 3~GB --- a ratio above 6. The Hutter Prize, a long-running
+competition founded by Marcus Hutter, currently stands near 1.1~GB
+on a 1~GB benchmark slice, i.e.\ a ratio close to 9. The prize's
+explicit premise is: \emph{the team that compresses English hardest
+has, by that very fact, built the best model of English}.
+\citep{hutter2006prize}
+
+\begin{example}[Bits, dollars, and benchmark points]
+\label{ex:three-currencies}
+Suppose a firm stores 100~TB of customer-support transcripts at
+\$0.023 per GB-month on commodity cloud storage. Raw cost:
+about \$28{,}000/year. A foundation model that compresses the logs
+2$\times$ (a realistic figure for natural-language logs) saves
+roughly \$14{,}000/year. That is the \textbf{dollars column}.
+The \textbf{bits column} is the bits-per-character of the same
+model on a held-out slice of the same logs. The \textbf{capability
+column} is what the same model scores on MMLU. The thesis of these
+notes is that the three columns are, up to noise and the caveats of
+\cref{sec:caveats}, three views of one underlying quantity.
+\end{example}
+
+\begin{activity}[title={Activity A1 --- Guess the next letter}]
+\textbf{Materials.} A short sentence (10--20 words), one letter per
+index card, kept face down.
+\textbf{Protocol.} In pairs. Flip card 1. Before flipping card 2,
+the guesser names the letter they think is next. Tally hits over 60
+cards.
+\textbf{Debrief.} Hit rate $h$ gives a back-of-envelope upper bound
+on your per-letter surprise: roughly $-\log_2 h$ bits. A frontier LM
+achieves about 0.9~bits per character on English. What did you
+achieve? The gap between you and the LM, in bits, is the gap that
+Shannon will soon teach us to price.
+\end{activity}
+
+\begin{activity}[title={Activity A2 --- Compress your own paragraph}]
+\textbf{Snippet (Python, $\sim$5 lines).}
+\begin{quote}\small\ttfamily
+import gzip, sys\\
+s = open("my\_paragraph.txt","rb").read()\\
+print("gzip bpc:", 8*len(gzip.compress(s))/len(s))
+\end{quote}
+Run it on a paragraph you wrote yourself. Typical English prose
+gives gzip $\approx 2.5$--$3.0$ bits per character. The same
+paragraph scored by a small public LM (code omitted; see the course
+repository) will give something closer to $1.0$. The ratio between
+those two numbers is roughly the ratio of ``what a dumb model of
+English knows'' to ``what a smart model of English knows.'' That
+ratio, multiplied by your storage bill, is the dollar value of
+intelligence measured in bits.
+\end{activity}
+
+\subsection*{The chain of results, informally}
+
+The rest of the section previews, in English, the four technical
+results that lock the equivalence together. Each will get a full
+treatment later; here we only name them and say which gap they
+close.
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Shannon source coding.} The minimum average number
+  of bits you need to encode a symbol drawn from a known
+  distribution equals that distribution's entropy. Corollary: if
+  you can predict, you can compress; if you can compress, you have
+  (implicitly) predicted. Prediction and compression are the same
+  job in different units.
+  \item \textbf{Kolmogorov complexity.} The length of the shortest
+  program that prints a string is, up to an additive constant that
+  does not depend on the string, independent of which universal
+  programming language you choose. So ``shortest description'' is
+  a property of the string, not of the describer. This licenses
+  talk of ``the'' complexity of a dataset.
+  \item \textbf{Solomonoff induction.} If you must bet on what
+  comes next with no prior knowledge, the Bayes-optimal gambler
+  assigns probability proportional to $2^{-K}$, where $K$ is the
+  Kolmogorov complexity of the hypothesis. Shorter explanations
+  are more likely; this is Occam's razor made into a theorem.
+  \item \textbf{AIXI.} An agent that acts to maximise expected
+  reward under Solomonoff's prior is, in a precisely defined
+  sense, the optimal reinforcement learner. It is uncomputable ---
+  but every real learner is a computable approximation to it, and
+  the distance from it is the distance from ideal intelligence.
+\end{enumerate}
+
+\begin{intuition}
+\textbf{The triangle to keep on a napkin.} Three vertices ---
+\emph{Predict}, \emph{Compress}, \emph{Act intelligently}. Three
+edges. Shannon is the edge Predict\,$\leftrightarrow$\,Compress;
+Solomonoff is the edge Compress\,$\leftrightarrow$\,Act (through
+Kolmogorov, which makes ``compress'' language-independent); and the
+full triangle closes at AIXI. \Cref{fig:triangle} draws it. If you
+remember only one picture from these notes, remember that one.
+\end{intuition}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  vertex/.style={draw, rounded corners, align=center, minimum width=2.6cm, minimum height=1cm, thick},
+  edge/.style={-{Latex[length=2mm]}, thick}
+]
+  \node[vertex] (P) at (0,0) {Predict\\ \scriptsize next-token model};
+  \node[vertex] (C) at (7,0) {Compress\\ \scriptsize shortest code};
+  \node[vertex] (A) at (3.5,-4) {Act\\ \scriptsize reward-seeking agent};
+
+  \draw[edge] (P) -- node[above, font=\small] {Shannon (\S2)} (C);
+  \draw[edge] (C) -- node[right, font=\small, xshift=2pt] {Solomonoff (\S4)} (A);
+  \draw[edge] (A) -- node[left, font=\small, xshift=-2pt] {AIXI (\S5)} (P);
+
+  \node[font=\small\itshape] at (3.5,-1.8) {Kolmogorov (\S3)\\ \scriptsize makes the triangle\\ \scriptsize language-independent};
+\end{tikzpicture}
+\caption{The three-vertex picture. Each edge is a theorem that
+translates one vertex into another. Kolmogorov complexity
+(\S3) is the hub that makes the translation coordinate-free.}
+\label{fig:triangle}
+\end{figure}
+
+\subsection*{Why this matters for decisions, not just for theory}
+
+A decision-maker evaluating a foundation-model vendor faces a
+simple but hard question: \emph{is the loss number on the vendor's
+training dashboard a proxy for anything you care about?} If the
+equivalence we are about to prove holds cleanly, the answer is yes:
+every 0.1-bit improvement in held-out cross-entropy corresponds to
+a measurable improvement in downstream capability, and the
+conversion rate can be estimated. If the equivalence leaks --- and
+we will show exactly where it does --- the answer is ``sometimes,
+in these regimes, with these caveats.'' Either answer is
+actionable; neither is available without the chain of theorems.
+
+\begin{activity}[title={Activity A4 --- Falsification worksheet}]
+Fill the table below before reading further. We will return to it
+in \cref{sec:caveats} and see which of your rows survives.
+\smallskip
+
+\begin{tabular}{p{4.2cm}p{4.2cm}p{4.2cm}}
+\toprule
+\textbf{Equivalence claim} & \textbf{What would refute it} & \textbf{What is merely consistent} \\
+\midrule
+Lower bpc $\Rightarrow$ higher MMLU (same size). & & \\
+Better zip ratio on a domain $\Rightarrow$ better agent on that domain. & & \\
+A model that memorises (does not generalise) cannot compress held-out data well. & & \\
+\bottomrule
+\end{tabular}
+\end{activity}
+
+\paragraph{A caveat, promoted out of the footnotes.}
+A \emph{perfect} next-token predictor would be an ideal learner.
+Real next-token predictors are not perfect. The gap between them
+and the ideal is exactly where this document's caveats live
+(\cref{sec:caveats}); we state the thesis before we qualify it,
+but the qualification is not optional. In particular: the
+equivalence is between the \emph{training objective} and general
+capability, not between any specific checkpoint and general
+capability. A model can be a poor compressor of your domain while
+the objective it was trained on remains the right objective. Keep
+the distinction; a lot of vendor arguments blur it.
+
+\medskip
+\noindent\textbf{Formal statement of the thesis.}
+The central technical claim of this note is that three operations
+often treated as distinct --- predicting the next symbol in a
+sequence, compressing that sequence into a shorter description, and
+behaving intelligently in its presence --- are, under a precise set
+of definitions, the \emph{same operation} viewed from three angles.
+Shannon's source coding theorem \citep{shannon1948mathematical}
+identifies prediction with compression; Kolmogorov complexity
+\citep{kolmogorov1965three} makes the notion of ``shortest
+description'' independent of the choice of description language;
+Solomonoff's universal prior \citep{solomonoff1964formal} promotes
+the Kolmogorov minimiser to a Bayesian predictor that converges to
+any computable source; and Hutter's AIXI
+\citep{hutter2005universal} upgrades that predictor into a
+reward-seeking agent whose optimality can be stated as a theorem.
+The chain is not an analogy. Every step in this note is a
+definition, a lemma, or a theorem. The pedagogical payoff is that
+one can then ask sharp questions about large language models ---
+whether they count as compressors, whether better compression
+entails more general capability, and where the equivalence breaks
+--- without smuggling in metaphor.

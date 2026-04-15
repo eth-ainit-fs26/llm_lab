@@ -1,0 +1,338 @@
+% === Revised Section 8: Caveats ===
+%
+% NEW PREAMBLE ADDITIONS NEEDED:
+% ------------------------------------------------------------------
+% \usepackage[most]{tcolorbox}   % already in main preamble
+% \tcbuselibrary{breakable,skins} % already in main preamble
+%
+% \newtcolorbox{activity}[1][]{
+%   breakable,
+%   enhanced,
+%   colback=blue!5,
+%   colframe=blue!55!black,
+%   coltitle=white,
+%   fonttitle=\bfseries,
+%   title={Activity},
+%   boxrule=0.6pt,
+%   left=6pt,right=6pt,top=4pt,bottom=4pt,
+%   #1
+% }
+%
+% \newtcolorbox{procurement}[1][]{
+%   breakable,
+%   enhanced,
+%   colback=green!5,
+%   colframe=green!45!black,
+%   coltitle=white,
+%   fonttitle=\bfseries,
+%   title={Procurement corollary},
+%   boxrule=0.5pt,
+%   left=6pt,right=6pt,top=3pt,bottom=3pt,
+%   fontupper=\small,
+%   #1
+% }
+% ------------------------------------------------------------------
+
+\section{Caveats and what the equivalence does not say}
+\label{sec:caveats}
+
+\begin{intuition}
+The equivalence is real but narrow. It tells you that good prediction
+entails good \emph{modelling}; it does \emph{not} tell you that good
+prediction entails understanding, agency, or safety. It promises
+statistical competence. It does not promise causal reasoning,
+counterfactual simulation, or moral judgement. Those may emerge ---
+the theory leaves the door open --- but they are not guaranteed by
+the objective.
+
+\medskip
+
+\noindent\textbf{The food-truck and the Michelin kitchen.} Keep this
+image in your pocket for the rest of the section. Uncomputability is
+not cosmetic: $K(x)$ and AIXI are unreachable
+(\cref{thm:uncomputable}), and every real compressor, every real
+agent, is a finite approximation. Saying an LLM is
+``approximating AIXI'' is like a food-truck claiming to approximate
+a Michelin three-star kitchen by reading the menu. Technically on
+the same axis. In practice, not the relevant comparison. The rest
+of this section is a tour of five specific places where the axis
+and the kitchen come apart.
+
+\medskip
+
+\noindent\textbf{The running cast.} To keep the five abstract
+caveats walkable, we will reuse three characters:
+
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+  \item \emph{Anna the junior analyst,} who has memorised every deal
+        memo in the vault --- $4{,}000$ deals going back a decade.
+  \item \emph{Ben the junior analyst,} who has read only ten of those
+        memos but understands why each deal priced where it did.
+  \item \emph{The phrasebook chatbot,} which has ``learned'' French by
+        memorising 100{,}000 tourist phrases and can now order
+        croissants flawlessly in thirteen dialects.
+\end{itemize}
+
+You will meet each of them again.
+
+\medskip
+
+\noindent\textbf{Remark 1 (the only non-tautological falsifier).}
+A reasonable operator will ask: if AIXI is uncomputable and every
+deployed system is ``a finite approximation,'' what test \emph{other
+than cross-entropy itself} decides whether system A approximates the
+ideal better than system B? The honest answer is: held-out
+cross-entropy on distributions the training set did not see, plus
+downstream task transfer. There is no deeper falsifier in the
+current theory. If that makes the AIXI framing feel tautological,
+the operator is reading the field correctly, not mis-reading the
+theorem. The operational response is not philosophical (``but
+really, AIXI!''). It is empirical: hold out a genuinely unseen
+distribution, measure transfer, and stop there.
+
+\medskip
+
+\noindent\textbf{Compression $\ne$ understanding.}
+Ask Anna, with her $4{,}000$ memorised memos, to price a deal that
+is \emph{not} in the vault. What you learn from her answer is
+whether she compressed the memos or the market. Ask the phrasebook
+chatbot a sentence that is off-phrasebook --- ``my croissant has
+opinions about the Maastricht Treaty'' --- and you find out whether
+it has learned French or merely tiled the phrase space. A lossless
+compressor has captured statistics, which is \emph{some} kind of
+understanding, but not necessarily the kind a board means when it
+asks ``does the model understand our business?''
+
+\medskip
+
+\noindent\textbf{Embodiment.}
+A text-only system has only ever been surprised by text. It has no
+ground-truth feedback from physical reality. Solomonoff's framework
+accepts any computable environment, but LLMs have the text channel
+and lack the body-in-a-world channel. Agentic, tool-using,
+multimodal systems are early attempts to close the gap. The
+equivalence does not tell you the gap has been closed.
+
+\medskip
+
+\noindent\textbf{Benchmarks are not the floor.}
+A model with low cross-entropy on a benchmark may just have
+memorised the benchmark. Data contamination is rampant. The
+equivalence only holds when the test distribution is genuinely held
+out --- which, for a model trained on ``the internet'', is an
+increasingly expensive proposition.
+
+\medskip
+
+\noindent\textbf{Why a decision-maker should care.} Use the
+equivalence as a \emph{lower bound, not an upper bound.} When a
+vendor says ``lowest perplexity,'' accept that as real evidence of
+genuine modelling skill. Then ask the second question: skill at
+what, tested on what, does it transfer to your domain? The
+equivalence tells you the knob exists. It does not tell you that
+turning the knob solves your problem. Confusing ``next-token
+prediction'' with ``just autocomplete'' misses a deep result;
+confusing ``next-token prediction'' with ``general intelligence''
+overclaims a narrow one. Both errors are expensive. Staying in the
+middle --- taking the equivalence seriously but not theologically
+--- is the managerial win.
+\end{intuition}
+
+\subsection*{Formal caveats (C1)--(C5)}
+\label{sec:formal-caveats}
+
+Several limitations of the chain~\eqref{eq:chain} deserve formal
+acknowledgement. Each is followed by a one-line \emph{procurement
+corollary}: the thing to actually say when a vendor pitches you.
+
+\paragraph{(C1) Uncomputability.}
+By \cref{thm:uncomputable}, $K(x)$ is not computable; by a related
+argument so is $M(x)$. The entire right-hand side of~\eqref{eq:chain}
+therefore names a mathematical \emph{ideal}, not an algorithm. Every
+real compressor produces an upper bound $\tilde K(x) \ge K(x)$, and
+equality is in principle unattainable. ``Approximates the universal
+prior'' must be taken as an asymptotic statement about cross-entropy,
+not as a literal claim that the model is computing $M$.
+
+\begin{procurement}
+If a vendor says their model ``approximates AIXI'' or ``computes the
+Solomonoff prior,'' ask on what computable sub-class, with what
+error bound, and over what distribution. The honest answer is
+``we lower cross-entropy on held-out data.'' That is fine; it is
+just not the same claim.
+\end{procurement}
+
+\paragraph{(C2) The additive constant.}
+\Cref{thm:invariance} only guarantees machine-independence up to an
+additive constant $c_{U_1, U_2}$. For short strings this constant
+can dominate $K(x)$ itself; Kolmogorov complexity is only meaningful
+asymptotically. Analogously, the $K(\mu)$ term
+in~\eqref{eq:sol-bound} is a finite one-time information cost: it
+does not shrink with data.
+
+\begin{procurement}
+On small, bespoke datasets (your legal corpus, your IoT telemetry)
+the constants swamp the asymptotics. ``Big model + lots of data''
+is the regime in which the theory speaks; ``small model + your
+niche'' is the regime in which you hire evaluators, not theorists.
+\end{procurement}
+
+\paragraph{(C3) Practical compressors vs.\ $K$.}
+A compressor $C$ is \emph{universal} in Shannon's sense if its code
+length $L_C(x_{1:T})/T$ converges to the entropy rate of any
+stationary ergodic source. It is \emph{not} in general universal in
+Solomonoff's sense: it need not dominate all computable measures.
+The gap between Lempel--Ziv (Shannon-universal) and Solomonoff
+(universal over all computable measures) is a full logical level of
+universality, and neural compressors live somewhere in between.
+
+\begin{procurement}
+``Compresses well'' comes in strengths. Ask which strength. A
+model that crushes Wikipedia perplexity may still be a
+Shannon-universal compressor on stationary text, not a Solomonoff-
+universal one on your domain's non-stationarities.
+\end{procurement}
+
+\paragraph{(C4) Necessary vs.\ sufficient.}
+\Cref{thm:solomonoff,thm:aixi-opt} establish that optimal prediction
+and agency \emph{entail} optimal compression. They do \emph{not}
+establish that every improvement in compression corresponds to an
+improvement in every intuitive sense of ``understanding.'' In
+particular, the framework is silent on phenomenal consciousness,
+grounding, and embodiment, and it takes the reward signal and the
+action--percept loop as primitives rather than explaining their
+origin.
+
+\begin{procurement}
+Compression is \emph{necessary} for intelligence in the theory's
+sense; no theorem says it is \emph{sufficient} for intelligence in
+your sense. If the vendor's pitch relies on sufficiency, the
+theory is not their friend.
+\end{procurement}
+
+\paragraph{(C5) Compression $\ne$ understanding (as internal structure).}
+A compressor is characterised by its length function, not by its
+internal representations. Two compressors with identical code
+lengths may use entirely different internal mechanisms, only one of
+which we would intuitively call ``understanding.''
+Equation~\eqref{eq:chain} reduces ``intelligence'' to an extensional
+(input--output) property; any argument that understanding is
+intensional (about how the function is computed) is not touched by
+the chain. Anna and Ben, from the running cast, can have identical
+cross-entropy on the ten deals Ben has actually seen. They will
+diverge on the eleventh.
+
+\begin{procurement}
+If you care \emph{how} the model arrives at its answers (audit,
+explainability, regulation), cross-entropy is silent on your
+question. You need mechanistic evaluation, not just a leaderboard
+score.
+\end{procurement}
+
+\paragraph{Summary.}
+The equivalence~\eqref{eq:chain} is a genuine theorem modulo
+\crefrange{def:entropy}{def:aixi} and the computability-based
+caveats (C1)--(C3), which are mathematical. Caveats (C4)--(C5) are
+of a different species: they are not theorems against the chain,
+they are \emph{scope restrictions} on what the chain claims.
+What~\eqref{eq:chain} licences is a precise sense in which lowering
+cross-entropy on a sufficiently rich corpus moves a predictor along
+a single axis shared with compression and with Hutter-style
+universal agency. What it does \emph{not} licence is the stronger
+claim that this axis exhausts what we mean by understanding, safety,
+or deployment-readiness.
+
+% ----------------------------------------------------------------------
+\subsection*{Activities}
+\label{sec:caveats-activities}
+
+\begin{activity}[title={Activity 8.1 --- Procurement checklist}]
+You are briefing your CIO tomorrow on a vendor proposal. Derive six
+questions --- one per caveat (C1)--(C5) plus one meta-question ---
+to put to the vendor in writing. A suggested starter set:
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
+  \item (C1) ``On what benchmark, with what held-out distribution, is
+        your perplexity number reported?''
+  \item (C2) ``How was the model adapted to our domain? What is the
+        performance delta between general and domain-specific
+        held-out data?''
+  \item (C3) ``Is your evaluation stationary or does it cover
+        distribution shift? Give an example.''
+  \item (C4) ``What evidence, beyond cross-entropy, supports the
+        claim that the model \emph{understands} our data?''
+  \item (C5) ``If we need to audit \emph{how} an answer was produced,
+        what tooling do you provide?''
+  \item (Meta) ``What would falsify your claims? Name the
+        experiment.''
+\end{enumerate}
+
+\textbf{Deliverable.} A one-page checklist you could email to
+procurement unchanged. Helps Aisha (a takeaway list) and Leo (the
+formal caveats now have teeth).
+\end{activity}
+
+\begin{activity}[title={Activity 8.2 --- Benchmark-contamination detective}]
+You are shown five short answers a model has given on a well-known
+reasoning benchmark. Your job: flag which answers look
+\emph{memorised} (verbatim phrasing, domain-specific jargon the
+prompt did not contain, suspiciously specific numbers) versus
+\emph{reasoned} (shows working, makes small errors, paraphrases).
+
+For each flagged answer, write one sentence: what would you do next
+to confirm contamination? (Suggested moves: perturb the prompt
+wording; shift numerical values; ask a follow-up that is only
+answerable from the derivation, not the final answer.)
+
+\textbf{Deliverable.} A 5-row table: answer \#, flag
+(memorised/reasoned/unsure), test-to-confirm. Helps Yuki (concrete
+stimulus) and Leo (gameified caveat (C1)).
+\end{activity}
+
+\begin{activity}[title={Activity 8.3 --- Two-analyst roleplay}]
+Two students play \emph{Compressor-Anna} (has memorised 4{,}000 deal
+memos) and \emph{Understander-Ben} (has read only ten but understands
+them). A third student plays the interviewer and asks three
+questions about a deal \emph{neither} analyst has seen:
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
+  \item ``Walk me through how you would price this.''
+  \item ``What single fact, if it changed, would flip your pricing
+        by more than ten percent?''
+  \item ``What is your second-best comparable and why?''
+\end{enumerate}
+
+Score each answer for \emph{generalisation} (did the analyst
+transfer a principle?) versus \emph{pattern-matching} (did the
+analyst return the nearest memo?). Debrief: which analyst is the
+LLM in this lecture's framing? (Answer: neither cleanly --- which
+is the point of (C5).)
+
+\textbf{Deliverable.} A 3$\times$2 score matrix with notes. Helps
+Yuki (concept $\to$ concrete) and Aisha (memorable characters).
+\end{activity}
+
+\begin{activity}[title={Activity 8.4 --- Claim-to-caveat matching}]
+Match each vendor claim to the caveat that most directly bites it.
+More than one match is possible; argue for your primary choice.
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
+  \item ``Our model is AGI-adjacent.''
+  \item ``Our LLM fully understands your firm's legal documents.''
+  \item ``Our system approximates the universal Solomonoff prior.''
+  \item ``We achieved state-of-the-art perplexity on
+        LegalBench-2024.''
+  \item ``Our model's reasoning is transparent and auditable.''
+\end{enumerate}
+
+Caveats to choose from: (C1) uncomputability, (C2) additive constant
+/ small-data regime, (C3) Shannon- vs. Solomonoff-universality,
+(C4) necessary vs. sufficient, (C5) extensional vs. intensional.
+
+\textbf{Deliverable.} A table of claim $\to$ primary caveat $\to$
+one-sentence rebuttal. Helps Leo (forces re-reading of the formal
+paragraphs with a task attached) and Maria (turns philosophy into
+operational critique).
+\end{activity}
+
+% =========================================================================

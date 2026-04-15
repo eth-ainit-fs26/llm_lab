@@ -107,12 +107,23 @@ you products whose entire training objective is one single number:
 how surprised the model was by the next word of the internet.  If you
 believe the chain above, minimising that one number is not a narrow
 engineering goal --- it is a proxy for general intelligence.  That is
-either the most important business fact of the decade or a category
-error.  You cannot tell which without understanding the equivalence.
-Think of it as three currencies --- bits saved, dollars earned, IQ
-points --- and three exchange rates between them.  Once you see the
+either the most important business fact of the decade or a confusion
+between two different things sharing a name.  You cannot tell which
+without understanding the equivalence.
+Think of it as three currencies --- \textbf{bits saved} (how tightly
+a model compresses your data), \textbf{dollars earned} (what that
+compression is worth when deployed), and \textbf{capability on
+held-out tasks} (how well the model handles problems it has not
+seen) --- and three exchange rates between them.  Three currencies,
+three exchange rates, one underlying quantity.  Once you see the
 rates, a lot of hype becomes legible, and a lot of legitimate
 excitement stops sounding like magic.
+
+\textbf{One frame to carry throughout.}  A perfect next-token
+predictor would be an ideal learner; real next-token predictors are
+not perfect, and the gap is exactly where this document's caveats
+live (\cref{sec:caveats}).  We state the thesis before we qualify
+it, but the qualification is not optional.
 \end{intuition}
 
 The central technical claim of this note is that three operations that
@@ -306,22 +317,24 @@ a compressor; its error rate and its compression rate are the same number
 in different clothes (see \cref{thm:ce-code} and \cref{cor:ppl}).
 
 \textbf{The two-consultants analogy.}  Two consultants write up the
-same quarterly results.  The first \emph{understands} the business: she
-nails the narrative in a crisp one-pager.  The second misreads the
-business: he rambles for ten pages to cover the same facts, because
-every paragraph has to hedge against the surprises his wrong mental
-model keeps generating.  Both describe reality perfectly; only one
-compresses it.  The extra pages are exactly the price of his wrong
-model.  That price has a name: \emph{cross-entropy}, written $H(p,q)$
-in \cref{def:cross-ent}.  It is always at least $H(p)$, and the gap is
-the tax you pay for being wrong.
+same quarter.  Both are earnest.  The one who understands your
+business writes a one-pager: \emph{revenue up 4\%, driven by Zurich,
+offset by FX.}  The one whose mental model is slightly off writes
+ten pages of hedging --- because every surprise in the data costs
+her extra sentences.  Both describe reality perfectly; only one
+compresses it.  Cross-entropy is a \textbf{tax on a wrong model},
+paid in pages; written $H(p,q)$ in \cref{def:cross-ent}, it is
+always at least $H(p)$, and the gap is the tax.  At $0.53$ extra
+bits per token over a million-token corpus that is roughly
+\textbf{530{,}000 extra bits of hedging} --- a concrete, addable
+number.
 
-\textbf{A tiny worked example.}  Suppose tomorrow's stock move is up
-$90\%$ of the time, down $10\%$.  The true entropy is small, about
-$0.47$ bits per day.  If your model thinks it's 50/50, your average
-description length becomes $1$ bit per day.  The $0.53$-bit gap is
-pure model-error tax; across a million days, that is $530{,}000$
-extra bits you burned because your model was wrong.
+\textbf{Where the $0.53$ comes from.}  Suppose tomorrow's stock move
+is up $90\%$ of the time, down $10\%$.  The true entropy is small,
+about $0.47$ bits per day.  If your model thinks it is 50/50, your
+average description length becomes $1$ bit per day.  The $0.53$-bit
+gap is the per-token tax above; the million-token aggregate is the
+$530{,}000$-bit number.
 
 \textbf{Perplexity and bits per token.}  LLM papers report
 ``perplexity 8'' or ``$2.1$ bits per token.''  These are the same
@@ -426,31 +439,8 @@ with cross-entropy $\overline{H}(p,q)$ bits per symbol corresponds,
 via arithmetic coding, to a compressor that uses $\overline{H}(p,q)$
 bits per symbol.  Better predictions $\Leftrightarrow$ shorter codes.
 
-\begin{example}[Cross-entropy on a 3-token sequence; nats vs.\ bits]
-\label{ex:ce3}
-Let $\mathcal{A} = \{A,B,C\}$ and suppose the true conditional
-distributions at positions $t=1,2,3$ have already been conditioned on
-the observed prefix, giving the sequence of true posterior masses on
-the realised tokens $p_1 = 0.8,\ p_2 = 0.5,\ p_3 = 0.1$.  Consider
-two models.  Model $q^{(1)}$ assigns $q_1 = 0.8, q_2 = 0.5,
-q_3 = 0.1$ (matches truth on the realised tokens); model $q^{(2)}$
-assigns $q_1 = 0.1, q_2 = 0.1, q_3 = 0.8$ (systematically wrong).
-
-For model $q^{(1)}$, the per-token code lengths in bits are
-$-\log_2 0.8 \approx 0.3219$, $-\log_2 0.5 = 1$,
-$-\log_2 0.1 \approx 3.3219$, summing to approximately $4.644$~bits.
-In nats, multiply by $\ln 2 \approx 0.6931$: $4.644 \cdot \ln 2
-\approx 3.219$~nats, matching $-\ln(0.8 \cdot 0.5 \cdot 0.1) =
--\ln 0.04 \approx 3.219$ directly.
-
-For model $q^{(2)}$, the lengths are $-\log_2 0.1 \approx 3.3219$,
-$-\log_2 0.1 \approx 3.3219$, $-\log_2 0.8 \approx 0.3219$, totalling
-$\approx 6.966$~bits ($\approx 4.828$~nats, consistent with
-$-\ln(0.008) \approx 4.828$).  The wrong model spends $2.32$ extra
-bits, the Kullback--Leibler excess predicted by~\eqref{eq:ce-kl}.
-Conversion rule: $1\text{ nat} = \log_2 e \text{ bits} \approx
-1.4427$~bits and conversely $1\text{ bit} = \ln 2 \text{ nats}$.
-\end{example}
+A worked numerical example separating the matched and mismatched
+models on a 3-token sequence is given in \cref{app:ce-worked}.
 
 % =========================================================================
 \section{Kolmogorov complexity}
@@ -487,14 +477,22 @@ $x$, hands you its shortest program (\cref{thm:uncomputable}); if
 there were, it would solve the halting problem.  $K(x)$ is a perfectly
 well-defined number you can never compute exactly.
 
-Why a decision-maker should care: $K$ is the Platonic ideal every
+Why a decision-maker should care: $K$ is the theoretical floor every
 real compressor (zip, JPEG, an LLM) approximates from above.  There is
 a \emph{true} information content in your company's data, vendor-
-independent.  Random/encrypted data cannot be compressed --- if a
-vendor claims otherwise, they are selling snake oil.  And when we say
-an LLM ``understands'' a corpus, one precise meaning is: its weights
-are a short program reproducing the corpus's statistics --- the model
-approaching $K$ from above.
+independent.  And when we say an LLM ``understands'' a corpus, one
+precise meaning is: its weights are a short program reproducing the
+corpus's statistics --- the model approaching $K$ from above.
+\end{intuition}
+
+\begin{intuition}[title={The compression sniff test}]
+If a vendor claims to compress genuinely random or encrypted data,
+they are selling snake oil --- Shannon closed that door in 1948.  A
+truly random source has entropy equal to its raw bit-length; no code
+can do better on average (\cref{thm:source-coding}).  ``We compress
+encrypted traffic by 40\%'' is either marketing about a non-random
+side channel (timestamps, packet sizes) or a claim that should not
+be in the contract.
 \end{intuition}
 
 Shannon's framework is probabilistic: entropy is a property of a
@@ -523,8 +521,15 @@ means $U$ on input $\pi$ halts with output $x$.
 \begin{theorem}[Invariance theorem]
 \label{thm:invariance}
 If $U_1$ and $U_2$ are two universal Turing machines, then there
-exists a constant $c_{U_1,U_2}$, depending on $U_1$ and $U_2$ but not
-on $x$, such that
+exists a constant $c_{U_1,U_2}$\footnote{The constant $c_{U_1,U_2}$
+is finite and does not grow with $|x|$.  For pairs of realistic
+universal machines --- two reasonable programming languages
+interpreting each other --- it is typically in the hundreds to low
+thousands of bits.  For data objects much larger than that (a
+megabyte-scale corpus, an ERP export), it is numerically negligible
+and ``machine-independent up to an additive constant'' is a property
+you can plan around.  For objects smaller than the constant, it is
+not.}, depending on $U_1$ and $U_2$ but not on $x$, such that
 \begin{equation}
   \bigl| K_{U_1}(x) - K_{U_2}(x) \bigr| \;\le\; c_{U_1,U_2}
   \quad \text{for every } x \in \{0,1\}^*.
@@ -593,16 +598,18 @@ To predict the future, average the predictions of every possible
 theory, giving shorter theories exponentially more weight
 (\cref{def:M,thm:solomonoff}).
 
-\textbf{The panel-of-theorists analogy.}  Imagine a town-hall where
-every possible theory of the world has a theorist.  Microphone volume
-is set by theory length: a theory of length $L$ bits gets weight
-$2^{-L}$.  A theory you can state in 10 words gets a microphone
-$1{,}000$ times louder than one needing 20 words.  Each theorist
-still consistent with the data shouts her prediction.  The weighted
-average \emph{is} the Solomonoff prediction $M$.  Quiet baroque
-theorists are drowned out; loud simple ones dominate --- until data
-eliminates them, at which point the next-simplest survivors take
-over.  This is Occam's razor, precisely quantified.
+\textbf{The prediction-market analogy.}  Imagine a prediction market
+where every trader is a theory of the world.  Simple theories start
+with a large float; complex theories start with almost nothing ---
+their share price is their \emph{simplicity premium}, set by theory
+length: a theory of length $L$ bits gets weight $2^{-L}$.  A theory
+you can state in 10 words gets a float $1{,}000$ times larger than
+one needing 20 words.  Each new data point is an earnings call.
+Theories that predicted it cheaply get paid; theories that predicted
+it badly get margin-called.  Over time the market consolidates around
+the simplest theories that still explain the tape.  That
+consolidation \emph{is} the Solomonoff prediction $M$.  This is
+Occam's razor, precisely quantified.
 
 \textbf{A tiny worked example.}  You see $2, 4, 6, 8$.  What's next?
 The theorist ``add 2'' has a very short program and shouts
@@ -626,9 +633,9 @@ standard of ``learning from data.''  Every ML method is, badly and
 efficiently, trying to imitate it.  ``Bayesian model averaging,''
 ``ensemble methods,'' ``regularise for simplicity'' --- all are
 engineering approximations of this ideal.  It also explains why
-overfitting is bad in a principled way: an overfit model is a
-baroque theorist with a long description, and Solomonoff would have
-weighted her near-zero from the start.  The question ``which model is
+overfitting is bad in a principled way: an overfit model is a long,
+ad-hoc theory, and Solomonoff would have weighted it near-zero from
+the start.  The question ``which model is
 best?'' has a right answer: whichever predicts held-out data with the
 fewest bits of surprise.
 \end{intuition}
@@ -741,14 +748,20 @@ asks the Solomonoff panel what is likely to happen, and picks the
 action whose expected future reward is highest
 (\cref{def:aixi,thm:aixi-opt}).
 
-\textbf{The chessplayer-with-infinite-advisors analogy.}  Before every
-move, our player consults every possible theory of chess --- rulebooks,
-strategies, crank manifestos --- weighted by simplicity.  For each
-candidate move she asks: ``If I play this, what happens over the next
-thousand moves, and how much will I enjoy it?''  She takes the
-weighted average and plays the best expected future.  That is
-\emph{AIXI}.  Hutter proves it is, in a specific technical sense, the
-most intelligent agent possible.
+\textbf{The regional-manager analogy.}  Imagine a regional manager
+who, before every staffing decision, consulted every possible theory
+of her stores --- every demand model, every weather-effect hypothesis,
+every crank manifesto about Mercury retrograde --- weighted by how
+simple each theory is.  For each candidate decision she asks: ``If I
+do this, what happens over the next hundred Tuesdays, and how much
+will I enjoy it?''  She takes the weighted average and places the
+staffing bet that maximises expected sales across all of them.  That
+manager would be provably optimal in a precise technical sense.  She
+would also be impossible: consulting every possible theory takes
+infinite time.  This is \emph{AIXI}.  It is a \textbf{north star for
+what a learner is approximating, not a machine anyone can build}.
+Real systems are food trucks reading the Michelin menu; AIXI is the
+chef with an infinite pantry and no kitchen.
 
 \textbf{A tiny worked example.}  A two-armed bandit: Arm A paid out
 once in three pulls; Arm B paid out zero times in one pull.  The
@@ -766,8 +779,8 @@ any computable environment and it will eventually learn the
 environment and play optimally.  Its only prior is Occam's razor.
 
 \textbf{The catch.}  AIXI is uncomputable; it requires running every
-possible program.  Bounded approximations (AIXItl, MC-AIXI) exist but
-are toys.  AIXI is to intelligence what the ideal gas law is to a
+possible program.  Bounded approximations exist but are toys at
+present.  AIXI is to intelligence what the ideal gas law is to a
 real gas --- a north star, not a product.
 
 Why a decision-maker should care: AIXI is a crisp, non-hand-wavy
@@ -854,6 +867,19 @@ a compressor of its training data --- which, per the chain above,
 puts it somewhere on the intelligence spectrum
 (\cref{eq:chain,thm:ce-code,thm:solomonoff}).
 
+\textbf{Residuals and arithmetic coding, in plain English.}  A
+\emph{residual} is the gap between what the model predicted and what
+actually came next.  If the model gave next-token probability $0.9$
+to ``the'' and ``the'' showed up, the residual is tiny --- a fraction
+of a bit.  If the model gave $0.01$ and ``the'' still showed up, the
+residual is large --- about $6.6$ bits of surprise.
+\emph{Arithmetic coding} is just a near-optimal way to write all
+those surprise numbers down end to end.  The compressed file is
+therefore the model's weights (fixed cost) plus the bill for every
+surprise (variable cost).  ``KL divergence'', when it appears below,
+is the same tax formalised: the average extra bits per token you pay
+for using the wrong distribution.
+
 \textbf{The Hutter Prize as a concrete hinge.}  Marcus Hutter put up
 real prize money for whoever can compress 1~GB of Wikipedia the most.
 The current leaderboard is dominated by neural compressors.  Training
@@ -891,8 +917,8 @@ text well, you must model the world the text is about.
 Why a decision-maker should care, three upshots.  First, you now have
 a real yardstick --- cross-entropy on your own domain data --- to
 compare vendors.  Second, you understand why ``just predict the next
-word'' produces general-looking behaviour; it is not marketing, it is
-a theorem wearing a T-shirt.  Third, you can reason about the
+word'' produces general-looking behaviour; it is not marketing, the
+mathematics agrees.  Third, you can reason about the
 ceiling: as models approach the true entropy of text, progress on
 pure language tasks must slow, and the frontier moves to multimodal
 data, embodied interaction, and reasoning architectures.  Plan
@@ -973,13 +999,25 @@ open --- but they are not guaranteed by the objective.
 \textbf{Uncomputability is not cosmetic.}  $K(x)$ and AIXI are
 unreachable (\cref{thm:uncomputable}).  Every real compressor and
 every real agent is a finite approximation.  Saying an LLM is
-``approximating AIXI'' is like saying your car is ``approximating the
-speed of light'' --- technically true in the limit, totally misleading
-in practice.
+``approximating AIXI'' is like a food-truck claiming to approximate
+a Michelin three-star kitchen by reading the menu --- technically
+on the same axis, in practice not the relevant comparison.
 
-\textbf{Compression $\ne$ understanding.}  A Blockbuster employee who
-memorised every movie in the store had compressed a lot of data.  Did
-he understand cinema?  Maybe, maybe not.  A lossless compressor has
+\textbf{The only non-tautological falsifier.}  A reasonable operator
+will ask: if AIXI is uncomputable and every deployed system is ``a
+finite approximation'', what test other than cross-entropy itself
+decides that system A approximates the ideal better than system B?
+Honest answer: held-out cross-entropy on distributions the training
+set did not see, plus downstream task transfer.  There is no deeper
+falsifier in the current theory.  If that makes the AIXI framing
+feel tautological to an operator, the operator is reading the state
+of the field correctly.
+
+\textbf{Compression $\ne$ understanding.}  A junior analyst who has
+memorised every deal memo in the vault --- say, $4{,}000$ deals
+going back a decade --- has compressed a lot of data.  Ask her to
+price a deal that is not in the vault and you find out whether she
+compressed the memos or the market.  A lossless compressor has
 captured statistics; that is \emph{some} kind of understanding, but
 not necessarily the kind a manager means when she asks ``does the
 model understand our business?''
@@ -1091,6 +1129,39 @@ this axis exhausts what we mean by understanding.
     the model inside an arithmetic coder, compresses out-of-domain
     byte streams (images, audio) competitively.
 \end{description}
+
+\appendix
+
+% =========================================================================
+\section{Worked cross-entropy calculation}
+\label{app:ce-worked}
+% =========================================================================
+
+\begin{example}[Cross-entropy on a 3-token sequence; nats vs.\ bits]
+\label{ex:ce3}
+Let $\mathcal{A} = \{A,B,C\}$ and suppose the true conditional
+distributions at positions $t=1,2,3$ have already been conditioned on
+the observed prefix, giving the sequence of true posterior masses on
+the realised tokens $p_1 = 0.8,\ p_2 = 0.5,\ p_3 = 0.1$.  Consider
+two models.  Model $q^{(1)}$ assigns $q_1 = 0.8, q_2 = 0.5,
+q_3 = 0.1$ (matches truth on the realised tokens); model $q^{(2)}$
+assigns $q_1 = 0.1, q_2 = 0.1, q_3 = 0.8$ (systematically wrong).
+
+For model $q^{(1)}$, the per-token code lengths in bits are
+$-\log_2 0.8 \approx 0.3219$, $-\log_2 0.5 = 1$,
+$-\log_2 0.1 \approx 3.3219$, summing to approximately $4.644$~bits.
+In nats, multiply by $\ln 2 \approx 0.6931$: $4.644 \cdot \ln 2
+\approx 3.219$~nats, matching $-\ln(0.8 \cdot 0.5 \cdot 0.1) =
+-\ln 0.04 \approx 3.219$ directly.
+
+For model $q^{(2)}$, the lengths are $-\log_2 0.1 \approx 3.3219$,
+$-\log_2 0.1 \approx 3.3219$, $-\log_2 0.8 \approx 0.3219$, totalling
+$\approx 6.966$~bits ($\approx 4.828$~nats, consistent with
+$-\ln(0.008) \approx 4.828$).  The wrong model spends $2.32$ extra
+bits, the Kullback--Leibler excess predicted by~\eqref{eq:ce-kl}.
+Conversion rule: $1\text{ nat} = \log_2 e \text{ bits} \approx
+1.4427$~bits and conversely $1\text{ bit} = \ln 2 \text{ nats}$.
+\end{example}
 
 \bibliography{../section3}
 

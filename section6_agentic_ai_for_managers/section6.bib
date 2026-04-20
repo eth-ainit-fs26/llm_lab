@@ -1,0 +1,194 @@
+% =====================================================================
+%  Section 6 bibliography -- Agentic AI: What Works, What Breaks
+%  Every entry marked with a venue tag (main-conference, workshop,
+%  top-journal, or preprint). Preprints are flagged explicitly so
+%  the deck and notes never imply peer-review where there was none.
+% =====================================================================
+
+% ---------------------------------------------------------------------
+%  Benchmarks (ICLR 2024 main-track)
+% ---------------------------------------------------------------------
+
+@inproceedings{mialon2024gaia,
+  author    = {Gr{\'e}goire Mialon and Cl{\'e}mentine Fourrier and Craig Swift and Thomas Wolf and Yann LeCun and Thomas Scialom},
+  title     = {{GAIA}: A Benchmark for General {AI} Assistants},
+  booktitle = {International Conference on Learning Representations ({ICLR})},
+  year      = {2024},
+  note      = {Peer-reviewed, main conference. arXiv:2311.12983}
+}
+
+@inproceedings{jimenez2024swebench,
+  author    = {Carlos E. Jimenez and John Yang and Alexander Wettig and Shunyu Yao and Kexin Pei and Ofir Press and Karthik Narasimhan},
+  title     = {{SWE}-bench: Can Language Models Resolve Real-World {GitHub} Issues?},
+  booktitle = {International Conference on Learning Representations ({ICLR})},
+  year      = {2024},
+  note      = {Peer-reviewed, main conference, oral presentation. arXiv:2310.06770}
+}
+
+@inproceedings{liu2024agentbench,
+  author    = {Xiao Liu and Hao Yu and Hanchen Zhang and Yifan Xu and Xuanyu Lei and Hanyu Lai and Yu Gu and Hangliang Ding and Kaiwen Men and Kejuan Yang and Shudan Zhang and Xiang Deng and Aohan Zeng and Zhengxiao Du and Chenhui Zhang and Sheng Shen and Tianjun Zhang and Yu Su and Huan Sun and Minlie Huang and Yuxiao Dong and Jie Tang},
+  title     = {{AgentBench}: Evaluating {LLM}s as Agents},
+  booktitle = {International Conference on Learning Representations ({ICLR})},
+  year      = {2024},
+  note      = {Peer-reviewed, main conference. arXiv:2308.03688}
+}
+
+@inproceedings{zhou2024webarena,
+  author    = {Shuyan Zhou and Frank F. Xu and Hao Zhu and Xuhui Zhou and Robert Lo and Abishek Sridhar and Xianyi Cheng and Tianyue Ou and Yonatan Bisk and Daniel Fried and Uri Alon and Graham Neubig},
+  title     = {{WebArena}: A Realistic Web Environment for Building Autonomous Agents},
+  booktitle = {International Conference on Learning Representations ({ICLR})},
+  year      = {2024},
+  note      = {Peer-reviewed, main conference. arXiv:2307.13854}
+}
+
+% ---------------------------------------------------------------------
+%  Scaffolding that makes agents work (ICLR / NeurIPS / UIST)
+% ---------------------------------------------------------------------
+
+@inproceedings{yao2023react,
+  author    = {Shunyu Yao and Jeffrey Zhao and Dian Yu and Nan Du and Izhak Shafran and Karthik Narasimhan and Yuan Cao},
+  title     = {{ReAct}: Synergizing Reasoning and Acting in Language Models},
+  booktitle = {International Conference on Learning Representations ({ICLR})},
+  year      = {2023},
+  note      = {Peer-reviewed, main conference. arXiv:2210.03629}
+}
+
+@inproceedings{shinn2023reflexion,
+  author    = {Noah Shinn and Federico Cassano and Edward Berman and Ashwin Gopinath and Karthik Narasimhan and Shunyu Yao},
+  title     = {Reflexion: Language Agents with Verbal Reinforcement Learning},
+  booktitle = {Advances in Neural Information Processing Systems ({NeurIPS})},
+  year      = {2023},
+  note      = {Peer-reviewed, main conference. arXiv:2303.11366}
+}
+
+@inproceedings{schick2023toolformer,
+  author    = {Timo Schick and Jane Dwivedi-Yu and Roberto Dess{\`i} and Roberta Raileanu and Maria Lomeli and Luke Zettlemoyer and Nicola Cancedda and Thomas Scialom},
+  title     = {Toolformer: Language Models Can Teach Themselves to Use Tools},
+  booktitle = {Advances in Neural Information Processing Systems ({NeurIPS})},
+  year      = {2023},
+  note      = {Peer-reviewed, main conference. arXiv:2302.04761}
+}
+
+@inproceedings{park2023generative,
+  author    = {Joon Sung Park and Joseph C. O'Brien and Carrie J. Cai and Meredith Ringel Morris and Percy Liang and Michael S. Bernstein},
+  title     = {Generative Agents: Interactive Simulacra of Human Behavior},
+  booktitle = {Proceedings of the 36th Annual {ACM} Symposium on User Interface Software and Technology ({UIST})},
+  year      = {2023},
+  doi       = {10.1145/3586183.3606763},
+  note      = {Peer-reviewed, best-paper honorable mention at UIST 2023}
+}
+
+% ---------------------------------------------------------------------
+%  Failure modes (NeurIPS / ICML / AISec / Cell Press / FAccT)
+% ---------------------------------------------------------------------
+
+@inproceedings{dziri2023faith,
+  author    = {Nouha Dziri and Ximing Lu and Melanie Sclar and Xiang (Lorraine) Li and Liwei Jiang and Bill Yuchen Lin and Peter West and Chandra Bhagavatula and Ronan Le Bras and Jena D. Hwang and Soumya Sanyal and Sean Welleck and Xiang Ren and Allyson Ettinger and Zaid Harchaoui and Yejin Choi},
+  title     = {Faith and Fate: Limits of Transformers on Compositionality},
+  booktitle = {Advances in Neural Information Processing Systems ({NeurIPS})},
+  year      = {2023},
+  note      = {Peer-reviewed, main conference. arXiv:2305.18654}
+}
+
+@inproceedings{langosco2022goal,
+  author    = {Lauro Langosco and Jack Koch and Lee Sharkey and Jacob Pfau and Laurent Orseau and David Krueger},
+  title     = {Goal Misgeneralization in Deep Reinforcement Learning},
+  booktitle = {Proceedings of the 39th International Conference on Machine Learning ({ICML})},
+  series    = {PMLR},
+  volume    = {162},
+  pages     = {12004--12019},
+  year      = {2022},
+  note      = {Peer-reviewed, main conference. arXiv:2105.14111}
+}
+
+@inproceedings{greshake2023indirect,
+  author    = {Kai Greshake and Sahar Abdelnabi and Shailesh Mishra and Christoph Endres and Thorsten Holz and Mario Fritz},
+  title     = {Not What You've Signed Up For: Compromising Real-World {LLM}-Integrated Applications with Indirect Prompt Injection},
+  booktitle = {Proceedings of the 16th {ACM} Workshop on Artificial Intelligence and Security ({AISec} '23)},
+  year      = {2023},
+  doi       = {10.1145/3605764.3623985},
+  note      = {Peer-reviewed workshop (co-located with CCS), not main-track. arXiv:2302.12173}
+}
+
+@article{park2024deception,
+  author    = {Peter S. Park and Simon Goldstein and Aidan O'Gara and Michael Chen and Dan Hendrycks},
+  title     = {{AI} Deception: A Survey of Examples, Risks, and Potential Solutions},
+  journal   = {Patterns},
+  publisher = {Cell Press},
+  volume    = {5},
+  number    = {5},
+  pages     = {100988},
+  year      = {2024},
+  doi       = {10.1016/j.patter.2024.100988},
+  note      = {Peer-reviewed, Cell Press journal}
+}
+
+@inproceedings{weidinger2022taxonomy,
+  author    = {Laura Weidinger and Jonathan Uesato and Maribeth Rauh and Conor Griffin and Po-Sen Huang and John Mellor and Amelia Glaese and Myra Cheng and Borja Balle and Atoosa Kasirzadeh and Courtney Biles and Sasha Brown and Zac Kenton and Will Hawkins and Tom Stepleton and Abeba Birhane and Lisa Anne Hendricks and Laura Rimell and William Isaac and Julia Haas and Sean Legassick and Geoffrey Irving and Iason Gabriel},
+  title     = {Taxonomy of Risks Posed by Language Models},
+  booktitle = {Proceedings of the 2022 {ACM} Conference on Fairness, Accountability, and Transparency ({FAccT})},
+  year      = {2022},
+  doi       = {10.1145/3531146.3533088},
+  note      = {Peer-reviewed, main conference}
+}
+
+% ---------------------------------------------------------------------
+%  Grey zone: widely cited, NOT peer-reviewed.
+%  These are flagged explicitly; do not use as primary evidence.
+% ---------------------------------------------------------------------
+
+@misc{hubinger2024sleeper,
+  author       = {Evan Hubinger and Carson Denison and Jesse Mu and Mike Lambert and Meg Tong and Monte MacDiarmid and Tamera Lanham and Daniel M. Ziegler and Tim Maxwell and Newton Cheng and Adam Jermyn and Amanda Askell and Ansh Radhakrishnan and Cem Anil and David Duvenaud and Deep Ganguli and Fazl Barez and Jack Clark and Kamal Ndousse and Kshitij Sachan and Michael Sellitto and Mrinank Sharma and Nova DasSarma and Roger Grosse and Shauna Kravec and Yuntao Bai and Zachary Witten and Marina Favaro and Jan Brauner and Holden Karnofsky and Paul Christiano and Samuel R. Bowman and Logan Graham and Jared Kaplan and S{\"o}ren Mindermann and Ryan Greenblatt and Buck Shlegeris and Nicholas Schiefer and Ethan Perez},
+  title        = {Sleeper Agents: Training Deceptive {LLM}s That Persist Through Safety Training},
+  howpublished = {arXiv:2401.05566},
+  year         = {2024},
+  note         = {Preprint, NOT peer-reviewed. Anthropic technical report}
+}
+
+@misc{meinke2024scheming,
+  author       = {Alexander Meinke and Bronson Schoen and J{\'e}r{\'e}my Scheurer and Mikita Balesni and Rusheb Shah and Marius Hobbhahn},
+  title        = {Frontier Models are Capable of In-Context Scheming},
+  howpublished = {arXiv:2412.04984},
+  year         = {2024},
+  note         = {Preprint, NOT peer-reviewed. Apollo Research technical report}
+}
+
+@misc{kinniment2023metr,
+  author       = {Megan Kinniment and Lucas Jun Koba Sato and Haoxing Du and Brian Goodrich and Max Hasin and Lawrence Chan and Luke Harold Miles and Tao R. Lin and Hjalmar Wijk and Joel Burget and Aaron Ho and Elizabeth Barnes and Paul Christiano},
+  title        = {Evaluating Language-Model Agents on Realistic Autonomous Tasks},
+  howpublished = {arXiv:2312.11671},
+  year         = {2023},
+  note         = {Preprint, NOT peer-reviewed. {METR} (formerly {ARC} Evals) technical report}
+}
+
+% ---------------------------------------------------------------------
+%  Supporting / connecting references
+% ---------------------------------------------------------------------
+
+@article{bakhtin2022cicero,
+  author    = {Anton Bakhtin and Noam Brown and Emily Dinan and Gabriele Farina and Colin Flaherty and Daniel Fried and Andrew Goff and Jonathan Gray and Hengyuan Hu and Athul Paul Jacob and Mojtaba Komeili and Karthik Konath and Minae Kwon and Adam Lerer and Mike Lewis and Alexander H. Miller and Sasha Mitts and Adithya Renduchintala and Stephen Roller and Dirk Rowe and Weiyan Shi and Joe Spisak and Alexander Wei and David Wu and Hugh Zhang and Markus Zijlstra},
+  title     = {Human-level play in the game of {D}iplomacy by combining language models with strategic reasoning},
+  journal   = {Science},
+  volume    = {378},
+  number    = {6624},
+  pages     = {1067--1074},
+  year      = {2022},
+  doi       = {10.1126/science.ade9097},
+  note      = {Peer-reviewed, Science (Meta FAIR's Cicero)}
+}
+
+@misc{grace2024thousands,
+  author       = {Katja Grace and Harlan Stewart and Julia Fabienne Sandk{\"u}hler and Stephen Thomas and Ben Weinstein-Raun and Jan Brauner},
+  title        = {Thousands of {AI} Authors on the Future of {AI}},
+  howpublished = {arXiv:2401.02843},
+  year         = {2024},
+  note         = {Largest AI-researcher survey to date; referenced here as the Section~5 anchor}
+}
+
+@misc{openai2024swebenchverified,
+  author       = {{OpenAI}},
+  title        = {Introducing {SWE}-bench Verified},
+  howpublished = {\url{https://openai.com/index/introducing-swe-bench-verified/}},
+  year         = {2024},
+  note         = {OpenAI blog post introducing the human-validated 500-task subset of SWE-bench}
+}

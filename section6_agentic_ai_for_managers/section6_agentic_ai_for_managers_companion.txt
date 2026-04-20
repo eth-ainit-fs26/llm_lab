@@ -1,0 +1,198 @@
+================================================================================
+  SECTION 6 --- COMPANION DOCUMENT
+  "Agentic AI: What Works, What Breaks, and What You Can't Trust"
+  ETH Zurich Executive Education --- 90-minute lecture
+================================================================================
+
+--------------------------------------------------------------------------------
+1. SESSION OVERVIEW
+--------------------------------------------------------------------------------
+
+Title:       Agentic AI: What Works, What Breaks, and What You Can't Trust
+Duration:    90 minutes (80 min content + 10 min Q&A)
+Audience:    Senior managers and business leaders, analytical backgrounds,
+             no machine-learning specialisation expected
+Format:      Lecture + optional interactive benchmark-reading exercise
+Prereqs:     Section 4 (dark side of LLMs) and Section 5 (AGI reality check)
+             are strongly recommended but not required
+
+Learning objectives. By the end of this session, participants will be able to:
+
+  (a) Distinguish an "agent" from a "chatbot" in terms of scaffolding
+      (planner, tools, retry, guardrails), and explain why the base model
+      is not the lever that matters most.
+
+  (b) Read current benchmark numbers (GAIA, SWE-bench, WebArena) with
+      appropriate skepticism, and name two mechanisms by which benchmark
+      scores can drift upward for the wrong reasons.
+
+  (c) Cite four peer-reviewed failure modes of agentic AI (compounding
+      errors, goal misgeneralization, indirect prompt injection, strategic
+      deception) and name one minimum guardrail for each.
+
+  (d) Apply a seven-question procurement checklist to a real vendor pitch.
+
+One-paragraph summary (for the programme brochure):
+
+    "Agentic AI" has moved from lab demo to procurement line item in under
+    two years. This 90-minute session unpacks what the peer-reviewed
+    literature actually says about these systems: why scaffolding matters
+    more than model size, why current benchmark scores are unstable signals
+    in both directions, and which four failure modes are already documented
+    at ICML, NeurIPS, ICLR, and in the Cell Press journal Patterns.
+    Participants leave with a seven-question procurement checklist, each
+    item anchored to a specific paper, and a clear rule for evaluating
+    agentic-AI vendors on their own workflows rather than on leaderboard
+    numbers.
+
+--------------------------------------------------------------------------------
+2. THE FOUR MOMENTS (deck structure)
+--------------------------------------------------------------------------------
+
+Moment 1: What an agent actually is.
+    Scaffolding carries the lift, not the base model. Anchors: ReAct
+    (ICLR 2023), Reflexion (NeurIPS 2023), Toolformer (NeurIPS 2023),
+    Generative Agents (UIST 2023).
+
+Moment 2: What the benchmarks say, and what they hide.
+    GAIA (humans 92%, best agent 44.8%), SWE-bench (2% to 93.9% in 30
+    months, with contamination), WebArena (14% to 71.6%, human 78%).
+    Benchmark scores are now unstable in both directions.
+
+Moment 3: How agentic AI actually breaks.
+    Four peer-reviewed failure modes: compounding errors (Dziri, NeurIPS
+    2023), goal misgeneralization (Langosco, ICML 2022), indirect prompt
+    injection (Greshake, ACM AISec 2023), strategic deception (Park,
+    Patterns 2024).
+
+Moment 4: What to do Monday morning.
+    Three decisions you own: evaluate on your own tasks; contain the four
+    failure modes; procure with seven explicit questions.
+
+--------------------------------------------------------------------------------
+3. DISCUSSION QUESTIONS
+--------------------------------------------------------------------------------
+
+For small-group work during the session, or for follow-up reading groups.
+
+A. The scaffolding lesson.
+
+    A1. A vendor shows you a demo. The demo involves an agent that reads
+        your emails, drafts replies, and schedules meetings. Which parts
+        of that are "the model" and which parts are "the scaffolding"?
+        Which questions should you ask about each?
+
+    A2. The Toolformer paper showed a 6.7B model using tools beating a
+        175B model without tools. What is the equivalent error mode in
+        your procurement process? Where are you paying for size when you
+        should be paying for integration?
+
+B. The benchmark crisis.
+
+    B1. OpenAI stopped reporting SWE-bench Verified scores due to
+        training-data contamination. If your preferred vendor is still
+        quoting a SWE-bench number in a pitch deck, what should you
+        ask them about how that number was generated?
+
+    B2. Build a 5-task "mini-benchmark" from your own workflows that a
+        vendor would have had no way to see during training. What does
+        each task test? How would you score it?
+
+C. The four failure modes.
+
+    C1. Pick one deployed AI system in your organisation. Walk through
+        the four failure modes (compounding, goal misgeneralization,
+        prompt injection, strategic deception). For each, name one
+        concrete scenario where this system could fail that way.
+
+    C2. Which of the four failure modes does your current guardrail
+        stack address? Which does it not?
+
+D. Monday morning.
+
+    D1. Rewrite one line of your current AI procurement template using
+        one of the seven questions from the deck. Which line did you
+        pick, and why?
+
+    D2. For a deployment in your organisation, where is "human in the
+        loop for irreversible actions" most likely to be violated in
+        practice?
+
+--------------------------------------------------------------------------------
+4. READING LIST
+--------------------------------------------------------------------------------
+
+Core reading (peer-reviewed, high priority):
+
+    Benchmarks.
+    * Mialon, G., et al. (2024). GAIA: A Benchmark for General AI
+      Assistants. ICLR 2024. arXiv:2311.12983.
+    * Jimenez, C. E., et al. (2024). SWE-bench: Can Language Models
+      Resolve Real-World GitHub Issues? ICLR 2024 (oral).
+      arXiv:2310.06770.
+    * Zhou, S., et al. (2024). WebArena: A Realistic Web Environment for
+      Building Autonomous Agents. ICLR 2024. arXiv:2307.13854.
+
+    Scaffolding.
+    * Yao, S., et al. (2023). ReAct: Synergizing Reasoning and Acting in
+      Language Models. ICLR 2023. arXiv:2210.03629.
+    * Shinn, N., et al. (2023). Reflexion: Language Agents with Verbal
+      Reinforcement Learning. NeurIPS 2023. arXiv:2303.11366.
+    * Park, J. S., et al. (2023). Generative Agents: Interactive
+      Simulacra of Human Behavior. UIST 2023 (best-paper honorable
+      mention).
+
+    Failure modes.
+    * Dziri, N., et al. (2023). Faith and Fate: Limits of Transformers
+      on Compositionality. NeurIPS 2023. arXiv:2305.18654.
+    * Langosco, L., et al. (2022). Goal Misgeneralization in Deep
+      Reinforcement Learning. ICML 2022 (PMLR 162). arXiv:2105.14111.
+    * Greshake, K., et al. (2023). Not What You've Signed Up For:
+      Compromising Real-World LLM-Integrated Applications with Indirect
+      Prompt Injection. ACM AISec 2023 (workshop, co-located with CCS).
+    * Park, P. S., et al. (2024). AI Deception: A Survey of Examples,
+      Risks, and Potential Solutions. Patterns (Cell Press) 5(5):100988.
+
+    Supporting.
+    * Bakhtin, A., et al. (2022). Human-level play in Diplomacy.
+      Science 378(6624):1067-1074.
+
+Additional reading (grey zone, NOT peer-reviewed, read with caution):
+
+    * Hubinger, E., et al. (2024). Sleeper Agents. Anthropic tech report.
+      arXiv:2401.05566.
+    * Meinke, A., et al. (2024). Frontier Models are Capable of
+      In-Context Scheming. Apollo Research tech report.
+      arXiv:2412.04984.
+    * Kinniment, M., et al. (2023). Evaluating LM Agents on Realistic
+      Autonomous Tasks. METR tech report. arXiv:2312.11671.
+
+Live sources consulted for April 2026 benchmark numbers:
+
+    * SWE-bench leaderboard: https://www.swebench.com/
+    * GAIA leaderboard: https://huggingface.co/spaces/gaia-benchmark/leaderboard
+    * WebArena leaderboard: https://webarena.dev/
+    * Berkeley RDI, "How We Broke Top AI Agent Benchmarks" (2026).
+
+--------------------------------------------------------------------------------
+5. PROCUREMENT CHECKLIST (take-home one-pager)
+--------------------------------------------------------------------------------
+
+For any agent-based product your organisation is considering:
+
+    [ ] 1. What scaffolding sits between the model and our data?
+    [ ] 2. What tools does the agent have? Who can revoke them?
+    [ ] 3. Which benchmark numbers are you citing, and when were they
+           generated?
+    [ ] 4. What is your contamination policy for evaluation data?
+    [ ] 5. Which of our workflows have you evaluated against?
+    [ ] 6. What happens when the agent is wrong? (rollback, human loop,
+           logs)
+    [ ] 7. Who is liable when the agent takes an irreversible action?
+
+A vendor that cannot answer all seven in plain language is not ready
+for an enterprise deployment.
+
+================================================================================
+End of companion document.
+================================================================================

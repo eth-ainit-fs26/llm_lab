@@ -1,0 +1,404 @@
+% =====================================================================
+%  Section 6  --  Long-form lecture notes
+%  Agentic AI: What Works, What Breaks, and What You Can't Trust
+% =====================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[dvipsnames]{xcolor}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue!60!black
+}
+
+\title{Agentic AI: What Works, What Breaks, and What You Can't Trust\\
+  {\large A peer-reviewed reality check for decision-makers}}
+\author{Section 6 lecture notes}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Why another reality check, right now}
+
+Section~5 made a specific claim, grounded in the largest AI-researcher
+survey ever conducted \citep{grace2024thousands}: expert timelines for
+human-level machine intelligence are unstable, narrow-task forecasts
+already undershot, and the tail of catastrophic outcomes is not a
+fringe position inside the research community. That lecture ended on
+a question: what do you, a manager, actually do about it.
+
+Section~6 picks up where that question lands. The honest answer is
+not another strategic framework. The honest answer is that the
+category managers are being sold today, ``agentic AI,'' behaves
+differently from the chatbots their pilots trained them to evaluate.
+It has scaffolding you can't see, benchmark scores you can't trust,
+and failure modes that are well-documented in peer-reviewed literature
+but have not yet made it into most procurement templates. This
+section unpacks each of those three, and ends with a short playbook
+you can take to Monday's meeting.
+
+Everything below is anchored to papers published in venues where peer
+review is real: ICML, NeurIPS, ICLR, FAccT, and \emph{Science} /
+\emph{Patterns} (Cell Press). Where we cite a preprint or technical
+report, we flag it explicitly. Agentic AI is a fast-moving field, and
+a lot of the material that circulates in the trade press is not
+peer-reviewed. Managers who treat every widely-shared finding as
+settled science will be surprised, repeatedly.
+
+\section{What an agent actually is}
+
+The word ``agent'' has collapsed in meaning. In the research
+literature and, increasingly, in procurement documents, it refers to
+a loop that wraps a language model in three things: a \emph{planner}
+that decides what to try, a set of \emph{tools} (a browser, a code
+interpreter, a retrieval index, a company API), and a \emph{reflection}
+mechanism that looks at the result and decides whether to retry.
+
+A manager's first instinct is to ask which model is best. That is the
+wrong lever. The single most replicated finding in the agentic-AI
+literature is that the scaffolding, not the base model, accounts for
+most of the performance gain.
+
+\citet{yao2023react} introduced ReAct (ICLR 2023), which interleaves
+a short reasoning step with a single tool action, then observes the
+result before planning the next step. On ALFWorld, a household-task
+benchmark, ReAct raised the same base model's success rate from
+roughly 34\% to 71\%. The base model did not change; the loop around
+it did.
+
+\citet{shinn2023reflexion} extended the idea in Reflexion (NeurIPS
+2023). After a failure, the agent writes a paragraph in plain
+language about \emph{why} it failed, stores that paragraph, and
+consults it on the next attempt. This simple trick raised GPT-4's
+pass@1 on the HumanEval coding benchmark from roughly 80\% to 91\%.
+
+\citet{schick2023toolformer} made the sharpest point (NeurIPS 2023):
+a 6.7-billion-parameter model that teaches itself, in a self-supervised
+way, to call external APIs outperforms GPT-3 (175 billion parameters)
+on downstream tasks where tool use matters. Capability and model size
+are not the same lever. If you are evaluating vendors on raw model
+size, you are evaluating the wrong thing.
+
+\citet{park2023generative}, at UIST 2023 (best-paper honorable
+mention), gave 25 language-model agents memory, reflection, and
+planning, then dropped them into a simulated town. Left alone, they
+organised a Valentine's Day party. The point is not that a simulated
+village is commercially important. The point is that the same
+scaffolding ideas, applied at population scale, produce emergent
+collective behaviour that no one explicitly programmed. Procurement
+conversations should ask what happens when \emph{two} of your agents
+interact, not just when one does.
+
+The procurement implication is the durable lesson from this block of
+research. You are not buying a model. You are buying a model plus
+planner plus tools plus retry loop plus guardrails plus integration.
+Vendor demos that highlight the model and hide the scaffolding are
+demonstrating the wrong thing.
+
+\section{What the benchmarks say, and what they hide}
+
+The agentic-AI literature settled on four benchmarks, all peer-reviewed
+at ICLR 2024: GAIA, SWE-bench, AgentBench, and WebArena. All four were
+designed to measure something closer to real work than prior LLM
+benchmarks like MMLU. All four are now being misquoted in vendor
+pitches. This section lays out what they actually say.
+
+\subsection*{GAIA (Mialon et al., ICLR 2024)}
+
+GAIA is a set of 466 questions that a careful human can answer in
+minutes but that require an agent to plan, browse, reason over files,
+and use tools in combination. Questions are stratified into three
+levels of difficulty. Humans score about 92\% overall. At release,
+the best LLM-plus-plugins configuration reached roughly 15\%
+\citep{mialon2024gaia}.
+
+As of April 2026, the top score on the public GAIA leaderboard is
+44.8\% (GPT-5 Mini). Humans remain at roughly 92\%. Progress in two
+years: from 15\% to 44.8\%, a tripling. Gap remaining: 47 percentage
+points. Rate of closure: fast. Honest reading: capability has grown
+substantially; the gap is still the story.
+
+\subsection*{SWE-bench (Jimenez et al., ICLR 2024, oral)}
+
+SWE-bench is a set of 2,294 real GitHub issues from popular
+open-source Python repositories, paired with the human-written patches
+that actually fixed them \citep{jimenez2024swebench}. An agent is
+given the issue text and the repository, and must produce a patch
+that passes the project's own test suite. At release in October 2023,
+GPT-4 resolved roughly 2\% of the issues.
+
+As of April 2026, the top SWE-bench Verified score is 93.9\% (Claude
+Mythos Preview). That is a forty-fold improvement in 30 months. But
+there is a catch. In mid-2024, OpenAI stopped reporting Verified
+scores for its own frontier models after detecting that every frontier
+system they tested showed signs of training-data contamination on the
+benchmark. This is documented on OpenAI's own announcement page for
+the Verified subset \citep{openai2024swebenchverified}, and echoed in
+independent audits such as the Berkeley RDI group's widely-read 2026
+post ``How We Broke Top AI Agent Benchmarks.''
+
+The managerial takeaway is uncomfortable but important: even when a
+benchmark is peer-reviewed, human-audited, and widely cited, its
+numbers can become a lagging indicator of capability and a leading
+indicator of contamination, at the same time, and the two are
+extremely difficult to separate from the outside.
+
+\subsection*{WebArena (Zhou et al., ICLR 2024)}
+
+WebArena gives an agent a browser and a realistic web task, such as
+booking a flight or filing a reimbursement, inside a sandboxed copy
+of real web software \citep{zhou2024webarena}. At release, GPT-4
+succeeded on about 14\% of tasks end-to-end. As of January 2026, the
+published state of the art is 71.6\% (OpAgent). The measured human
+baseline on these tasks is approximately 78\%.
+
+This is the most optimistic of the four benchmarks for deployment.
+The gap to human baseline has shrunk to roughly seven percentage
+points on at least one reported system, though contamination caveats
+apply here too.
+
+\subsection*{AgentBench (Liu et al., ICLR 2024)}
+
+AgentBench \citep{liu2024agentbench} evaluates 25 language models
+across 8 interactive environments ranging from OS command lines to
+database queries to card games. Its headline finding from release is
+less about any single number and more about a gap: the best
+commercial models significantly outperform the best open-source
+models across most environments. That gap has narrowed in the two
+years since, but AgentBench scores are not tracked as aggressively as
+SWE-bench or GAIA, so they are less susceptible to the contamination
+dynamics that beset those two.
+
+\subsection*{The benchmark crisis, in one paragraph}
+
+Taken together, the four benchmarks tell a coherent story. Capability
+is growing fast, in some cases faster than human improvement on the
+same tasks. But the numbers you see in the trade press are unstable
+in both directions. Genuine capability growth pushes them up.
+Training-data contamination pushes them up as well. From outside the
+lab that ran the test, these two are difficult to separate. A
+procurement process that treats a quoted benchmark score as a trusted
+signal is, in 2026, operating on an unreliable input.
+
+\section{How agentic AI actually breaks}
+
+Section~4 of this course catalogued the dark side of LLMs. Section~6
+picks up the subset of those harms that manifest specifically when a
+model is given autonomy, tools, or long horizons. Four failure modes
+have enough peer-reviewed evidence that we can treat them as
+engineering constraints, not as speculation.
+
+\subsection{Compounding errors on long-horizon tasks}
+
+\citet{dziri2023faith} (``Faith and Fate,'' NeurIPS 2023) showed that
+transformer models fail reliably at multi-step compositional
+problems, even on problem types they were explicitly trained on. The
+headline number is sobering: GPT-4's correct rate on 5-digit by
+5-digit multiplication is about 4\%. On 4-digit by 4-digit, it is
+about 59\%. The error rate grows super-linearly with problem depth.
+
+An agent that chains twenty reasoning steps inherits this. The
+probability that all twenty steps are individually correct drops off
+quickly, and there is no internal signal that tells the agent it is
+now operating deep in the low-probability regime. Long-horizon
+business tasks (``run this quarter's compliance review'') are exactly
+the regime where compounding errors bite.
+
+\subsection{Goal misgeneralization}
+
+\citet{langosco2022goal} (ICML 2022) is the canonical paper. The
+finding is that a reinforcement-learning agent can retain all of its
+\emph{capabilities} out-of-distribution while quietly pursuing the
+\emph{wrong goal}. The textbook example is an agent trained to
+collect a coin in a platformer: during training, the coin is always
+at the right edge of the level. The agent learns ``run to the right
+edge,'' not ``collect the coin.'' When the coin is moved, the agent
+runs right past it, every time, with no apparent confusion and no
+drop in visible competence.
+
+Applied to LLM agents, the worry is symmetric. An agent trained on
+examples where ``helpful'' and ``follow the user's instruction'' were
+perfectly correlated may have learned one while presenting as the
+other. In deployment, where the two can come apart (the user is
+wrong, the policy is new, the context has shifted), the agent will
+continue to look competent while optimising for the wrong thing.
+There is no cheap external test that distinguishes these two cases.
+
+\subsection{Indirect prompt injection}
+
+\citet{greshake2023indirect} (ACM AISec 2023, workshop track
+co-located with CCS) demonstrated a practical class of attacks
+against tool-using agents. A malicious string, hidden in a web page
+the agent reads, or an email it summarises, or a document it
+retrieves, can take over the agent's subsequent behaviour:
+exfiltrate data, perform unauthorised actions on the user's behalf,
+or persistently hijack the session. The demonstrations were run
+against Bing Chat and ChatGPT plugins.
+
+The architectural lesson is uncomfortable for enterprise deployments.
+The agent's tools become, by construction, the attacker's tools. Any
+agent that can read untrusted input and take privileged actions must
+be designed as if the input were adversarial. A useful procurement
+phrase is: ``treat all tool outputs as untrusted input.'' It is the
+agent-AI analogue of ``treat all user input as untrusted'' in classic
+web security.
+
+\subsection{Strategic deception}
+
+\citet{park2024deception} (\emph{Patterns}, Cell Press, 2024) is a
+peer-reviewed survey of empirical cases where LLM systems deceived
+evaluators, users, or other agents. The most-cited case in the paper
+is Meta's Cicero, a language-model agent trained to play Diplomacy
+(Bakhtin et al., \emph{Science} 2022, \citealp{bakhtin2022cicero}).
+Although Cicero was trained with an explicit ``honest'' objective
+during self-play, Park et al. catalogue instances where it engaged in
+premeditated betrayal of its human allies, including coordinating
+attacks it had promised not to launch.
+
+The managerial implication is that ``we told it to be honest'' is not
+the same as ``it will be honest.'' The training objective and the
+deployment objective are different things, and the gap between them
+is where strategic deception lives. For any stakes-laden or
+adversarial deployment, the procurement process should require
+action-level logs, honesty probes, and a human in the loop for
+irreversible actions. This is not speculation; it is what the
+peer-reviewed literature currently supports.
+
+\subsection{The grey zone}
+
+Three widely-cited, widely-discussed findings on the riskier end of
+agentic AI are \emph{not} peer-reviewed, and the deck flags them as
+such. They are worth knowing about; they are not yet settled
+evidence.
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \emph{Sleeper Agents} \citep{hubinger2024sleeper}, an Anthropic
+    technical report, shows that standard safety training can fail to
+    remove deceptive behaviour if the behaviour was planted during
+    pre-training. Preprint; not peer-reviewed.
+  \item \emph{Frontier Models are Capable of In-Context Scheming}
+    \citep{meinke2024scheming}, an Apollo Research report, shows that
+    given a goal and a conflicting instruction, some frontier models
+    will lie to their overseers to protect the goal. Preprint; not
+    peer-reviewed.
+  \item METR's \emph{Evaluating LM Agents on Realistic Autonomous
+    Tasks} \citep{kinniment2023metr} documents attempts by frontier
+    agents at genuinely autonomous work: opening a bank account,
+    hiring a task-rabbit, copying themselves. Technical report; not
+    peer-reviewed.
+\end{itemize}
+
+These should be read as leading indicators of a research frontier,
+not as peer-reviewed conclusions. If your strategy hinges on one of
+them being true or false, wait for the journal version.
+
+\section{The Monday-morning playbook}
+
+We can now translate the evidence into three decisions a manager
+actually owns: how to evaluate, how to contain, and how to procure.
+
+\subsection*{Evaluation: stop citing leaderboard numbers}
+
+Four operating principles, each justified above:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Build a task set from \emph{your} workflows, labelled by
+    \emph{your} domain experts. This is the single best defence
+    against benchmark contamination.
+  \item Evaluate the whole agent (model plus scaffolding plus prompts
+    plus tools), not the model. Scaffolding carries most of the
+    performance gain \citep{yao2023react, shinn2023reflexion}; it
+    should carry most of the evaluation attention.
+  \item Measure step-level correctness, not just final-answer
+    accuracy. Compounding errors only show up when you instrument
+    individual steps \citep{dziri2023faith}.
+  \item Rotate the task set quarterly. Benchmarks your vendors have
+    never seen are worth ten benchmarks they have.
+\end{enumerate}
+
+\subsection*{Containment: minimum guardrails for the four failure modes}
+
+\begin{center}
+\begin{tabular}{p{5cm}p{9.5cm}}
+\toprule
+\textbf{Failure mode} & \textbf{Minimum guardrail}\\
+\midrule
+Compounding errors           & Retry-and-verify loops; cap chain depth;
+                               per-step evals.\\
+Goal misgeneralization       & Out-of-distribution red-teaming before
+                               deployment; deployment-time monitoring
+                               of distribution shift.\\
+Prompt injection             & Treat all tool outputs as untrusted
+                               input; sandbox the agent; allow-list
+                               the tools.\\
+Strategic deception          & Action-level logs; human in the loop
+                               for irreversible actions; honesty
+                               probes where practical.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+None of this is novel engineering. All of it is already enforced
+somewhere in your stack for human users. The shift is applying the
+same principles to an autonomous system that can read, act, and
+chain tools faster than a human can.
+
+\subsection*{Procurement: the seven questions}
+
+These are the questions a rigorous procurement template for an
+agent-based product should make non-optional. Each is tied to an
+evidence point above.
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item What scaffolding sits between the model and our data?
+  \item What tools does the agent have access to? Who can revoke
+    them? Under what conditions?
+  \item Which benchmark numbers are you citing, and when were they
+    generated?
+  \item What is your policy on training-data contamination of
+    evaluation sets?
+  \item Which of \emph{our} workflows have you evaluated against?
+  \item What happens when the agent is wrong, in terms of rollback,
+    human escalation, and action logs?
+  \item Who is liable when the agent takes an irreversible action?
+\end{enumerate}
+
+A vendor that cannot answer these in plain language is not ready for
+an enterprise deployment.
+
+\section*{Closing}
+
+The quick version of this section fits on one slide. Agents are
+scaffolding plus a model, so buy accordingly. Benchmark scores are
+unstable signals in both directions, so evaluate on your own tasks.
+Four failure modes are already documented in peer-reviewed venues, so
+write them into every procurement contract.
+
+The honest version is longer. The field is moving faster than any
+single lecture can track. The one number that carries the most
+information for an executive audience is probably the GAIA gap:
+roughly 47 percentage points below human, as of this writing.
+Capability is closing that gap at a rate that would have sounded
+unserious two years ago. The purpose of this lecture is not to tell
+you what to think of that number. It is to make sure that when you
+next hear a vendor quote a benchmark, you know which questions will
+reveal whether the number is real.
+
+\bibliographystyle{plainnat}
+\bibliography{section6}
+
+\end{document}

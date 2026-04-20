@@ -1,0 +1,351 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{microtype}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{ETH Zurich Executive Education}
+\lhead{Section 6 --- Annotated Bibliography}
+\cfoot{\thepage}
+
+\title{Agentic AI: What Works, What Breaks, What You Can't Trust \\[0.2em]
+       \large Annotated Bibliography for the ETH Zurich Executive Lecture}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\noindent
+Thirteen anchor references shape this lecture, organised under four
+themes. Every entry carries a one-line full citation, a plain-English
+takeaway, and the venue's peer-review status. Three further entries
+in a ``grey zone'' section are widely cited but not peer-reviewed;
+they are flagged as such.
+
+\section*{Theme 1: What an Agent Actually Is (scaffolding papers)}
+
+\subsection*{B1. Yao et al., \emph{ReAct} (ICLR 2023)}
+
+\textbf{Full citation.}
+Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K.\ and Cao, Y.
+\emph{ReAct: Synergizing Reasoning and Acting in Language Models}.
+International Conference on Learning Representations (ICLR) 2023.
+arXiv:2210.03629.
+
+\textbf{What it says.}
+Interleaving a short reasoning step with a single tool action raises
+ALFWorld household-task success from roughly 34\% to 71\% on the same
+base model.
+
+\textbf{Why it matters for managers.}
+Introduces the single most replicated finding in the literature: the
+scaffolding around the model carries most of the performance gain.
+Procurement should weigh integration, not model size.
+
+\textbf{Peer-reviewed.} Yes (main-conference track).
+
+\subsection*{B2. Shinn et al., \emph{Reflexion} (NeurIPS 2023)}
+
+\textbf{Full citation.}
+Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K.\ and Yao, S.
+\emph{Reflexion: Language Agents with Verbal Reinforcement Learning}.
+Advances in Neural Information Processing Systems (NeurIPS) 2023.
+arXiv:2303.11366.
+
+\textbf{What it says.}
+Let the agent write a paragraph about why its last attempt failed,
+store it, and feed it into the next attempt. HumanEval pass@1 on GPT-4
+rises from roughly 80\% to 91\%.
+
+\textbf{Why it matters for managers.}
+Verbal self-reflection is cheap, modular, and retrofittable. The lesson
+is that simple feedback loops can close a meaningful capability gap
+without retraining.
+
+\textbf{Peer-reviewed.} Yes (main-conference track).
+
+\subsection*{B3. Schick et al., \emph{Toolformer} (NeurIPS 2023)}
+
+\textbf{Full citation.}
+Schick, T., Dwivedi-Yu, J., Dess{\`i}, R., Raileanu, R., Lomeli, M.,
+Zettlemoyer, L., Cancedda, N.\ and Scialom, T.
+\emph{Toolformer: Language Models Can Teach Themselves to Use Tools}.
+NeurIPS 2023. arXiv:2302.04761.
+
+\textbf{What it says.}
+A 6.7B-parameter model that teaches itself, in a self-supervised way,
+to call external APIs outperforms GPT-3 (175B parameters) on
+tool-relevant downstream tasks.
+
+\textbf{Why it matters for managers.}
+Capability and model size are not the same lever. If your vendor
+evaluation weighs parameter count heavily, you are solving yesterday's
+problem.
+
+\textbf{Peer-reviewed.} Yes (main-conference track).
+
+\subsection*{B4. Park et al., \emph{Generative Agents} (UIST 2023)}
+
+\textbf{Full citation.}
+Park, J.\,S., O'Brien, J.\,C., Cai, C.\,J., Morris, M.\,R.,
+Liang, P.\ and Bernstein, M.\,S.
+\emph{Generative Agents: Interactive Simulacra of Human Behavior}.
+ACM UIST 2023. DOI: 10.1145/3586183.3606763.
+
+\textbf{What it says.}
+Twenty-five LLM agents with memory, reflection, and planning were
+dropped into a simulated town. They organised a Valentine's Day
+party without being told to.
+
+\textbf{Why it matters for managers.}
+Emergent collective behaviour shows up once you have many scaffolded
+agents, not just one. Plan procurement for multi-agent interactions,
+not just single-agent deployments.
+
+\textbf{Peer-reviewed.} Yes (UIST 2023, best-paper honorable mention).
+
+\section*{Theme 2: Benchmarks and the Benchmark Crisis}
+
+\subsection*{C1. Mialon et al., \emph{GAIA} (ICLR 2024)}
+
+\textbf{Full citation.}
+Mialon, G., Fourrier, C., Swift, C., Wolf, T., LeCun, Y.\ and Scialom, T.
+\emph{GAIA: A Benchmark for General AI Assistants}. ICLR 2024.
+arXiv:2311.12983.
+
+\textbf{What it says.}
+466 real-assistant tasks a careful human answers in minutes. Humans
+score $\approx 92\%$; GPT-4 + plugins scored $\approx 15\%$ at release.
+As of April 2026, the leaderboard top is 44.8\% (GPT-5 Mini).
+
+\textbf{Why it matters for managers.}
+The most honest ``hype vs.\ reality'' number in the agent literature.
+The 47-point human-agent gap is the headline for a manager audience.
+
+\textbf{Peer-reviewed.} Yes (main-conference track).
+
+\subsection*{C2. Jimenez et al., \emph{SWE-bench} (ICLR 2024, oral)}
+
+\textbf{Full citation.}
+Jimenez, C.\,E., Yang, J., Wettig, A., Yao, S., Pei, K., Press, O.\
+and Narasimhan, K.\
+\emph{SWE-bench: Can Language Models Resolve Real-World GitHub Issues?}
+ICLR 2024 (oral). arXiv:2310.06770.
+
+\textbf{What it says.}
+2{,}294 real GitHub issues paired with human patches and test suites.
+GPT-4 solved $\sim 2\%$ at release; the Verified subset is now at
+93.9\% (Claude Mythos Preview, April 2026).
+
+\textbf{Why it matters for managers.}
+The 2\%-to-94\% arc in 30 months is the centrepiece of the ``benchmarks
+are moving'' narrative. OpenAI halted reporting on Verified after
+detecting training-data contamination, which is the centrepiece of
+the ``benchmarks are untrustworthy'' narrative. Both are true.
+
+\textbf{Peer-reviewed.} Yes (oral presentation).
+
+\subsection*{C3. Zhou et al., \emph{WebArena} (ICLR 2024)}
+
+\textbf{Full citation.}
+Zhou, S., Xu, F.\,F., Zhu, H., Zhao, X., Lo, R., Sridhar, A.,
+Cheng, X., Ou, T., Bisk, Y., Fried, D., Alon, U.\ and Neubig, G.
+\emph{WebArena: A Realistic Web Environment for Building Autonomous
+Agents}. ICLR 2024. arXiv:2307.13854.
+
+\textbf{What it says.}
+Sandboxed copies of real web software (Gitlab, Wordpress, Shopping,
+Reddit, etc.) with task suites. GPT-4 succeeded at $\approx 14\%$ at
+release; January 2026 leaderboard top is 71.6\% (OpAgent), against a
+human baseline of $\approx 78\%$.
+
+\textbf{Why it matters for managers.}
+The optimistic half of the benchmark story: on a realistic task set,
+agents are closing in on human parity. Still contamination-sensitive,
+but the gap has visibly narrowed.
+
+\textbf{Peer-reviewed.} Yes (main-conference track).
+
+\subsection*{C4. Liu et al., \emph{AgentBench} (ICLR 2024)}
+
+\textbf{Full citation.}
+Liu, X., Yu, H., Zhang, H.\ et al.
+\emph{AgentBench: Evaluating LLMs as Agents}. ICLR 2024.
+arXiv:2308.03688.
+
+\textbf{What it says.}
+25 LLMs evaluated across 8 interactive environments (OS, database,
+web, card game, etc.). Big gap between commercial and open-source
+models at release; consistent reasoning-breakdown patterns.
+
+\textbf{Why it matters for managers.}
+The least-cited of the four benchmarks, which makes its numbers less
+susceptible to contamination. Worth watching precisely because it is
+not yet gamed.
+
+\textbf{Peer-reviewed.} Yes (main-conference track).
+
+\section*{Theme 3: Four Failure Modes of Agentic AI}
+
+\subsection*{D1. Dziri et al., \emph{Faith and Fate} (NeurIPS 2023)}
+
+\textbf{Full citation.}
+Dziri, N., Lu, X., Sclar, M., Li, X.\,L., Jiang, L., Lin, B.\,Y.,
+West, P., Bhagavatula, C., Bras, R.\,L., Hwang, J.\,D., Sanyal, S.,
+Welleck, S., Ren, X., Ettinger, A., Harchaoui, Z.\ and Choi, Y.
+\emph{Faith and Fate: Limits of Transformers on Compositionality}.
+NeurIPS 2023. arXiv:2305.18654.
+
+\textbf{What it says.}
+Transformers fail reliably at multi-step compositional tasks even on
+problem types they were trained on. GPT-4 correct rate on 5-digit
+multiplication is about 4\%.
+
+\textbf{Why it matters for managers.}
+Long-horizon business tasks (quarterly compliance review, multi-leg
+reasoning) inherit compounding error. Guardrail: step-level evals
+and chain-depth caps.
+
+\textbf{Peer-reviewed.} Yes (main-conference track).
+
+\subsection*{D2. Langosco et al., \emph{Goal Misgeneralization} (ICML 2022)}
+
+\textbf{Full citation.}
+Langosco, L., Koch, J., Sharkey, L., Pfau, J., Orseau, L.\ and Krueger, D.
+\emph{Goal Misgeneralization in Deep Reinforcement Learning}.
+Proceedings of the 39th International Conference on Machine Learning
+(ICML 2022), PMLR 162:12004--12019. arXiv:2105.14111.
+
+\textbf{What it says.}
+An RL agent can retain its capabilities out-of-distribution while
+pursuing the wrong goal. The textbook example: an agent learns ``run
+right,'' not ``collect the coin.''
+
+\textbf{Why it matters for managers.}
+An agent can look competent while optimising for the wrong target.
+No cheap external test catches this. Guardrail: explicit
+out-of-distribution red-teaming before deployment.
+
+\textbf{Peer-reviewed.} Yes (main-conference track).
+
+\subsection*{D3. Greshake et al., \emph{Indirect Prompt Injection} (AISec 2023)}
+
+\textbf{Full citation.}
+Greshake, K., Abdelnabi, S., Mishra, S., Endres, C., Holz, T.\ and Fritz, M.
+\emph{Not What You've Signed Up For: Compromising Real-World LLM-Integrated
+Applications with Indirect Prompt Injection}. ACM AISec 2023 (workshop,
+co-located with CCS). DOI: 10.1145/3605764.3623985.
+
+\textbf{What it says.}
+A malicious string in a webpage, email, or document can hijack an LLM
+agent that reads it. Demonstrated live against Bing Chat and ChatGPT
+plugins.
+
+\textbf{Why it matters for managers.}
+The agent's tools become the attacker's tools. Guardrail: treat every
+tool output as untrusted input; sandbox; allow-list tool actions.
+
+\textbf{Peer-reviewed.} Yes (workshop track; note: not main CCS
+conference).
+
+\subsection*{D4. Park et al., \emph{AI Deception} (Patterns, Cell Press, 2024)}
+
+\textbf{Full citation.}
+Park, P.\,S., Goldstein, S., O'Gara, A., Chen, M.\ and Hendrycks, D.
+\emph{AI Deception: A Survey of Examples, Risks, and Potential Solutions}.
+Patterns 5(5):100988, 2024. DOI: 10.1016/j.patter.2024.100988.
+
+\textbf{What it says.}
+Peer-reviewed catalogue of empirical cases in which LLM systems
+deceived evaluators, users, or other agents. The anchor case is
+Meta's Cicero (Bakhtin et al., Science 2022): trained for ``honest''
+Diplomacy play, it committed premeditated betrayal.
+
+\textbf{Why it matters for managers.}
+``We trained it to be honest'' is not the same as ``it will be
+honest.'' For stakes-laden deployments, require action logs, honesty
+probes, and a human loop on irreversible actions.
+
+\textbf{Peer-reviewed.} Yes (Cell Press journal).
+
+\subsection*{D5. Weidinger et al., \emph{Taxonomy of Risks} (FAccT 2022)}
+
+\textbf{Full citation.}
+Weidinger, L., Uesato, J., Rauh, M.\ et al.
+\emph{Taxonomy of Risks Posed by Language Models}.
+ACM FAccT 2022. DOI: 10.1145/3531146.3533088.
+
+\textbf{What it says.}
+Twenty-one risk categories across six areas (discrimination,
+information hazards, misinformation, malicious use, HCI harms,
+socioeconomic and environmental harms).
+
+\textbf{Why it matters for managers.}
+Organising frame for the dark-side inventory from Section 4.
+Complement to the four failure-mode frame used here.
+
+\textbf{Peer-reviewed.} Yes (main-conference track).
+
+\section*{Theme 4: Supporting References}
+
+\subsection*{E1. Bakhtin et al., \emph{Cicero} (Science 2022)}
+
+\textbf{Full citation.}
+Bakhtin, A.\ et al.
+\emph{Human-level play in the game of Diplomacy by combining language
+models with strategic reasoning}. Science 378(6624):1067--1074, 2022.
+DOI: 10.1126/science.ade9097.
+
+\textbf{What it says.}
+Meta's Cicero combined an LLM with a strategic reasoning module to
+achieve human-level play in natural-language Diplomacy.
+
+\textbf{Why it matters for managers.}
+The primary evidence for the strategic-deception case study in D4.
+
+\textbf{Peer-reviewed.} Yes (Science).
+
+\section*{Grey Zone: Widely Cited, NOT Peer-Reviewed}
+
+These three preprints are mentioned in the deck with explicit
+``non-peer-reviewed'' flags. They are included here because managers
+will encounter them in the trade press, but they should be read as
+leading indicators, not as settled evidence.
+
+\subsection*{Z1. Hubinger et al., \emph{Sleeper Agents} (arXiv 2024)}
+
+\textbf{Full citation.}
+Hubinger, E.\ et al.
+\emph{Sleeper Agents: Training Deceptive LLMs That Persist Through
+Safety Training}. arXiv:2401.05566. Anthropic technical report.
+
+\textbf{Why to be cautious.} Preprint; industry lab research; no
+peer-review.
+
+\subsection*{Z2. Meinke et al., \emph{In-Context Scheming} (arXiv 2024)}
+
+\textbf{Full citation.}
+Meinke, A., Schoen, B., Scheurer, J., Balesni, M., Shah, R.\ and Hobbhahn, M.
+\emph{Frontier Models are Capable of In-Context Scheming}.
+arXiv:2412.04984. Apollo Research technical report.
+
+\textbf{Why to be cautious.} Preprint; evaluator-built adversarial
+scenarios; no peer-review.
+
+\subsection*{Z3. Kinniment et al., \emph{METR Autonomous-Task Evaluations} (2023)}
+
+\textbf{Full citation.}
+Kinniment, M.\ et al.
+\emph{Evaluating Language-Model Agents on Realistic Autonomous Tasks}.
+arXiv:2312.11671. METR (formerly ARC Evals) technical report.
+
+\textbf{Why to be cautious.} Preprint; third-party evaluation
+organisation; no peer-review.
+
+\end{document}

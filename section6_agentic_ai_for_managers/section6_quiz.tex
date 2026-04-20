@@ -1,0 +1,191 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{ETH Zurich Executive Education}
+\lhead{Section 6 --- Agentic AI}
+\cfoot{\thepage}
+
+\title{Calibration Quiz: Agentic AI\\[0.2em]
+       \large What Works, What Breaks, What You Can't Trust}
+\author{Companion to the ETH Zurich Executive Lecture}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Instructions.}
+Answer each question with a single letter, number, or short phrase.
+For forecasting questions, also write a 90\% confidence interval
+(a lower and upper bound you are 90\% sure contains the true answer).
+This is a calibration exercise --- the aim is not to be right, but
+to learn how wide your uncertainty really is.
+
+\vspace{1em}
+
+\section*{Part I --- Facts}
+
+\begin{enumerate}[label=Q\arabic*.]
+
+\item The single most replicated finding in the agentic-AI literature is
+      that the main driver of agent performance is:
+\begin{enumerate}[label=(\alph*)]
+  \item the base model's parameter count
+  \item the scaffolding (planner, tools, reflection) around the model
+  \item the training data used during pre-training
+  \item the choice of prompt template
+\end{enumerate}
+
+\item Yao et al.'s \emph{ReAct} paper was published at:
+\begin{enumerate}[label=(\alph*)]
+  \item NeurIPS 2022 \qquad (b) ICLR 2023 \qquad (c) ICML 2023 \qquad (d) ACL 2023
+\end{enumerate}
+
+\item On the ALFWorld household-task benchmark, ReAct raised the same
+      base model's success rate from roughly:
+\begin{enumerate}[label=(\alph*)]
+  \item 10\% to 30\% \qquad (b) 34\% to 71\% \qquad (c) 55\% to 82\% \qquad (d) 60\% to 95\%
+\end{enumerate}
+
+\item Schick et al.'s \emph{Toolformer} paper makes which headline claim?
+\begin{enumerate}[label=(\alph*)]
+  \item A 13B model matches GPT-4 on tool-use benchmarks.
+  \item A 6.7B model that teaches itself to call APIs outperforms a
+        175B GPT-3 model without tools on downstream tasks.
+  \item Tool use is unnecessary once the base model crosses 70B
+        parameters.
+  \item Language models cannot reliably learn to call external tools
+        without reinforcement learning from human feedback.
+\end{enumerate}
+
+\item The four ICLR 2024 benchmarks covered in this lecture are GAIA,
+      SWE-bench, WebArena, and:
+\begin{enumerate}[label=(\alph*)]
+  \item BIG-bench \qquad (b) HELM \qquad (c) AgentBench \qquad (d) MMLU
+\end{enumerate}
+
+\item On GAIA, the approximate human baseline is:
+\begin{enumerate}[label=(\alph*)]
+  \item 72\% \qquad (b) 82\% \qquad (c) 92\% \qquad (d) 98\%
+\end{enumerate}
+
+\item OpenAI stopped reporting SWE-bench Verified scores for its
+      frontier models because:
+\begin{enumerate}[label=(\alph*)]
+  \item Scores plateaued below 50\%.
+  \item Scores became too expensive to compute.
+  \item All tested frontier models showed training-data contamination
+        on the benchmark.
+  \item The benchmark was deprecated by its authors.
+\end{enumerate}
+
+\item ``Faith and Fate'' (Dziri et al., NeurIPS 2023) reports that
+      GPT-4's correct rate on 5-digit multiplication is approximately:
+\begin{enumerate}[label=(\alph*)]
+  \item 4\% \qquad (b) 23\% \qquad (c) 59\% \qquad (d) 88\%
+\end{enumerate}
+
+\item Langosco et al.'s \emph{Goal Misgeneralization in Deep
+      Reinforcement Learning} was published at:
+\begin{enumerate}[label=(\alph*)]
+  \item NeurIPS 2021 \qquad (b) ICLR 2022 \qquad (c) ICML 2022 \qquad (d) ICML 2023
+\end{enumerate}
+
+\item Greshake et al.'s \emph{Not What You've Signed Up For} paper on
+      indirect prompt injection was published as:
+\begin{enumerate}[label=(\alph*)]
+  \item Main-track paper at CCS 2023
+  \item Workshop paper at ACM AISec 2023 (co-located with CCS)
+  \item Main-track paper at USENIX Security 2023
+  \item Journal article in IEEE Security \& Privacy 2023
+\end{enumerate}
+
+\item Park et al.'s \emph{AI Deception} survey appeared in which
+      peer-reviewed journal?
+\begin{enumerate}[label=(\alph*)]
+  \item Nature \qquad (b) Science \qquad (c) Patterns (Cell Press) \qquad (d) PNAS
+\end{enumerate}
+
+\item Which of the following is \emph{not} one of the four
+      peer-reviewed failure modes discussed in this lecture?
+\begin{enumerate}[label=(\alph*)]
+  \item Compounding errors on long-horizon tasks
+  \item Goal misgeneralization
+  \item Indirect prompt injection
+  \item Hallucinated citations in scientific writing
+\end{enumerate}
+
+\item Which of the following is explicitly \emph{not} peer-reviewed
+      (a preprint or technical report)?
+\begin{enumerate}[label=(\alph*)]
+  \item Reflexion (Shinn et al.)
+  \item GAIA (Mialon et al.)
+  \item Sleeper Agents (Hubinger et al., Anthropic)
+  \item Generative Agents (Park et al.)
+\end{enumerate}
+
+\end{enumerate}
+
+\section*{Part II --- Forecasting (with 90\% confidence intervals)}
+
+\noindent For each question, give your best point estimate \emph{and}
+a 90\% confidence interval (low, high).
+
+\begin{enumerate}[resume, label=Q\arabic*.]
+
+\item By the end of 2027, what do you think the highest reported score
+      on GAIA will be? (Human baseline is $\approx 92\%$.)
+
+\item By the end of 2027, what do you think the gap between the best
+      LLM agent and humans on WebArena will be, in percentage points?
+      (At April 2026: agent 71.6\%, human $\approx 78\%$, so gap
+      $\approx 6.4$ points.)
+
+\item Imagine a ``clean'' agentic-AI benchmark released in 2026 that
+      has \emph{not} yet been contaminated. By the end of 2028, what
+      fraction of the published leaderboard entries on that benchmark
+      do you expect to show evidence of contamination?
+
+\item Of the three ``grey zone'' preprints cited in this lecture
+      (Sleeper Agents, In-Context Scheming, METR autonomous tasks),
+      how many do you think will be published in a peer-reviewed venue
+      by the end of 2027?
+
+\end{enumerate}
+
+\section*{Part III --- Scenarios}
+
+\begin{enumerate}[resume, label=Q\arabic*.]
+
+\item A vendor demonstrates an agent that reads inbound customer
+      emails, drafts replies, and schedules follow-up meetings. The
+      demo goes well. Which two of the four failure modes from this
+      lecture are most relevant to the risk assessment for this
+      deployment, and what is one concrete question you would ask the
+      vendor about each?
+
+\item Your CTO circulates a slide citing a SWE-bench score of 78\% for
+      a product you are considering, and concludes ``this model can now
+      fix most engineering tickets autonomously.'' Write a two-sentence
+      reply that challenges the implicit claim using specific points
+      from this lecture.
+
+\item You are writing your procurement template. Pick three of the
+      seven procurement questions from the deck. For each, write one
+      concrete follow-up question you would use in an interview with
+      the vendor.
+
+\end{enumerate}
+
+\vspace{2em}
+
+\noindent\textbf{Scoring note.} Part~I is objective (one correct
+answer). Part~II has no ``right'' answer; the useful output is your
+own calibration over time. Part~III is discussion-oriented and is
+best reviewed with a colleague or in a reading group.
+
+\end{document}

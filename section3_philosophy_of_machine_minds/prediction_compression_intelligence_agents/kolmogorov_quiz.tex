@@ -1,0 +1,278 @@
+\documentclass[aspectratio=169, 12pt, xcolor={dvipsnames}]{beamer}
+\usetheme{metropolis}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+
+\definecolor{accent}{RGB}{200, 50, 50}
+\definecolor{hint}{RGB}{120, 120, 120}
+
+\newcommand{\seq}[1]{{\huge\ttfamily #1}}
+\newcommand{\seqtight}[1]{{\Large\ttfamily #1}}
+\newcommand{\blank}{\textcolor{accent}{\textbf{?}}}
+\newcommand{\ans}[1]{\textcolor{accent}{\textbf{#1}}}
+\newcommand{\hintline}[1]{\vfill\begin{center}\small\textcolor{hint}{#1}\end{center}}
+
+\title{Guess the Pattern}
+\subtitle{Ten short sequences, thirty seconds each}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{How this works}
+\large
+\begin{itemize}
+  \item I show you a sequence. You call out the \emph{shortest description} that lets a classmate reproduce it --- words, math, anything.
+  \item Thirty seconds. Two guesses accepted before the reveal.
+  \item At the end, we count characters --- and something strange happens.
+\end{itemize}
+\vfill
+\begin{center}
+\textcolor{hint}{Warmup for one idea:\\
+\emph{prediction $=$ compression $=$ intelligence}.}
+\end{center}
+\end{frame}
+
+% ======================================================================
+% 1. Squares
+% ======================================================================
+\begin{frame}{1 --- What comes next?}
+\vfill
+\begin{center}\seq{$1 \quad 4 \quad 9 \quad 16 \quad 25 \quad$ \blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{1 --- Reveal}
+\vfill
+\begin{center}\seq{$1 \quad 4 \quad 9 \quad 16 \quad 25 \quad $\ans{36}}\end{center}
+\vfill
+\begin{center}\Large Squares: $a_n = n^2$\end{center}
+\hintline{Sequence: 14 chars. \quad Description: 2 chars.}
+\end{frame}
+
+% ======================================================================
+% 2. Primes
+% ======================================================================
+\begin{frame}{2 --- What comes next?}
+\vfill
+\begin{center}\seq{$2 \quad 3 \quad 5 \quad 7 \quad 11 \quad 13 \quad$ \blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{2 --- Reveal}
+\vfill
+\begin{center}\seq{$2 \quad 3 \quad 5 \quad 7 \quad 11 \quad 13 \quad $\ans{17}}\end{center}
+\vfill
+\begin{center}\Large Primes\end{center}
+\hintline{A single word reproduces infinitely many terms.}
+\end{frame}
+
+% ======================================================================
+% 3. Fibonacci
+% ======================================================================
+\begin{frame}{3 --- What comes next?}
+\vfill
+\begin{center}\seq{$1 \quad 1 \quad 2 \quad 3 \quad 5 \quad 8 \quad$ \blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{3 --- Reveal}
+\vfill
+\begin{center}\seq{$1 \quad 1 \quad 2 \quad 3 \quad 5 \quad 8 \quad $\ans{13}}\end{center}
+\vfill
+\begin{center}\Large Fibonacci: $a_n = a_{n-1} + a_{n-2}$\end{center}
+\hintline{A recursion is a short description too.}
+\end{frame}
+
+% ======================================================================
+% 4. Digits of pi
+% ======================================================================
+\begin{frame}{4 --- What comes next?}
+\vfill
+\begin{center}\seq{$3 \quad 1 \quad 4 \quad 1 \quad 5 \quad 9 \quad 2 \quad$ \blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{4 --- Reveal}
+\vfill
+\begin{center}\seq{$3 \quad 1 \quad 4 \quad 1 \quad 5 \quad 9 \quad 2 \quad $\ans{6}}\end{center}
+\vfill
+\begin{center}\Large Digits of $\pi$\end{center}
+\hintline{The sequence looks random --- but the program that generates it is tiny.}
+\end{frame}
+
+% ======================================================================
+% 5. Lazy caterer --- closed form vs recursion
+% ======================================================================
+\begin{frame}{5 --- What comes next?}
+\vfill
+\begin{center}\seq{$1 \quad 2 \quad 4 \quad 7 \quad 11 \quad 16 \quad$ \blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{5 --- Reveal}
+\vfill
+\begin{center}\seq{$1 \quad 2 \quad 4 \quad 7 \quad 11 \quad 16 \quad $\ans{22}}\end{center}
+\vfill
+\begin{center}
+\Large Closed form: $a_n = \tfrac{n^2 - n + 2}{2}$\\[0.4em]
+\emph{or} recursion: $a_n = a_{n-1} + (n-1)$
+\end{center}
+\hintline{Two correct descriptions. Kolmogorov asks for the \emph{shortest}.}
+\end{frame}
+
+% ======================================================================
+% 6. QUIRKY: Star Wars release order
+% ======================================================================
+\begin{frame}{6 --- What comes next?}
+\vfill
+\begin{center}\seq{$4 \quad 5 \quad 6 \quad 1 \quad 2 \quad 3 \quad 7 \quad 8 \quad$ \blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{6 --- Reveal}
+\vfill
+\begin{center}\seq{$4 \quad 5 \quad 6 \quad 1 \quad 2 \quad 3 \quad 7 \quad 8 \quad $\ans{9}}\end{center}
+\vfill
+\begin{center}\Large Star Wars episodes, in release order\end{center}
+\hintline{You didn't write down a formula. You looked up a memory.\\That memory is your description.}
+\end{frame}
+
+% ======================================================================
+% 7. English digit initials (classic killer negative gap)
+% ======================================================================
+\begin{frame}{7 --- What comes next?}
+\vfill
+\begin{center}\seq{O \quad T \quad T \quad F \quad F \quad S \quad S \quad E \quad N \quad \blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{7 --- Reveal}
+\vfill
+\begin{center}\seq{O \quad T \quad T \quad F \quad F \quad S \quad S \quad E \quad N \quad \ans{T}}\end{center}
+\vfill
+\begin{center}\Large First letters of \emph{one, two, three, \ldots, ten}\end{center}
+\hintline{Notice: the English description is \emph{longer} than the sequence.\\
+The description is short only in the language of your brain.}
+\end{frame}
+
+% ======================================================================
+% 8. QUIRKY: Digits alphabetized
+% ======================================================================
+\begin{frame}{8 --- What comes next?}
+\vfill
+\begin{center}\seq{$8 \quad 5 \quad 4 \quad 9 \quad 1 \quad 7 \quad 6 \quad$ \blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{8 --- Reveal}
+\vfill
+\begin{center}\seq{$8 \quad 5 \quad 4 \quad 9 \quad 1 \quad 7 \quad 6 \quad $\ans{10}}\end{center}
+\vfill
+\begin{center}
+\Large Digits 0--10, sorted alphabetically by spelling\\[0.3em]
+\small \emph{eight, five, four, nine, one, seven, six, \textbf{ten}, three, two, zero}
+\end{center}
+\hintline{Sorting numbers by how they're \emph{spelled}. A description that cheats a little.}
+\end{frame}
+
+% ======================================================================
+% 9. Look-and-say
+% ======================================================================
+\begin{frame}{9 --- What comes next?}
+\vfill
+\begin{center}\seqtight{$1,\ 11,\ 21,\ 1211,\ 111221,\ $\blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{9 --- Reveal}
+\vfill
+\begin{center}\seqtight{$1,\ 11,\ 21,\ 1211,\ 111221,\ $\ans{$312211$}}\end{center}
+\vfill
+\begin{center}
+\Large Look-and-say: read the previous term aloud\\[0.3em]
+\small ``one 1'' $\to 11$, \quad ``two 1s'' $\to 21$, \quad ``one 2, one 1'' $\to 1211$, \ldots
+\end{center}
+\hintline{The rule is self-referential: each term describes the one before it.}
+\end{frame}
+
+% ======================================================================
+% 10. QUIRKY CLIMAX: Kolakoski
+% ======================================================================
+\begin{frame}{10 --- What comes next?}
+\vfill
+\begin{center}\seqtight{$1\ 2\ 2\ 1\ 1\ 2\ 1\ 2\ 2\ 1\ 2\ 2\ 1\ 1\ 2\ $\blank}\end{center}
+\vfill
+\end{frame}
+
+\begin{frame}{10 --- Reveal}
+\vfill
+\begin{center}\seqtight{$1\ 2\ 2\ 1\ 1\ 2\ 1\ 2\ 2\ 1\ 2\ 2\ 1\ 1\ 2\ $\ans{1}}\end{center}
+\vfill
+\begin{center}\Large The Kolakoski sequence --- it describes itself\end{center}
+\vspace{0.3em}
+\begin{center}\small
+Read the sequence. Count the runs of identical values.\\
+The run lengths \emph{are} the sequence again.
+\[
+\underbrace{1}_{1}\ \underbrace{2\,2}_{2}\ \underbrace{1\,1}_{2}\ \underbrace{2}_{1}\ \underbrace{1}_{1}\ \underbrace{2\,2}_{2}\ \underbrace{1}_{1}\ \underbrace{2\,2}_{2}\ \underbrace{1\,1}_{2}\ \underbrace{2}_{1}\ \dots
+\]
+\end{center}
+\hintline{The sequence \emph{is} its own description. That's a very short program.}
+\end{frame}
+
+% ======================================================================
+% Scoreboard
+% ======================================================================
+\begin{frame}{The scoreboard}
+\footnotesize
+\begin{center}
+\begin{tabular}{cllccc}
+\toprule
+\# & Sequence & Description & Raw & Desc & Gap \\
+\midrule
+1  & $1,4,9,16,25,36$                 & $n^2$                        & 14 &  2 & $+12$ \\
+2  & $2,3,5,7,11,13,17$               & primes                       & 16 &  6 & $+10$ \\
+3  & $1,1,2,3,5,8,13$                 & Fibonacci                    & 14 &  9 & $+5$  \\
+4  & $3,1,4,1,5,9,2,6$                & digits of $\pi$              & 16 & 11 & $+5$  \\
+5  & $1,2,4,7,11,16,22$               & $(n^2-n+2)/2$                & 16 & 10 & $+6$  \\
+6  & $4,5,6,1,2,3,7,8,9$              & Star Wars release order      & 17 & 24 & $-7$  \\
+7  & \texttt{O T T F F S S E N T}     & English digit initials       & 19 & 22 & $-3$  \\
+8  & $8,5,4,9,1,7,6,10$               & digits 0--10 alphabetized    & 17 & 27 & $-10$ \\
+9  & $1,11,21,1211,111221,312211$     & look-and-say                 & 25 & 12 & $+13$ \\
+10 & $1,2,2,1,1,2,1,2,2,1,2,2,\ldots$ & Kolakoski                    & -- &  9 & big   \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vfill
+\small\textcolor{hint}{Positive gap: description shorter than sequence.
+Negative gap: description longer \emph{in English} --- but very short in the language of your brain.}
+\end{frame}
+
+% ======================================================================
+% Punchline
+% ======================================================================
+\begin{frame}{The punchline}
+\vfill
+\begin{center}
+\Large
+\[
+\boxed{\,K(x) \;=\; \min\{\,|p|\ :\ U(p) = x\,\}\,}
+\]
+\end{center}
+\vfill
+\small
+\begin{itemize}
+  \item The Kolmogorov complexity of a string $x$ is the length of the shortest program $p$ that, on a fixed universal computer $U$, outputs $x$.
+  \item Sequences \textbf{6--8} had \emph{negative} gaps because English is a verbose programming language --- but in the language of your own brain, ``Star Wars'' and ``digit initials'' are very short programs. $K$ depends on the machine.
+  \item Every modern language model, when it predicts the next token well, is searching for a \emph{short program} that fits the data.
+\end{itemize}
+\vfill
+\begin{center}
+\Large\textbf{prediction \;$=$\; compression \;$=$\; intelligence}
+\end{center}
+\end{frame}
+
+\end{document}
